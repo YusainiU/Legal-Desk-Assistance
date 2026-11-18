@@ -21,6 +21,12 @@ php artisan serve
 
 Open http://localhost:8000 and use the account and password entered at the prompt. The optional `--demo` flag adds a fictional sample matter. To work on the styles with Vite hot reload, run `npm run dev` in a separate terminal. For a hosted environment, point the web root at `public/`, set `APP_ENV=production` and `APP_DEBUG=false`, and serve it over HTTPS.
 
+## Application structure
+
+Run Composer, Artisan, and Vite from this repository’s root. The root contains the Laravel app, Fortify configuration, Flux views, and MySQL migrations.
+
+Fortify’s authentication views live in `resources/views/login.blade.php` and `resources/views/auth/`. For local password reset testing, the example environment writes mail to the Laravel log. Configure your mail transport before sending reset links to real users.
+
 ## Workflow
 
 1. Interview the client and review urgent dates.

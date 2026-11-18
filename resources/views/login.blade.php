@@ -17,5 +17,16 @@
             <flux:checkbox name="remember" label="Remember me" :checked="(bool) old('remember')" />
             <flux:button type="submit" variant="primary" class="w-full">Sign in</flux:button>
         </form>
+
+        @if (Route::has('password.request') || Route::has('register'))
+            <div class="flex flex-wrap justify-center gap-x-4 gap-y-2 text-sm">
+                @if (Route::has('password.request'))
+                    <flux:link :href="route('password.request')">Forgot password?</flux:link>
+                @endif
+                @if (Route::has('register'))
+                    <flux:link :href="route('register')">Create an account</flux:link>
+                @endif
+            </div>
+        @endif
     </flux:card>
 </x-layouts.app>
