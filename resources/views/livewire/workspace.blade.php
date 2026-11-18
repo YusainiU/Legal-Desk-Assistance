@@ -62,7 +62,9 @@
                         <flux:text>{{ $description }}</flux:text>
                         @if ($matter->stage === 4)<flux:text>{{ $practices[$matter->practice] }}</flux:text>@endif
                         @foreach ($items as $index => $item)
-                            @php($checked = $matter->checks['stage_'.$matter->stage][$index] ?? false)
+                            @php
+                                $checked = $matter->checks['stage_'.$matter->stage][$index] ?? false;
+                            @endphp
                             <flux:checkbox :label="$item" :checked="$checked"
                                 wire:key="stage-{{ $matter->stage }}-check-{{ $index }}-{{ (int) $checked }}"
                                 wire:change="toggleCheck({{ $matter->stage }}, {{ $index }}, {{ $checked ? 'false' : 'true' }})"
