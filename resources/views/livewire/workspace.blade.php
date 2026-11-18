@@ -51,7 +51,6 @@
             [$name, $description, $items] = $stages[$matter->stage];
             $active = $matter->status === 'Open';
             $last = count($stages) - 1;
-            $openTaskCount = (int) $matter->open_tasks_count;
             $closed = $matter->status === 'Closed';
             $nextStage = $active && $matter->stage < $last ? $stages[$matter->stage + 1][0] : null;
         @endphp
@@ -134,7 +133,17 @@
             </nav>
 
             <section id="case-panel-workflow" aria-label="Workflow" x-show="casePanel === 'workflow'" class="space-y-4" tabindex="-1">
-                @if ($active)
+                @if ($reviewedStage === null)
+                    @error('stageReview')<flux:callout color="red" role="alert">{{ $message }}</flux:callout>@enderror
+                @endif
+                @if ($reviewedStage !== null)
+                    @include('livewire.partials.completed-stage')
+                @elseif ($active)
+                    @if ($matter->stage > 0)
+                        <flux:button type="button" size="sm" variant="ghost" icon="arrow-left"
+                            wire:click="viewCompletedStage({{ $matter->stage - 1 }})"
+                            wire:loading.attr="disabled" wire:target="viewCompletedStage">Previous stage</flux:button>
+                    @endif
                     <flux:card class="desk-panel space-y-4">
                         <flux:heading size="lg" level="2">{{ $matter->stage === 2 ? 'Case decision' : 'Stage checklist' }}</flux:heading>
                         <flux:text>{{ $description }}</flux:text>
@@ -192,7 +201,7 @@
                             wire:key="stage-note-{{ $matter->id }}-{{ $matter->stage }}" class="space-y-2 border-t border-zinc-200 pt-4 dark:border-zinc-800">
                             <flux:textarea label="Stage note" wire:model="stageNote" rows="2" maxlength="4000"
                                 placeholder="Add a comment about this stage" />
-                            <flux:text size="sm">Notes appear in Case history. A draft also saves when you advance, decline, or close the case.</flux:text>
+                            <flux:text size="sm">Notes appear in Case history. A draft also saves when you advance, reinstate a stage, decline, or close the case.</flux:text>
 
                             <div class="flex flex-wrap items-center gap-3">
                                 <flux:button type="submit" size="sm" wire:loading.attr="disabled" wire:target="saveStageNote">Save note</flux:button>
@@ -234,31 +243,28 @@
                 <details class="desk-panel p-4">
                     <summary class="cursor-pointer text-sm font-semibold">All workflow stages</summary>
                     <ol class="mt-3 divide-y divide-zinc-200 dark:divide-zinc-800">
-                        @foreach ($stages as $index => [$label, $detail, $checklist])
-                            <li class="space-y-2 py-3" @if ($active && $index === $matter->stage) aria-current="step" @endif>
-                                <div class="flex flex-wrap items-center justify-between gap-2">
-                                    <div class="flex items-center gap-2">
-                                        <span class="grid size-6 shrink-0 place-items-center rounded-full bg-zinc-100 text-xs font-medium dark:bg-zinc-800">{{ $index + 1 }}</span>
-                                        <span class="text-sm {{ $active && $index === $matter->stage ? 'font-semibold text-teal-800 dark:text-teal-300' : '' }}">{{ $label }}</span>
-                                    </div>
-                                    @if ($closed || $index < $matter->stage)
-                                        <flux:badge size="sm" color="zinc">Complete</flux:badge>
+                        @foreach ($stages as $index => [$label])
+                            <li class="flex flex-wrap items-center justify-between gap-2 py-3"
+                                @if ($active && $index === $matter->stage) aria-current="step" @endif>
+                                <div class="flex items-center gap-2">
+                                    <span class="grid size-6 shrink-0 place-items-center rounded-full bg-zinc-100 text-xs font-medium dark:bg-zinc-800">{{ $index + 1 }}</span>
+                                    <span class="text-sm {{ $active && $index === $matter->stage ? 'font-semibold text-teal-800 dark:text-teal-300' : '' }}">{{ $label }}</span>
+                                </div>
+                                <div class="flex flex-wrap items-center gap-2">
+                                    @if ($matter->hasCompletedStage($index))
+                                        <flux:badge size="sm" color="zinc">Completed</flux:badge>
+                                        @if ($reviewedStage !== $index)
+                                            <flux:button type="button" size="sm" variant="ghost"
+                                                wire:click="viewCompletedStage({{ $index }})"
+                                                :aria-label="'View completed stage '.$label"
+                                                wire:loading.attr="disabled" wire:target="viewCompletedStage">View stage</flux:button>
+                                        @endif
                                     @elseif ($active && $index === $matter->stage)
                                         <flux:badge size="sm" color="teal">Current</flux:badge>
                                     @elseif (! $active && $index === $matter->stage)
                                         <flux:badge size="sm" color="amber">Ended here</flux:badge>
                                     @endif
                                 </div>
-                                @if ($checklist && ($closed || $index < $matter->stage))
-                                    <details class="ms-8 text-sm">
-                                        <summary class="cursor-pointer text-zinc-600 dark:text-zinc-300">Recorded checklist</summary>
-                                        <ul class="ms-4 mt-2 list-disc">
-                                            @foreach ($checklist as $checkIndex => $check)
-                                                @if ($matter->checks['stage_'.$index][$checkIndex] ?? false)<li>{{ $check }}</li>@endif
-                                            @endforeach
-                                        </ul>
-                                    </details>
-                                @endif
                             </li>
                         @endforeach
                     </ol>

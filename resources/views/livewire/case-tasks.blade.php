@@ -22,6 +22,8 @@
                 <flux:heading level="3">{{ $stages[$taskStage][0] ?? 'Earlier stage' }}</flux:heading>
                 @if ($active && $taskStage === $stage)
                     <flux:badge size="sm" color="teal">Current stage</flux:badge>
+                @elseif ($active && $taskStage > $stage)
+                    <flux:badge size="sm" color="zinc">Upcoming stage</flux:badge>
                 @endif
             </div>
             <ul class="divide-y divide-zinc-200 dark:divide-zinc-800">

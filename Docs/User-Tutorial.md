@@ -22,7 +22,7 @@ Return to **Workspace**, select **New case**, enter the following example, and s
 | Case owner | Your name |
 | Practice area | Litigation |
 
-The case opens at **Interview client**. The **Current stage** header stays visible as you switch between case sections. Under **Workflow**, use the current checklist and look for **Next stage** next to the advance button. Expand **All workflow stages** to see the full sequence and recorded checklists.
+The case opens at **Interview client**. The **Current stage** header stays visible as you switch between case sections. Under **Workflow**, use the current checklist and look for **Next stage** next to the advance button. Select **Previous stage**, or expand **All workflow stages** and select **View stage**, to review a completed step. Completed checklists, stage notes, and tasks are read-only. On an open case, select **Reinstate stage** and confirm to make that step current again. Later stages become upcoming and their recorded information stays on file.
 
 ## 3. Link and email contacts
 
@@ -42,7 +42,7 @@ While the case is open, open **Case history** and select **Add entry**. Choose a
 
 Under **Tasks**, select **New task**. Enter what needs doing, who is responsible, and an optional due date. The task is assigned to the current stage. Use **Mark complete** once it’s done, **Edit** to change the details, or **Delete** to remove it.
 
-The workflow flags any incomplete task on the case. Complete or delete those tasks before advancing to the next stage or closing the file. Existing tasks are assigned to the stage the case was at when the task module was installed.
+The workflow flags incomplete tasks for the current and earlier stages. Complete or delete them before advancing or closing the file. If you reinstate a stage, tasks in later stages are checked when you reach those stages again. Existing tasks are assigned to the stage the case was at when the task module was installed.
 
 Record client updates and billing events in **Case history** as they happen.
 
@@ -54,7 +54,7 @@ Use **Preview** to open a PDF, image, or plain-text file in a new tab. Use **Dow
 
 ## 6. Work through the nine stages
 
-At each active stage, enter a comment in **Stage note** and select **Save note**. The note appears in **Case history** with the stage name. A draft also saves when you successfully advance, decline, or close the case.
+At each active stage, enter a comment in **Stage note** and select **Save note**. The note appears in **Case history** with the stage name. A draft also saves when you successfully advance, reinstate a stage, decline, or close the case.
 
 Tick each checklist item after completing the work it describes. Select **Advance stage** when the stage is ready. The decision and closing stages have their own buttons.
 

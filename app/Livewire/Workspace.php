@@ -25,6 +25,9 @@ class Workspace extends Component
     #[Locked]
     public ?int $selected = null;
 
+    #[Locked]
+    public ?int $reviewingStage = null;
+
     public string $screen = 'register';
 
     public string $search = '';
@@ -50,7 +53,7 @@ class Workspace extends Component
     public function show(string $screen): void
     {
         abort_unless(in_array($screen, ['register', 'guide', 'new'], true), 404);
-        $this->reset('selected', 'form', 'decision', 'stageNote', 'stageNoteSaved', 'body', 'document', 'documentStatus');
+        $this->reset('selected', 'reviewingStage', 'form', 'decision', 'stageNote', 'stageNoteSaved', 'body', 'document', 'documentStatus');
         $this->resetValidation();
         $this->screen = $screen;
     }
@@ -61,6 +64,44 @@ class Workspace extends Component
         $this->show('register');
         $this->selected = $matter->id;
         $this->screen = 'detail';
+    }
+
+    public function viewCompletedStage(int $stage): void
+    {
+        $matter = $this->matters()->findOrFail($this->selected);
+        abort_unless($matter->hasCompletedStage($stage), 404);
+
+        $this->reviewingStage = $stage;
+        $this->resetValidation('stageReview');
+    }
+
+    public function returnToWorkflow(): void
+    {
+        $this->reset('reviewingStage');
+        $this->resetValidation('stageReview');
+    }
+
+    public function reinstateStage(int $expectedStage): void
+    {
+        $this->change(function (Matter $matter) use ($expectedStage) {
+            $stage = $this->reviewingStage;
+
+            if ($matter->stage !== $expectedStage || $stage === null || ! $matter->hasCompletedStage($stage)) {
+                $this->addError('stageReview', 'The workflow has changed. Open the completed stage again before reinstating it.');
+
+                return;
+            }
+
+            if (filled($this->stageNote)) {
+                $this->recordStageNote($matter);
+            }
+
+            $stages = config('matterdesk.stages');
+            $from = $stages[$matter->stage][0];
+            $matter->update(['stage' => $stage]);
+            $this->log($matter, "Reinstated {$stages[$stage][0]} from {$from}.");
+            $this->finishStageChange();
+        });
     }
 
     public function selectCreatedContact(int $contactId): void
@@ -139,7 +180,7 @@ class Workspace extends Component
                 return;
             }
 
-            if ($matter->tasks()->where('done', false)->exists()) {
+            if ($matter->incompleteTasksThroughCurrentStage()->exists()) {
                 $this->addError('stageTasks', 'Complete or delete the incomplete tasks before continuing.');
 
                 return;
@@ -286,8 +327,10 @@ class Workspace extends Component
     {
         $matter = $this->selected === null ? null : $this->matters()->with(['entries' => fn ($query) => $query->where('kind', '!=', 'Task'), 'documents'])
             ->withExists('contacts')
-            ->withCount(['tasks as open_tasks_count' => fn (Builder $query) => $query->where('done', false)])
             ->findOrFail($this->selected);
+        $reviewedStage = $matter && $this->reviewingStage !== null && $matter->hasCompletedStage($this->reviewingStage)
+            ? $this->reviewingStage
+            : null;
         $register = collect();
         if ($this->screen === 'register') {
             $register = $this->matters()
@@ -303,6 +346,9 @@ class Workspace extends Component
         return view('livewire.workspace', [
             'register' => $register,
             'matter' => $matter,
+            'reviewedStage' => $reviewedStage,
+            'reviewedTasks' => $reviewedStage === null ? collect() : $matter->tasks()->where('task_stage', $reviewedStage)->latest('id')->get(),
+            'openTaskCount' => $matter && $matter->status === 'Open' ? $matter->incompleteTasksThroughCurrentStage()->count() : 0,
             'stages' => config('matterdesk.stages'),
             'practices' => config('matterdesk.practices'),
             'canMove' => $matter && $matter->status === 'Open' && $matter->contacts_exists && $this->canAdvance($matter),
@@ -343,8 +389,8 @@ class Workspace extends Component
     private function finishStageChange(): void
     {
         DB::afterCommit(function () {
-            $this->reset('decision', 'stageNote', 'stageNoteSaved');
-            $this->resetValidation(['workflow', 'stageNote', 'stageTasks']);
+            $this->reset('decision', 'stageNote', 'stageNoteSaved', 'reviewingStage');
+            $this->resetValidation(['workflow', 'stageNote', 'stageTasks', 'stageReview']);
             $this->dispatch('case-stage-changed');
         });
     }
