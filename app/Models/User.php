@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -20,4 +21,8 @@ class User extends Authenticatable
         'is_admin' => 'boolean',
         'has_access' => 'boolean',
     ];
+    public function contacts(): HasMany
+    {
+        return $this->hasMany(Contact::class);
+    }
 }

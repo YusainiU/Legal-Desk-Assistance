@@ -1,11 +1,16 @@
 <?php
 
 use App\Http\Controllers\CaseDocumentController;
+use App\Http\Controllers\ContactController;
 use App\Http\Controllers\UserController;
 use App\Livewire\Workspace;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', Workspace::class)->middleware('auth')->name('workspace');
+
+Route::resource('contacts', ContactController::class)
+    ->only(['index', 'create', 'store', 'edit', 'update'])
+    ->middleware('auth');
 
 Route::resource('users', UserController::class)
     ->except('show')

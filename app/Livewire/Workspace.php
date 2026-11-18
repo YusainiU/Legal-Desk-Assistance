@@ -68,13 +68,21 @@ class Workspace extends Component
     {
         $data = $this->validate([
             'form.title' => 'required|string|max:160',
-            'form.client' => 'required|string|max:160',
+            'form.contact_id' => ['required', 'integer', Rule::exists('contacts', 'id')->where('user_id', auth()->id())],
             'form.party' => 'nullable|string|max:160',
             'form.owner' => 'required|string|max:160',
             'form.practice' => ['required', Rule::in(array_keys(config('matterdesk.practices')))],
         ])['form'];
 
-        $matter = Matter::create($data + ['user_id' => auth()->id()]);
+        $matter = DB::transaction(function () use ($data) {
+            $contact = auth()->user()->contacts()->findOrFail($data['contact_id']);
+            unset($data['contact_id']);
+
+            $matter = Matter::create($data + ['user_id' => auth()->id(), 'client' => $contact->name]);
+            $matter->contacts()->attach($contact->id);
+
+            return $matter;
+        });
         $this->open($matter->id);
     }
 
@@ -107,6 +115,12 @@ class Workspace extends Component
             $stages = config('matterdesk.stages');
             $last = count($stages) - 1;
 
+            if (! $matter->contacts()->exists()) {
+                $this->addError('workflow', 'Link a contact before advancing this case.');
+
+                return;
+            }
+
             if ($matter->stage !== $expectedStage || ! $this->canAdvance($matter)) {
                 $this->addError('workflow', 'Review the current checklist, conflict decision or outstanding tasks.');
 
@@ -136,6 +150,13 @@ class Workspace extends Component
         $this->validate(['decision' => 'required|string|max:4000']);
         $this->change(function (Matter $matter) {
             abort_unless($matter->stage === 2, 422);
+
+            if (! $matter->contacts()->exists()) {
+                $this->addError('workflow', 'Link a contact before deciding whether to take the case.');
+
+                return;
+            }
+
             $matter->update(['status' => 'Declined']);
             $this->log($matter, 'Case declined — '.$this->decision);
         });
@@ -232,7 +253,7 @@ class Workspace extends Component
 
     public function render()
     {
-        $matter = $this->selected === null ? null : $this->matters()->with(['entries', 'documents'])->findOrFail($this->selected);
+        $matter = $this->selected === null ? null : $this->matters()->with(['entries', 'documents'])->withExists('contacts')->findOrFail($this->selected);
         $register = collect();
         if ($this->screen === 'register') {
             $register = $this->matters()
@@ -250,7 +271,8 @@ class Workspace extends Component
             'matter' => $matter,
             'stages' => config('matterdesk.stages'),
             'practices' => config('matterdesk.practices'),
-            'canMove' => $matter && $matter->status === 'Open' && $this->canAdvance($matter),
+            'canMove' => $matter && $matter->status === 'Open' && $matter->contacts_exists && $this->canAdvance($matter),
+            'contactOptions' => $this->screen === 'new' ? auth()->user()->contacts()->orderBy('name')->get() : collect(),
         ]);
     }
 

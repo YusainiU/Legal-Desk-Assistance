@@ -27,6 +27,12 @@ Run Composer, Artisan, and Vite from this repository’s root. The root contains
 
 Fortify’s authentication views live in `resources/views/login.blade.php` and `resources/views/auth/`. For local password reset testing, the example environment writes mail to the Laravel log. Configure your mail transport before sending reset links to real users.
 
+## Case contacts and email
+
+Create an address-book contact before opening a case. A contact can have an email address, a phone number, or both. Existing cases stay in place. Link a contact from **Case contacts** before advancing an older case that has no linked contact.
+
+To send email from an open case, configure a delivery mailer in `.env`, such as `MAIL_MAILER=smtp` with your provider’s host, port, credentials, and verified `MAIL_FROM_ADDRESS`. Run `php artisan config:clear` after changing the environment. The local `log` and `array` transports do not send case email. Test with a mailbox you control. A **Sent to mail provider** entry confirms handoff to the mailer. If the attempt is unconfirmed, check with your provider before composing a new email.
+
 ## Case documents
 
 Attachments are stored on Laravel’s private local disk under `storage/app/private/case-documents`. Use persistent storage and back up this directory alongside MySQL. Keep it outside the public web root. Each upload is limited to 10 MB. Set PHP’s `upload_max_filesize` and `post_max_size` high enough to accept files and the multipart request overhead. Apply equivalent request-size limits in your web server if applicable.

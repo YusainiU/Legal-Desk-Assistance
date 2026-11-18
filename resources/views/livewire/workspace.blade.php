@@ -19,14 +19,28 @@
         <flux:card class="desk-panel max-w-xl">
             <form class="space-y-4" wire:submit="createMatter">
                 <h1 class="desk-title">New case</h1>
-                @foreach (['title' => 'Case title', 'client' => 'Prospective client', 'party' => 'Other party', 'owner' => 'Case owner'] as $key => $label)
+                @foreach (['title' => 'Case title', 'party' => 'Other party', 'owner' => 'Case owner'] as $key => $label)
                     <flux:input :label="$label" :wire:model="'form.'.$key" maxlength="160" :required="$key !== 'party'" />
                 @endforeach
+                @if ($contactOptions->isEmpty())
+                    <flux:callout color="amber">
+                        <flux:callout.heading>A contact is required</flux:callout.heading>
+                        <flux:callout.text>Create a contact before opening a case.</flux:callout.text>
+                    </flux:callout>
+                    <flux:link :href="route('contacts.create')">Create a contact</flux:link>
+                @else
+                    <flux:select label="Client contact" wire:model="form.contact_id" required>
+                        <option value="">Choose a contact</option>
+                        @foreach ($contactOptions as $contact)
+                            <option value="{{ $contact->id }}">{{ $contact->name }} · {{ $contact->email ?? $contact->phone }}</option>
+                        @endforeach
+                    </flux:select>
+                @endif
                 <flux:select label="Practice area" wire:model="form.practice" required>
                     <option value="">Choose a practice area</option>
                     @foreach ($practices as $name => $guidance)<option>{{ $name }}</option>@endforeach
                 </flux:select>
-                <flux:button type="submit" variant="primary">Create case</flux:button>
+                <flux:button type="submit" variant="primary" :disabled="$contactOptions->isEmpty()">Create case</flux:button>
             </form>
         </flux:card>
     @elseif ($screen === 'detail' && $matter)
@@ -93,6 +107,12 @@
                         @if ($matter->stage === $last && $matter->entries->contains(fn ($entry) => $entry->kind === 'Task' && ! $entry->done))
                             <flux:callout color="amber">Complete outstanding tasks before closing the file.</flux:callout>
                         @endif
+                        @unless ($matter->contacts_exists)
+                            <flux:callout color="amber">
+                                <flux:callout.heading>Link a contact to continue</flux:callout.heading>
+                                <flux:callout.text>Use the <a href="#case-contacts" class="underline">Case contacts</a> panel to add a contact before advancing.</flux:callout.text>
+                            </flux:callout>
+                        @endunless
                         @error('workflow')<flux:callout color="red" role="alert">{{ $message }}</flux:callout>@enderror
 
                         <div class="flex flex-wrap gap-4">
@@ -100,7 +120,7 @@
                                 <flux:button type="button" variant="primary" wire:click="advance(2)" wire:loading.attr="disabled" :disabled="! $canMove">
                                     Accept case
                                 </flux:button>
-                                <flux:button type="button" variant="ghost" wire:click="decline" wire:loading.attr="disabled">Decline case</flux:button>
+                                <flux:button type="button" variant="ghost" wire:click="decline" wire:loading.attr="disabled" :disabled="! $matter->contacts_exists">Decline case</flux:button>
                             @else
                                 <flux:button type="button" variant="primary" wire:click="advance({{ $matter->stage }})" wire:loading.attr="disabled" :disabled="! $canMove">
                                     {{ $matter->stage === $last ? 'Close file' : 'Advance stage' }}
@@ -109,6 +129,8 @@
                         </div>
                     </flux:card>
                 @endif
+                <livewire:case-contacts :matter-id="$matter->id" :key="'case-contacts-'.$matter->id" @case-contacts-changed="$refresh" />
+
                 <flux:card class="desk-panel space-y-4">
                     <flux:heading size="lg" level="2">Tasks &amp; deadlines</flux:heading>
                     @forelse ($matter->entries->where('kind', 'Task') as $task)
@@ -235,7 +257,7 @@
                             @foreach ($history as $entry)
                                 @php
                                     $color = match ($entry->kind) {
-                                        'Client update' => 'teal',
+                                        'Client update', 'Email' => 'teal',
                                         'Billing' => 'amber',
                                         'Activity' => 'blue',
                                         default => 'zinc',
@@ -245,6 +267,15 @@
                                     <article class="space-y-2">
                                         <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
                                             <flux:badge size="sm" :color="$color">{{ $entry->kind }}</flux:badge>
+                                            @if ($entry->kind === 'Email')
+                                                <flux:badge size="sm" :color="$entry->email_status === 'sent' ? 'green' : 'amber'">
+                                                    {{ match ($entry->email_status) {
+                                                        'sent' => 'Sent to mail provider',
+                                                        'pending' => 'Awaiting confirmation',
+                                                        default => 'Delivery unconfirmed',
+                                                    } }}
+                                                </flux:badge>
+                                            @endif
                                             <time class="text-xs tabular-nums text-zinc-500 dark:text-zinc-400"
                                                 datetime="{{ $entry->created_at->toIso8601String() }}">{{ $entry->created_at->format('j M Y · H:i') }}</time>
                                         </div>
