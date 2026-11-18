@@ -2,7 +2,7 @@
     <div class="space-y-6">
         <div class="flex flex-wrap items-start justify-between gap-4">
             <h1 class="desk-title">Contacts</h1>
-            <flux:button variant="primary" icon="plus" :href="route('contacts.create')">New contact</flux:button>
+            <livewire:contact-creator :return-to-index="true" />
         </div>
 
         @if (session('status'))

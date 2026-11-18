@@ -10,7 +10,7 @@ Select **Case register** to see each matter’s stage or status, owner, and next
 
 ## 2. Create a practice matter
 
-First, open **Contacts** from the sidebar and select **New contact**. Enter **Cedar Vale Studio** as the name and a fictional phone number or `cedar-vale@example.test` as the email address. Select **Create contact**.
+First, open **Contacts** from the sidebar and select **New contact**. In the modal, enter **Cedar Vale Studio** as the name and a fictional phone number or `cedar-vale@example.test` as the email address. Select **Create contact**.
 
 Return to **Workspace**, select **New case**, enter the following example, and select **Create case**.
 
@@ -26,7 +26,7 @@ The matter opens at **Interview client**. The current stage shows its checklist.
 
 ## 3. Link and email contacts
 
-In an open case, use **Case contacts** to link more contacts from your address book. For an older case without a contact, link one before moving to the next stage.
+In an open case, use **Case contacts** to link more contacts from your address book. Select **New contact** there to create one in a modal, then select it from the list and choose **Link contact**. For an older case without a contact, link one before moving to the next stage.
 
 To send email, select a linked contact under **Email a contact**, enter a subject and message, then select **Send email**. A linked contact needs an email address, and the deployment needs a working delivery mailer. Case history records each attempt and whether the mail provider accepted it. Use a mailbox you control to test sending.
 

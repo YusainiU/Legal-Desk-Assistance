@@ -2,7 +2,7 @@
     <div class="flex flex-wrap items-center justify-between gap-3">
         <flux:heading size="lg" level="2">Case contacts</flux:heading>
         @if ($canLink)
-            <flux:link :href="route('contacts.index')">Open contacts</flux:link>
+            <livewire:contact-creator @contact-created="$refresh" />
         @endif
     </div>
 
@@ -37,8 +37,6 @@
             </div>
             <flux:button type="submit">Link contact</flux:button>
         </form>
-    @elseif ($canLink && $contacts->isEmpty())
-        <flux:link :href="route('contacts.create')">Create a contact first</flux:link>
     @endif
 
     @if ($linkStatus)
