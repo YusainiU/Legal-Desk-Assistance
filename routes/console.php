@@ -26,3 +26,18 @@ Artisan::command('matterdesk:user {email} {--demo}', function () {
 
     return 0;
 });
+
+Artisan::command('legal-desk:grant-admin {email}', function () {
+    $user = User::query()->where('email', $this->argument('email'))->first();
+
+    if (! $user) {
+        $this->error('No account found for that email.');
+
+        return 1;
+    }
+
+    $user->forceFill(['is_admin' => true, 'has_access' => true])->save();
+    $this->info('Administrator access granted.');
+
+    return 0;
+})->purpose('Grant an existing account administrator access');

@@ -27,6 +27,18 @@ Run Composer, Artisan, and Vite from this repository’s root. The root contains
 
 Fortify’s authentication views live in `resources/views/login.blade.php` and `resources/views/auth/`. For local password reset testing, the example environment writes mail to the Laravel log. Configure your mail transport before sending reset links to real users.
 
+## User administration
+
+After migrating, grant administrator access to an existing account:
+
+```sh
+php artisan legal-desk:grant-admin demo@example.test
+```
+
+Use your actual account email if you did not create the demo account. Sign in and select **Users** in the sidebar. Administrators can create and edit accounts, grant or revoke workspace access, and select the **Staff** or **Administrator** role. Newly created accounts need **Granted** workspace access before they can sign in. The application does not email credentials. Users can use **Forgot password?** when mail is configured.
+
+Deleting an account blocks sign-in and removes it from the Users page while retaining its existing case records. Use **Revoked** to suspend an account you may need to reactivate. Cases remain scoped to their owning account. Public self-registration is disabled.
+
 ## Workflow
 
 1. Interview the client and review urgent dates.

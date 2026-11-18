@@ -20,6 +20,11 @@
                 <flux:sidebar.item icon="briefcase" :href="route('workspace')" :current="request()->routeIs('workspace')">
                     Workspace
                 </flux:sidebar.item>
+                @can('manage-users')
+                    <flux:sidebar.item icon="users" :href="route('users.index')" :current="request()->routeIs('users.*')">
+                        Users
+                    </flux:sidebar.item>
+                @endcan
             </flux:sidebar.nav>
 
             <flux:spacer />
