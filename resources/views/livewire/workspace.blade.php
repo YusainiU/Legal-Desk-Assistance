@@ -62,14 +62,32 @@
                         @endif
                         @if ($matter->stage === 2)
                             <flux:textarea label="Decision and reasons" wire:model="decision" maxlength="4000" />
+
+                            @if ($matter->conflict === 'Cleared')
+                                <flux:text>Enter your reasons and select Accept case to move to Warrant to act &amp; retainer.</flux:text>
+                            @else
+                                <flux:callout color="amber" icon="information-circle">
+                                    <flux:callout.heading>Conflict clearance required to accept</flux:callout.heading>
+                                    <flux:callout.text>Record the reviewer’s clearance using Conflict decision above. You can decline the case without clearance.</flux:callout.text>
+                                </flux:callout>
+                            @endif
                         @endif
                         @if ($matter->stage === $last && $matter->entries->contains(fn ($entry) => $entry->kind === 'Task' && ! $entry->done))
                             <flux:callout color="amber">Complete outstanding tasks before closing the file.</flux:callout>
                         @endif
                         @error('workflow')<flux:callout color="red" role="alert">{{ $message }}</flux:callout>@enderror
+
                         <div class="flex flex-wrap gap-4">
-                            <flux:button type="button" variant="primary" wire:click="advance({{ $matter->stage }})" wire:loading.attr="disabled" :disabled="! $canMove">{{ match ($matter->stage) {2 => 'Accept case', $last => 'Close file', default => 'Advance stage'} }}</flux:button>
-                            @if ($matter->stage === 2)<flux:button type="button" variant="ghost" wire:click="decline" wire:loading.attr="disabled">Decline case</flux:button>@endif
+                            @if ($matter->stage === 2)
+                                <flux:button type="button" variant="primary" wire:click="advance(2)" wire:loading.attr="disabled" :disabled="! $canMove">
+                                    Accept case
+                                </flux:button>
+                                <flux:button type="button" variant="ghost" wire:click="decline" wire:loading.attr="disabled">Decline case</flux:button>
+                            @else
+                                <flux:button type="button" variant="primary" wire:click="advance({{ $matter->stage }})" wire:loading.attr="disabled" :disabled="! $canMove">
+                                    {{ $matter->stage === $last ? 'Close file' : 'Advance stage' }}
+                                </flux:button>
+                            @endif
                         </div>
                     </flux:card>
                 @endif
