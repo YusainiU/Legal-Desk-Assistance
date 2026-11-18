@@ -37,6 +37,10 @@ To send email from an open case, configure a delivery mailer in `.env`, such as 
 
 Attachments are stored on Laravel’s private local disk under `storage/app/private/case-documents`. Use persistent storage and back up this directory alongside MySQL. Keep it outside the public web root. Each upload is limited to 10 MB. Set PHP’s `upload_max_filesize` and `post_max_size` high enough to accept files and the multipart request overhead. Apply equivalent request-size limits in your web server if applicable.
 
+## Time charges
+
+Record minutes and hourly rates by stage under **Time & charges**. Each charge is rounded to the nearest cent or equivalent minor unit before case totals are added. Closing a case freezes the total and records it in Case history. The running total can be used when preparing the final invoice.
+
 ## User administration
 
 After migrating, grant administrator access to an existing account:

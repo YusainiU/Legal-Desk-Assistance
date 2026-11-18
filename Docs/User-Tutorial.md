@@ -52,7 +52,13 @@ Open a case and select **Documents**. Choose a file and select **Upload document
 
 Use **Preview** to open a PDF, image, or plain-text file in a new tab. Use **Download** to save any attachment, including Office files. On an open case, use **Delete** next to a document and confirm **Delete document** to remove the attachment. Closed and declined cases keep their existing documents available for preview and download.
 
-## 6. Work through the nine stages
+## 6. Log time and review charges
+
+Open **Time & charges → Log time**. Select the stage, describe the work, and enter the time in minutes and the hourly rate. The first entry sets the case currency. The charge is calculated from the minutes and rate, and the panel shows a subtotal for each stage. You can edit or delete entries while the case is open.
+
+At **Conclude & issue final invoice**, use **Review time charges** to see the total to carry into your invoice. When you select **Close file**, Legal Desk saves the final time and charge total in **Case history** and makes the entries read-only. Use your usual invoicing process for discounts, taxes, payments, and issuing the invoice.
+
+## 7. Work through the nine stages
 
 At each active stage, enter a comment in **Stage note** and select **Save note**. The note appears in **Case history** with the stage name. A draft also saves when you successfully advance, reinstate a stage, decline, or close the case.
 

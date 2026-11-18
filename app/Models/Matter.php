@@ -11,7 +11,12 @@ class Matter extends Model
 {
     protected $fillable = ['user_id', 'title', 'client', 'party', 'owner', 'practice', 'stage', 'status', 'checks', 'conflict'];
 
-    protected $casts = ['checks' => 'array', 'stage' => 'integer'];
+    protected $casts = [
+        'checks' => 'array',
+        'stage' => 'integer',
+        'final_charge_minutes' => 'integer',
+        'final_charge_minor' => 'integer',
+    ];
 
     public function contacts(): BelongsToMany
     {
@@ -43,6 +48,11 @@ class Matter extends Model
         return $this->tasks()->where('done', false)->where(function (Builder $query) {
             $query->whereNull('task_stage')->orWhere('task_stage', '<=', $this->stage);
         });
+    }
+
+    public function timeCharges(): HasMany
+    {
+        return $this->hasMany(CaseTimeCharge::class);
     }
 
     public function entries(): HasMany

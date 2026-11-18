@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Models\CaseDocument;
 use App\Models\Matter;
+use App\Support\CaseBilling;
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
@@ -199,8 +200,7 @@ class Workspace extends Component
             }
 
             if ($matter->stage === $last) {
-                $matter->update(['status' => 'Closed']);
-                $this->log($matter, 'File closed.');
+                $this->closeFile($matter);
             } else {
                 $matter->update(['stage' => $matter->stage + 1]);
                 $this->log($matter, 'Advanced to '.$stages[$matter->stage][0].'.');
@@ -384,6 +384,29 @@ class Workspace extends Component
         }
 
         return $matter->stage !== 2 || $matter->conflict === 'Cleared';
+    }
+
+    private function closeFile(Matter $matter): void
+    {
+        $charges = $matter->timeCharges()->lockForUpdate()->get(['minutes', 'amount_minor']);
+        $minutes = $charges->sum('minutes');
+        $amount = $charges->sum('amount_minor');
+
+        $matter->forceFill([
+            'status' => 'Closed',
+            'final_charge_minutes' => $minutes,
+            'final_charge_minor' => $amount,
+        ])->save();
+
+        if ($minutes > 0) {
+            $matter->entries()->create([
+                'kind' => 'Billing',
+                'body' => 'Final time charges · '.CaseBilling::money($matter->billing_currency, $amount)
+                    ."\nTotal recorded time · ".CaseBilling::duration($minutes),
+            ]);
+        }
+
+        $this->log($matter, 'File closed.');
     }
 
     private function finishStageChange(): void

@@ -103,6 +103,12 @@
                     @if (! $active && ! $closed)
                         <flux:text size="sm">{{ $name }}</flux:text>
                     @endif
+                    @if ($closed && $matter->billing_currency && $matter->final_charge_minutes > 0)
+                        <flux:text size="sm">
+                            Final time charges {{ \App\Support\CaseBilling::money($matter->billing_currency, $matter->final_charge_minor) }}
+                            · {{ \App\Support\CaseBilling::duration($matter->final_charge_minutes) }}
+                        </flux:text>
+                    @endif
                 </div>
 
                 <ol aria-label="Workflow progress" class="grid grid-cols-9 gap-1.5">
@@ -124,7 +130,7 @@
             </section>
 
             <nav class="flex flex-wrap gap-1 border-b border-zinc-200 pb-2 dark:border-zinc-800" aria-label="Case sections">
-                @foreach (['workflow' => 'Workflow', 'contacts' => 'Contacts', 'documents' => 'Documents', 'tasks' => 'Tasks', 'history' => 'Case history'] as $panel => $label)
+                @foreach (['workflow' => 'Workflow', 'contacts' => 'Contacts', 'documents' => 'Documents', 'tasks' => 'Tasks', 'charges' => 'Time & charges', 'history' => 'Case history'] as $panel => $label)
                     <button type="button" class="desk-case-tab" aria-controls="case-panel-{{ $panel }}"
                         x-bind:aria-pressed="(casePanel === '{{ $panel }}').toString()" x-on:click="casePanel = '{{ $panel }}'">
                         {{ $label }}
@@ -189,6 +195,10 @@
                             <button type="button" class="text-sm font-medium text-teal-800 underline underline-offset-2 dark:text-teal-300"
                                 x-on:click="openPanel('tasks')">Manage tasks for this stage</button>
                         @endif
+                        <div>
+                            <button type="button" class="text-sm font-medium text-teal-800 underline underline-offset-2 dark:text-teal-300"
+                                x-on:click="openPanel('charges')">{{ $matter->stage >= $last - 1 ? 'Review time charges' : 'Log time for this stage' }}</button>
+                        </div>
                         @unless ($matter->contacts_exists)
                             <flux:callout color="amber">
                                 <flux:callout.heading>Link a contact to continue</flux:callout.heading>
@@ -346,6 +356,10 @@
             <section id="case-panel-tasks" aria-label="Tasks"
                 x-show="casePanel === 'tasks'" x-cloak tabindex="-1">
                 <livewire:case-tasks :matter-id="$matter->id" :key="'case-tasks-'.$matter->id.'-'.$matter->stage.'-'.$matter->status" @case-tasks-changed="$refresh" />
+            </section>
+            <section id="case-panel-charges" aria-label="Time and charges"
+                x-show="casePanel === 'charges'" x-cloak tabindex="-1">
+                <livewire:case-time-charges :matter-id="$matter->id" :key="'case-time-charges-'.$matter->id.'-'.$matter->stage.'-'.$matter->status" />
             </section>
             <section id="case-panel-history" aria-label="Case history"
                 x-show="casePanel === 'history'" x-cloak tabindex="-1">
