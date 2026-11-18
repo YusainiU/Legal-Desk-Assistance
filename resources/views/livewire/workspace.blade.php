@@ -181,6 +181,24 @@
                         @endunless
                         @error('workflow')<flux:callout color="red" role="alert">{{ $message }}</flux:callout>@enderror
 
+                        <form wire:submit="saveStageNote({{ $matter->stage }})"
+                            wire:key="stage-note-{{ $matter->id }}-{{ $matter->stage }}" class="space-y-2 border-t border-zinc-200 pt-4 dark:border-zinc-800">
+                            <flux:textarea label="Stage note" wire:model="stageNote" rows="2" maxlength="4000"
+                                placeholder="Add a comment about this stage" />
+                            <flux:text size="sm">Notes appear in Case history. A draft also saves when you advance, decline, or close the case.</flux:text>
+
+                            <div class="flex flex-wrap items-center gap-3">
+                                <flux:button type="submit" size="sm" wire:loading.attr="disabled" wire:target="saveStageNote">Save note</flux:button>
+                                @if ($stageNoteSaved)
+                                    <div role="status" class="text-sm text-zinc-600 dark:text-zinc-300">
+                                        Note saved.
+                                        <button type="button" class="font-medium underline underline-offset-2"
+                                            x-on:click="openPanel('history')">View Case history</button>
+                                    </div>
+                                @endif
+                            </div>
+                        </form>
+
                         <div class="flex flex-wrap items-center justify-between gap-4 border-t border-zinc-200 pt-4 dark:border-zinc-800">
                             <div class="space-y-1">
                                 <p class="text-sm font-medium">{{ $matter->stage === $last ? 'Final step' : 'Next stage' }}</p>

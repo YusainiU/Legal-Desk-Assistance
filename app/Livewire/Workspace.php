@@ -35,6 +35,10 @@ class Workspace extends Component
 
     public string $decision = '';
 
+    public string $stageNote = '';
+
+    public bool $stageNoteSaved = false;
+
     public string $body = '';
 
     public string $assignee = '';
@@ -50,7 +54,7 @@ class Workspace extends Component
     public function show(string $screen): void
     {
         abort_unless(in_array($screen, ['register', 'guide', 'new'], true), 404);
-        $this->reset('selected', 'form', 'decision', 'body', 'assignee', 'due', 'document', 'documentStatus');
+        $this->reset('selected', 'form', 'decision', 'stageNote', 'stageNoteSaved', 'body', 'assignee', 'due', 'document', 'documentStatus');
         $this->resetValidation();
         $this->screen = $screen;
     }
@@ -140,6 +144,13 @@ class Workspace extends Component
 
             if ($matter->stage === 2) {
                 $this->validate(['decision' => 'required|string|max:4000']);
+            }
+
+            if (filled($this->stageNote)) {
+                $this->recordStageNote($matter);
+            }
+
+            if ($matter->stage === 2) {
                 $this->log($matter, 'Case accepted — '.$this->decision);
             }
 
@@ -151,9 +162,7 @@ class Workspace extends Component
                 $this->log($matter, 'Advanced to '.$stages[$matter->stage][0].'.');
             }
 
-            $this->reset('decision');
-            $this->resetValidation('workflow');
-            DB::afterCommit(fn () => $this->dispatch('case-stage-changed'));
+            $this->finishStageChange();
         });
     }
 
@@ -169,11 +178,33 @@ class Workspace extends Component
                 return;
             }
 
+            if (filled($this->stageNote)) {
+                $this->recordStageNote($matter);
+            }
+
             $matter->update(['status' => 'Declined']);
             $this->log($matter, 'Case declined — '.$this->decision);
-            DB::afterCommit(fn () => $this->dispatch('case-stage-changed'));
+            $this->finishStageChange();
         });
-        $this->reset('decision');
+    }
+
+    public function saveStageNote(int $expectedStage): void
+    {
+        $this->stageNoteSaved = false;
+
+        $this->change(function (Matter $matter) use ($expectedStage) {
+            if ($matter->stage !== $expectedStage) {
+                $this->addError('stageNote', 'The stage changed. Review your draft before saving it to the current stage.');
+
+                return;
+            }
+
+            $this->recordStageNote($matter);
+            DB::afterCommit(function () {
+                $this->reset('stageNote');
+                $this->stageNoteSaved = true;
+            });
+        });
     }
 
     public function addEntry(): void
@@ -318,6 +349,26 @@ class Workspace extends Component
 
         return ($matter->stage !== 2 || $matter->conflict === 'Cleared')
             && ($matter->stage !== count($stages) - 1 || ! $matter->entries()->where('kind', 'Task')->where('done', false)->exists());
+    }
+
+    private function finishStageChange(): void
+    {
+        DB::afterCommit(function () {
+            $this->reset('decision', 'stageNote', 'stageNoteSaved');
+            $this->resetValidation(['workflow', 'stageNote']);
+            $this->dispatch('case-stage-changed');
+        });
+    }
+
+    private function recordStageNote(Matter $matter): void
+    {
+        $note = $this->validate(['stageNote' => 'required|string|max:4000'])['stageNote'];
+        $stage = config('matterdesk.stages')[$matter->stage][0];
+
+        $matter->entries()->create([
+            'kind' => 'Note',
+            'body' => "Stage · {$stage}\n\n".trim($note),
+        ]);
     }
 
     private function log(Matter $matter, string $body): void

@@ -51,6 +51,8 @@ Use **Preview** to open a PDF, image, or plain-text file in a new tab. Use **Dow
 
 ## 6. Work through the nine stages
 
+At each active stage, enter a comment in **Stage note** and select **Save note**. The note appears in **Case history** with the stage name. A draft also saves when you successfully advance, decline, or close the case.
+
 Tick each checklist item after completing the work it describes. Select **Advance stage** when the stage is ready. The decision and closing stages have their own buttons.
 
 | Stage | What to do |
