@@ -27,6 +27,10 @@ Run Composer, Artisan, and Vite from this repository’s root. The root contains
 
 Fortify’s authentication views live in `resources/views/login.blade.php` and `resources/views/auth/`. For local password reset testing, the example environment writes mail to the Laravel log. Configure your mail transport before sending reset links to real users.
 
+## Case documents
+
+Attachments are stored on Laravel’s private local disk under `storage/app/private/case-documents`. Use persistent storage and back up this directory alongside MySQL. Keep it outside the public web root. Each upload is limited to 10 MB. Set PHP’s `upload_max_filesize` and `post_max_size` high enough to accept files and the multipart request overhead. Apply equivalent request-size limits in your web server if applicable.
+
 ## User administration
 
 After migrating, grant administrator access to an existing account:

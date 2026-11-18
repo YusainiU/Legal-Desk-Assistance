@@ -2,18 +2,25 @@
 
 namespace App\Livewire;
 
+use App\Models\CaseDocument;
 use App\Models\Matter;
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
+use Livewire\WithFileUploads;
+use Throwable;
 
 #[Layout('components.layouts.app')]
 class Workspace extends Component
 {
+    use WithFileUploads;
+
     #[Locked]
     public ?int $selected = null;
 
@@ -35,10 +42,14 @@ class Workspace extends Component
 
     public string $kind = 'Note';
 
+    public $document;
+
+    public bool $documentUploaded = false;
+
     public function show(string $screen): void
     {
         abort_unless(in_array($screen, ['register', 'guide', 'new'], true), 404);
-        $this->reset('selected', 'form', 'decision', 'body', 'assignee', 'due');
+        $this->reset('selected', 'form', 'decision', 'body', 'assignee', 'due', 'document', 'documentUploaded');
         $this->resetValidation();
         $this->screen = $screen;
     }
@@ -149,6 +160,46 @@ class Workspace extends Component
         $this->reset('body', 'due');
     }
 
+    public function uploadDocument(): void
+    {
+        $matter = $this->matters()->findOrFail($this->selected);
+        abort_unless($matter->status === 'Open', 422);
+
+        $this->documentUploaded = false;
+        $extensions = implode(',', CaseDocument::EXTENSIONS);
+        $this->validate(['document' => ['required', 'file', 'max:10240', 'mimes:'.$extensions, 'extensions:'.$extensions]]);
+
+        $document = $this->document;
+        $original = basename(str_replace('\\', '/', $document->getClientOriginalName()));
+        $stem = preg_replace('/\p{C}+/u', '', pathinfo($original, PATHINFO_FILENAME));
+        $name = (Str::limit(trim($stem ?? ''), 180, '') ?: 'document').'.'.strtolower($document->getClientOriginalExtension());
+        $mimeType = $document->getMimeType();
+        $size = $document->getSize();
+        $path = $document->store('case-documents/'.$matter->id, 'local');
+
+        if (! $path) {
+            $this->addError('document', 'The file could not be stored. Please try again.');
+
+            return;
+        }
+
+        try {
+            $this->change(fn (Matter $matter) => $matter->documents()->create([
+                'name' => $name,
+                'path' => $path,
+                'mime_type' => $mimeType,
+                'size' => $size,
+            ]));
+        } catch (Throwable $exception) {
+            Storage::disk('local')->delete($path);
+
+            throw $exception;
+        }
+
+        $this->reset('document');
+        $this->documentUploaded = true;
+    }
+
     public function toggleTask(int $id, bool $checked): void
     {
         $this->change(function (Matter $matter) use ($id, $checked) {
@@ -159,7 +210,7 @@ class Workspace extends Component
 
     public function render()
     {
-        $matter = $this->selected === null ? null : $this->matters()->with('entries')->findOrFail($this->selected);
+        $matter = $this->selected === null ? null : $this->matters()->with(['entries', 'documents'])->findOrFail($this->selected);
         $register = collect();
         if ($this->screen === 'register') {
             $register = $this->matters()

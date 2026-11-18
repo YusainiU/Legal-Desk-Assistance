@@ -11,6 +11,11 @@ class Matter extends Model
 
     protected $casts = ['checks' => 'array', 'stage' => 'integer'];
 
+    public function documents(): HasMany
+    {
+        return $this->hasMany(CaseDocument::class)->latest('id');
+    }
+
     public function entries(): HasMany
     {
         return $this->hasMany(MatterEntry::class);

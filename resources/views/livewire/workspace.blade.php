@@ -104,6 +104,49 @@
                         <p>No tasks recorded.</p>
                     @endforelse
                 </flux:card>
+                <flux:card class="space-y-4">
+                    <flux:heading size="lg" level="2">Documents</flux:heading>
+
+                    @if ($active)
+                        <form class="space-y-3" wire:submit="uploadDocument"
+                            wire:key="document-upload-{{ $matter->id }}-{{ $matter->documents->count() }}">
+                            <flux:input type="file" label="Select a document" wire:model="document" required
+                                :accept="'.'.implode(',.', \App\Models\CaseDocument::EXTENSIONS)" />
+                            <flux:text size="sm">PDF, Word, Excel, PowerPoint, text, JPEG or PNG. Maximum 10 MB per file.</flux:text>
+                            <div wire:loading wire:target="document" role="status">Preparing file…</div>
+                            <flux:button type="submit" variant="primary" icon="arrow-up-tray"
+                                wire:loading.attr="disabled" wire:target="document,uploadDocument">Upload document</flux:button>
+                        </form>
+                    @endif
+
+                    @if ($documentUploaded)
+                        <flux:callout color="green" role="status">Document uploaded.</flux:callout>
+                    @endif
+
+                    @forelse ($matter->documents as $document)
+                        <div class="flex flex-wrap items-center justify-between gap-3 border-t border-zinc-200 pt-3 dark:border-zinc-700"
+                            wire:key="case-document-{{ $document->id }}">
+                            <div class="min-w-0">
+                                <flux:heading class="break-all">{{ $document->name }}</flux:heading>
+                                <flux:text size="sm">
+                                    {{ number_format($document->size / 1024, 1) }} KB · {{ $document->created_at->format('j M Y') }}
+                                    @unless ($document->canPreview()) · Download to view @endunless
+                                </flux:text>
+                            </div>
+                            <div class="flex flex-wrap gap-2">
+                                @if ($document->canPreview())
+                                    <flux:button size="sm" variant="ghost" :href="route('case-documents.preview', $document)"
+                                        target="_blank" rel="noopener noreferrer" :aria-label="'Preview '.$document->name.' (opens in a new tab)'">Preview</flux:button>
+                                @endif
+                                <flux:button size="sm" variant="ghost" :href="route('case-documents.download', $document)"
+                                    :aria-label="'Download '.$document->name">Download</flux:button>
+                            </div>
+                        </div>
+                    @empty
+                        <flux:text>No documents uploaded.</flux:text>
+                    @endforelse
+                </flux:card>
+
                 <flux:card class="space-y-3">
                     <flux:heading size="lg" level="2">Case history</flux:heading>
                     @if ($active)

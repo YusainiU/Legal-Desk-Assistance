@@ -35,7 +35,13 @@ While the matter is open, go to **Matter history**, choose an **Entry type**, en
 
 Tasks appear under **Tasks & deadlines**. Tick a task there when it’s complete. Record client updates and billing events as they happen throughout the matter.
 
-## 4. Work through the nine stages
+## 4. Attach and open documents
+
+Open a case and find **Documents**. Choose a file and select **Upload document**. Each file can be up to 10 MB. Accepted formats include PDF, Word, Excel, PowerPoint, plain text, JPEG, and PNG.
+
+Use **Preview** to open a PDF, image, or plain-text file in a new tab. Use **Download** to save any attachment, including Office files. Closed and declined cases keep their existing documents available for preview and download.
+
+## 5. Work through the nine stages
 
 Tick each checklist item after completing the work it describes. Select **Advance stage** when the stage is ready. The decision and closing stages have their own buttons.
 
