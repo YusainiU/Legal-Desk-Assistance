@@ -51,6 +51,7 @@
             [$name, $description, $items] = $stages[$matter->stage];
             $active = $matter->status === 'Open';
             $last = count($stages) - 1;
+            $openTaskCount = (int) $matter->open_tasks_count;
             $closed = $matter->status === 'Closed';
             $nextStage = $active && $matter->stage < $last ? $stages[$matter->stage + 1][0] : null;
         @endphp
@@ -167,11 +168,17 @@
                                 </flux:callout>
                             @endif
                         @endif
-                        @if ($matter->stage === $last && $matter->entries->contains(fn ($entry) => $entry->kind === 'Task' && ! $entry->done))
-                            <flux:callout color="amber">
-                                <flux:callout.heading>Complete outstanding tasks before closing the file</flux:callout.heading>
-                                <flux:callout.text><button type="button" class="font-medium underline underline-offset-2" x-on:click="openPanel('tasks')">Review tasks</button></flux:callout.text>
+                        @if ($openTaskCount > 0)
+                            <flux:callout color="amber" :role="$errors->has('stageTasks') ? 'alert' : 'status'">
+                                <flux:callout.heading>{{ $openTaskCount }} {{ $openTaskCount === 1 ? 'incomplete task' : 'incomplete tasks' }}</flux:callout.heading>
+                                <flux:callout.text>
+                                    {{ $errors->first('stageTasks') ?: 'Complete or delete these tasks before moving on.' }}
+                                    <button type="button" class="font-medium underline underline-offset-2" x-on:click="openPanel('tasks')">Review tasks</button>
+                                </flux:callout.text>
                             </flux:callout>
+                        @else
+                            <button type="button" class="text-sm font-medium text-teal-800 underline underline-offset-2 dark:text-teal-300"
+                                x-on:click="openPanel('tasks')">Manage tasks for this stage</button>
                         @endif
                         @unless ($matter->contacts_exists)
                             <flux:callout color="amber">
@@ -332,19 +339,7 @@
             </section>
             <section id="case-panel-tasks" aria-label="Tasks"
                 x-show="casePanel === 'tasks'" x-cloak tabindex="-1">
-                <flux:card class="desk-panel space-y-4">
-                    <flux:heading size="lg" level="2">Tasks &amp; deadlines</flux:heading>
-                    @forelse ($matter->entries->where('kind', 'Task') as $task)
-                        <div class="border-t border-zinc-200 pt-3 dark:border-zinc-700" wire:key="task-{{ $task->id }}-{{ (int) $task->done }}">
-                            <flux:checkbox :label="$task->body" :checked="$task->done" :disabled="! $active"
-                                :description="$task->assignee.' · '.($task->due_on?->format('j M Y') ?? 'No due date')"
-                                wire:change="toggleTask({{ $task->id }}, {{ $task->done ? 'false' : 'true' }})"
-                                wire:loading.attr="disabled" />
-                        </div>
-                    @empty
-                        <p>No tasks recorded.</p>
-                    @endforelse
-                </flux:card>
+                <livewire:case-tasks :matter-id="$matter->id" :key="'case-tasks-'.$matter->id.'-'.$matter->stage.'-'.$matter->status" @case-tasks-changed="$refresh" />
             </section>
             <section id="case-panel-history" aria-label="Case history"
                 x-show="casePanel === 'history'" x-cloak tabindex="-1">
@@ -366,15 +361,9 @@
                         <form id="case-entry-form" x-cloak x-show="composing" class="space-y-4 rounded-lg border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-700 dark:bg-zinc-800/60"
                             wire:submit="addEntry">
                             <flux:select label="Entry type" wire:model.live="kind">
-                                @foreach (['Note', 'Task', 'Client update', 'Billing'] as $type)<option>{{ $type }}</option>@endforeach
+                                @foreach (['Note', 'Client update', 'Billing'] as $type)<option>{{ $type }}</option>@endforeach
                             </flux:select>
                             <flux:textarea label="Details" wire:model="body" required maxlength="4000" />
-                            @if ($kind === 'Task')
-                                <div class="grid gap-4 sm:grid-cols-2">
-                                    <flux:input label="Assigned to" wire:model="assignee" required maxlength="160" />
-                                    <flux:input label="Due date" wire:model="due" type="date" />
-                                </div>
-                            @endif
                             <div class="flex flex-wrap justify-end gap-2">
                                 <flux:button type="button" variant="ghost" x-on:click="composing = false">Hide form</flux:button>
                                 <flux:button type="submit" variant="primary">Save entry</flux:button>
@@ -383,9 +372,7 @@
                     @endif
 
                     @php
-                        $history = $matter->entries
-                            ->where('kind', '!=', 'Task')
-                            ->sortBy([['created_at', 'desc'], ['id', 'desc']]);
+                        $history = $matter->entries->sortBy([['created_at', 'desc'], ['id', 'desc']]);
                     @endphp
                     @if ($history->isEmpty())
                         <flux:text class="rounded-lg border border-dashed border-zinc-200 px-4 py-5 dark:border-zinc-700">No history recorded.</flux:text>

@@ -1,0 +1,27 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::table('matter_entries', function (Blueprint $table) {
+            $table->unsignedTinyInteger('task_stage')->nullable();
+        });
+
+        DB::table('matter_entries')->where('kind', 'Task')->update([
+            'task_stage' => DB::raw('(select stage from matters where matters.id = matter_entries.matter_id)'),
+        ]);
+    }
+
+    public function down(): void
+    {
+        Schema::table('matter_entries', function (Blueprint $table) {
+            $table->dropColumn('task_stage');
+        });
+    }
+};

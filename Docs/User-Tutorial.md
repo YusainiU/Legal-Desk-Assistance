@@ -30,18 +30,21 @@ In an open case, open **Contacts** to link more contacts from your address book.
 
 To send email, select a linked contact under **Email a contact**, enter a subject and message, then select **Send email**. A linked contact needs an email address, and the deployment needs a working delivery mailer. Case history records each attempt and whether the mail provider accepted it. Use a mailbox you control to test sending.
 
-## 4. Record notes, tasks, and updates
+## 4. Manage stage tasks and record updates
 
 While the case is open, open **Case history** and select **Add entry**. Choose an **Entry type**, enter the **Details**, and select **Save entry**. The timeline shows the newest entries first, with a date and time on each entry.
 
 | Entry type | Example |
 | --- | --- |
 | **Note** | The client wants to resolve the delivery dispute and avoid further delays. |
-| **Task** | Review the signed supply agreement. Enter an assignee and, if needed, a due date. |
 | **Client update** | The client was told that the agreement is under review and when to expect the next update. |
 | **Billing** | Interim invoice DEMO-001 was issued. Add a billing entry when payment is received. |
 
-Tasks appear under **Tasks**. Tick a task there when it’s complete. Record client updates and billing events as they happen throughout the matter.
+Under **Tasks**, select **New task**. Enter what needs doing, who is responsible, and an optional due date. The task is assigned to the current stage. Use **Mark complete** once it’s done, **Edit** to change the details, or **Delete** to remove it.
+
+The workflow flags any incomplete task on the case. Complete or delete those tasks before advancing to the next stage or closing the file. Existing tasks are assigned to the stage the case was at when the task module was installed.
+
+Record client updates and billing events in **Case history** as they happen.
 
 ## 5. Attach and open documents
 

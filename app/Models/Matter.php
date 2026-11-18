@@ -27,6 +27,11 @@ class Matter extends Model
         return $this->hasMany(CaseDocument::class)->latest('id');
     }
 
+    public function tasks(): HasMany
+    {
+        return $this->entries()->where('kind', 'Task');
+    }
+
     public function entries(): HasMany
     {
         return $this->hasMany(MatterEntry::class);

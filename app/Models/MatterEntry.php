@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class MatterEntry extends Model
 {
-    protected $fillable = ['kind', 'body', 'assignee', 'due_on', 'done'];
+    protected $fillable = ['kind', 'body', 'assignee', 'due_on', 'done', 'task_stage'];
 
-    protected $casts = ['due_on' => 'date', 'done' => 'boolean'];
+    protected $casts = ['due_on' => 'date', 'done' => 'boolean', 'task_stage' => 'integer'];
 }

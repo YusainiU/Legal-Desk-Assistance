@@ -41,10 +41,6 @@ class Workspace extends Component
 
     public string $body = '';
 
-    public string $assignee = '';
-
-    public string $due = '';
-
     public string $kind = 'Note';
 
     public $document;
@@ -54,7 +50,7 @@ class Workspace extends Component
     public function show(string $screen): void
     {
         abort_unless(in_array($screen, ['register', 'guide', 'new'], true), 404);
-        $this->reset('selected', 'form', 'decision', 'stageNote', 'stageNoteSaved', 'body', 'assignee', 'due', 'document', 'documentStatus');
+        $this->reset('selected', 'form', 'decision', 'stageNote', 'stageNoteSaved', 'body', 'document', 'documentStatus');
         $this->resetValidation();
         $this->screen = $screen;
     }
@@ -65,7 +61,6 @@ class Workspace extends Component
         $this->show('register');
         $this->selected = $matter->id;
         $this->screen = 'detail';
-        $this->assignee = $matter->owner;
     }
 
     public function selectCreatedContact(int $contactId): void
@@ -126,6 +121,8 @@ class Workspace extends Component
 
     public function advance(int $expectedStage): void
     {
+        $this->resetValidation('stageTasks');
+
         $this->change(function (Matter $matter) use ($expectedStage) {
             $stages = config('matterdesk.stages');
             $last = count($stages) - 1;
@@ -137,7 +134,13 @@ class Workspace extends Component
             }
 
             if ($matter->stage !== $expectedStage || ! $this->canAdvance($matter)) {
-                $this->addError('workflow', 'Review the current checklist, conflict decision or outstanding tasks.');
+                $this->addError('workflow', 'Review the current checklist and conflict decision.');
+
+                return;
+            }
+
+            if ($matter->tasks()->where('done', false)->exists()) {
+                $this->addError('stageTasks', 'Complete or delete the incomplete tasks before continuing.');
 
                 return;
             }
@@ -210,20 +213,12 @@ class Workspace extends Component
     public function addEntry(): void
     {
         $data = $this->validate([
-            'kind' => ['required', Rule::in(['Note', 'Task', 'Client update', 'Billing'])],
+            'kind' => ['required', Rule::in(['Note', 'Client update', 'Billing'])],
             'body' => 'required|string|max:4000',
-            'assignee' => 'required_if:kind,Task|nullable|string|max:160',
-            'due' => 'nullable|date_format:Y-m-d',
         ]);
 
-        $this->change(function (Matter $matter) use ($data) {
-            $entry = ['kind' => $data['kind'], 'body' => $data['body']];
-            if ($data['kind'] === 'Task') {
-                $entry += ['assignee' => $data['assignee'], 'due_on' => $data['due'] ?: null];
-            }
-            $matter->entries()->create($entry);
-        });
-        $this->reset('body', 'due');
+        $this->change(fn (Matter $matter) => $matter->entries()->create($data));
+        $this->reset('body');
     }
 
     public function uploadDocument(): void
@@ -287,17 +282,12 @@ class Workspace extends Component
         $this->documentStatus = 'Document deleted.';
     }
 
-    public function toggleTask(int $id, bool $checked): void
-    {
-        $this->change(function (Matter $matter) use ($id, $checked) {
-            $task = $matter->entries()->where('kind', 'Task')->findOrFail($id);
-            $task->update(['done' => $checked]);
-        });
-    }
-
     public function render()
     {
-        $matter = $this->selected === null ? null : $this->matters()->with(['entries', 'documents'])->withExists('contacts')->findOrFail($this->selected);
+        $matter = $this->selected === null ? null : $this->matters()->with(['entries' => fn ($query) => $query->where('kind', '!=', 'Task'), 'documents'])
+            ->withExists('contacts')
+            ->withCount(['tasks as open_tasks_count' => fn (Builder $query) => $query->where('done', false)])
+            ->findOrFail($this->selected);
         $register = collect();
         if ($this->screen === 'register') {
             $register = $this->matters()
@@ -306,7 +296,7 @@ class Workspace extends Component
                     $term = '%'.trim($this->search).'%';
                     $query->where(fn (Builder $match) => $match->whereLike('title', $term)->orWhereLike('client', $term)->orWhereLike('party', $term)->orWhereLike('owner', $term));
                 })
-                ->withMin(['entries as next_due' => fn (Builder $query) => $query->where('kind', 'Task')->where('done', false)], 'due_on')
+                ->withMin(['tasks as next_due' => fn (Builder $query) => $query->where('done', false)], 'due_on')
                 ->latest('id')->get();
         }
 
@@ -347,15 +337,14 @@ class Workspace extends Component
             }
         }
 
-        return ($matter->stage !== 2 || $matter->conflict === 'Cleared')
-            && ($matter->stage !== count($stages) - 1 || ! $matter->entries()->where('kind', 'Task')->where('done', false)->exists());
+        return $matter->stage !== 2 || $matter->conflict === 'Cleared';
     }
 
     private function finishStageChange(): void
     {
         DB::afterCommit(function () {
             $this->reset('decision', 'stageNote', 'stageNoteSaved');
-            $this->resetValidation(['workflow', 'stageNote']);
+            $this->resetValidation(['workflow', 'stageNote', 'stageTasks']);
             $this->dispatch('case-stage-changed');
         });
     }
