@@ -8,7 +8,7 @@ return [
         ['Warrant to act & retainer', 'Record the agreed scope and fee terms, then confirm execution of the warrant to act and payment of the retainer.', ['Warrant to act executed', 'Retainer fee requested', 'Retainer fee paid']],
         ['Attend to the case', 'Plan and carry out the work for the selected practice area.', ['Record the work plan and verify relevant deadlines', 'Record substantive work and any outstanding actions']],
         ['Interim invoices', 'Track interim invoices as they are issued and record payment. Add a follow-up task for any outstanding payment.', ['Interim invoices issued and recorded, or marked not applicable in a note', 'Interim payments recorded, or marked not applicable in a note']],
-        ['Update the client', 'Keep the client informed during the case and record progress updates in the matter notes.', ['Record the progress update and next steps shared with the client']],
+        ['Update the client', 'Keep the client informed during the case and record progress updates in the case notes.', ['Record the progress update and next steps shared with the client']],
         ['Conclude & issue final invoice', 'Record the outcome, communicate it to the client and issue the final invoice.', ['Record the outcome and communicate it to the client', 'Final invoice issued and recorded']],
         ['Close the file', 'Complete the closing review and record the firm’s retention decision.', ['Send the closing communication and review billing and client funds as applicable', 'Record the retention decision and close out outstanding obligations']],
     ],

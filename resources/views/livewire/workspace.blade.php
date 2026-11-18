@@ -1,6 +1,6 @@
 <div class="space-y-6">
     <nav class="flex flex-wrap items-center gap-5 text-sm" aria-label="Workspace">
-        <flux:button type="button" :variant="$screen === 'guide' ? 'ghost' : 'filled'" icon="briefcase" wire:click="show('register')">Matters</flux:button>
+        <flux:button type="button" :variant="$screen === 'guide' ? 'ghost' : 'filled'" icon="briefcase" wire:click="show('register')">Legal Desk</flux:button>
         <flux:button type="button" :variant="$screen === 'guide' ? 'filled' : 'ghost'" icon="book-open" wire:click="show('guide')">Workflow guide</flux:button>
     </nav>
 
@@ -16,15 +16,15 @@
     @elseif ($screen === 'new')
         <flux:card class="max-w-xl">
             <form class="space-y-4" wire:submit="createMatter">
-                <flux:heading size="xl" level="1">New matter</flux:heading>
-                @foreach (['title' => 'Matter title', 'client' => 'Prospective client', 'party' => 'Other party', 'owner' => 'Matter owner'] as $key => $label)
+                <flux:heading size="xl" level="1">New Legal Desk case</flux:heading>
+                @foreach (['title' => 'Case title', 'client' => 'Prospective client', 'party' => 'Other party', 'owner' => 'Case owner'] as $key => $label)
                     <flux:input :label="$label" :wire:model="'form.'.$key" maxlength="160" :required="$key !== 'party'" />
                 @endforeach
                 <flux:select label="Practice area" wire:model="form.practice" required>
                         <option value="">Choose a practice area</option>
                         @foreach ($practices as $name => $guidance)<option>{{ $name }}</option>@endforeach
                 </flux:select>
-                <flux:button type="submit" variant="primary">Create matter</flux:button>
+                <flux:button type="submit" variant="primary">Create case</flux:button>
             </form>
         </flux:card>
     @elseif ($screen === 'detail' && $matter)
@@ -58,7 +58,7 @@
                                     <option value="{{ $result }}" @selected($matter->conflict === $result)>{{ $result }}</option>
                                 @endforeach
                             </flux:select>
-                            <p class="text-sm text-zinc-600 dark:text-zinc-300">Record the reviewer and basis for the decision in the matter history.</p>
+                            <p class="text-sm text-zinc-600 dark:text-zinc-300">Record the reviewer and basis for the decision in the case history.</p>
                         @endif
                         @if ($matter->stage === 2)
                             <flux:textarea label="Decision and reasons" wire:model="decision" maxlength="4000" />
@@ -105,7 +105,7 @@
                     @endforelse
                 </flux:card>
                 <flux:card class="space-y-3">
-                    <flux:heading size="lg" level="2">Matter history</flux:heading>
+                    <flux:heading size="lg" level="2">Case history</flux:heading>
                     @if ($active)
                         <form class="space-y-3" wire:submit="addEntry">
                             <flux:select label="Entry type" wire:model.live="kind">
@@ -154,13 +154,13 @@
         </div>
     @else
         <div class="flex flex-wrap items-center justify-between gap-3">
-            <flux:heading size="xl" level="1">Matters</flux:heading>
-            <flux:button type="button" variant="primary" icon="plus" wire:click="show('new')">New matter</flux:button>
+            <flux:heading size="xl" level="1">Legal Desk</flux:heading>
+            <flux:button type="button" variant="primary" icon="plus" wire:click="show('new')">New Legal Desk case</flux:button>
         </div>
         <flux:card class="space-y-4">
-            <flux:heading size="lg" level="2">Matter register</flux:heading>
+            <flux:heading size="lg" level="2">Legal Desk register</flux:heading>
             <div class="grid gap-3 sm:grid-cols-2">
-                <flux:input type="search" icon="magnifying-glass" wire:model.live.debounce.250ms="search" aria-label="Search matters" placeholder="Search matters" />
+                <flux:input type="search" icon="magnifying-glass" wire:model.live.debounce.250ms="search" aria-label="Search cases" placeholder="Search cases" />
                 <flux:select wire:model.live="status" aria-label="Filter by status">
                     <option value="">All statuses</option>
                     @foreach (['Open', 'Closed', 'Declined'] as $value)<option>{{ $value }}</option>@endforeach
@@ -168,7 +168,7 @@
             </div>
             <flux:table>
                 <flux:table.columns>
-                    <flux:table.column>Matter</flux:table.column>
+                    <flux:table.column>Case</flux:table.column>
                     <flux:table.column>Stage / status</flux:table.column>
                     <flux:table.column>Owner</flux:table.column>
                     <flux:table.column>Next due date</flux:table.column>
@@ -185,7 +185,7 @@
                             <flux:table.cell>{{ $row->status === 'Open' ? ($row->next_due ?? 'No due date') : '—' }}</flux:table.cell>
                         </flux:table.row>
                     @empty
-                        <flux:table.row><flux:table.cell colspan="4">No matching matters.</flux:table.cell></flux:table.row>
+                        <flux:table.row><flux:table.cell colspan="4">No matching cases.</flux:table.cell></flux:table.row>
                     @endforelse
                 </flux:table.rows>
             </flux:table>
