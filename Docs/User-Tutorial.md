@@ -22,17 +22,17 @@ Return to **Workspace**, select **New case**, enter the following example, and s
 | Case owner | Your name |
 | Practice area | Litigation |
 
-The matter opens at **Interview client**. The current stage shows its checklist. The **Workflow** panel shows the full sequence and lets you review recorded checklists for earlier stages.
+The case opens at **Interview client**. The **Current stage** header stays visible as you switch between case sections. Under **Workflow**, use the current checklist and look for **Next stage** next to the advance button. Expand **All workflow stages** to see the full sequence and recorded checklists.
 
 ## 3. Link and email contacts
 
-In an open case, use **Case contacts** to link more contacts from your address book. Select **New contact**, then **Create and link contact** to add a new contact directly to the case. For a contact already in your address book, choose it from the list and select **Link contact**. For an older case without a contact, link one before moving to the next stage.
+In an open case, open **Contacts** to link more contacts from your address book. Select **New contact**, then **Create and link contact** to add a new contact directly to the case. For a contact already in your address book, choose it from the list and select **Link contact**. For an older case without a contact, link one before moving to the next stage.
 
 To send email, select a linked contact under **Email a contact**, enter a subject and message, then select **Send email**. A linked contact needs an email address, and the deployment needs a working delivery mailer. Case history records each attempt and whether the mail provider accepted it. Use a mailbox you control to test sending.
 
 ## 4. Record notes, tasks, and updates
 
-While the case is open, go to **Case history** and select **Add entry**. Choose an **Entry type**, enter the **Details**, and select **Save entry**. The timeline shows the newest entries first, with a date and time on each entry.
+While the case is open, open **Case history** and select **Add entry**. Choose an **Entry type**, enter the **Details**, and select **Save entry**. The timeline shows the newest entries first, with a date and time on each entry.
 
 | Entry type | Example |
 | --- | --- |
@@ -41,11 +41,11 @@ While the case is open, go to **Case history** and select **Add entry**. Choose 
 | **Client update** | The client was told that the agreement is under review and when to expect the next update. |
 | **Billing** | Interim invoice DEMO-001 was issued. Add a billing entry when payment is received. |
 
-Tasks appear under **Tasks & deadlines**. Tick a task there when it’s complete. Record client updates and billing events as they happen throughout the matter.
+Tasks appear under **Tasks**. Tick a task there when it’s complete. Record client updates and billing events as they happen throughout the matter.
 
 ## 5. Attach and open documents
 
-Open a case and find **Documents**. Choose a file and select **Upload document**. Each file can be up to 10 MB. Accepted formats include PDF, Word, Excel, PowerPoint, plain text, JPEG, and PNG.
+Open a case and select **Documents**. Choose a file and select **Upload document**. Each file can be up to 10 MB. Accepted formats include PDF, Word, Excel, PowerPoint, plain text, JPEG, and PNG.
 
 Use **Preview** to open a PDF, image, or plain-text file in a new tab. Use **Download** to save any attachment, including Office files. On an open case, use **Delete** next to a document and confirm **Delete document** to remove the attachment. Closed and declined cases keep their existing documents available for preview and download.
 

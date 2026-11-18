@@ -153,6 +153,7 @@ class Workspace extends Component
 
             $this->reset('decision');
             $this->resetValidation('workflow');
+            DB::afterCommit(fn () => $this->dispatch('case-stage-changed'));
         });
     }
 
@@ -170,6 +171,7 @@ class Workspace extends Component
 
             $matter->update(['status' => 'Declined']);
             $this->log($matter, 'Case declined — '.$this->decision);
+            DB::afterCommit(fn () => $this->dispatch('case-stage-changed'));
         });
         $this->reset('decision');
     }

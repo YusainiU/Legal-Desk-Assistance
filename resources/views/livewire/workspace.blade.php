@@ -51,31 +51,91 @@
             [$name, $description, $items] = $stages[$matter->stage];
             $active = $matter->status === 'Open';
             $last = count($stages) - 1;
+            $closed = $matter->status === 'Closed';
+            $nextStage = $active && $matter->stage < $last ? $stages[$matter->stage + 1][0] : null;
         @endphp
-        <header class="space-y-4">
-            <div class="flex flex-wrap items-center gap-2">
-                <flux:text size="sm">MD-{{ $matter->id }} · {{ $matter->practice }}</flux:text>
-                <flux:badge size="sm" :color="$active ? 'teal' : ($matter->status === 'Declined' ? 'amber' : 'zinc')">
-                    {{ $matter->status }}
-                </flux:badge>
-            </div>
-            <h1 class="desk-title">{{ $matter->title }}</h1>
-            <dl class="flex flex-wrap gap-x-8 gap-y-3 border-b border-zinc-200 pb-5 text-sm dark:border-zinc-800">
-                <div><dt class="text-zinc-500 dark:text-zinc-400">Client</dt><dd class="font-medium">{{ $matter->client }}</dd></div>
-                <div><dt class="text-zinc-500 dark:text-zinc-400">Case owner</dt><dd class="font-medium">{{ $matter->owner }}</dd></div>
-                @if ($matter->party)
-                    <div><dt class="text-zinc-500 dark:text-zinc-400">Other party</dt><dd class="font-medium">{{ $matter->party }}</dd></div>
-                @endif
-            </dl>
-        </header>
-        <div class="grid gap-5 xl:grid-cols-[minmax(0,1fr)_19rem]">
-            <div class="space-y-5">
+        <div class="space-y-5" wire:key="case-detail-{{ $matter->id }}"
+            x-data="{
+                casePanel: 'workflow',
+                openPanel(panel) {
+                    this.casePanel = panel;
+                    this.$nextTick(() => document.getElementById('case-panel-' + panel)?.focus());
+                },
+                showStage() {
+                    this.casePanel = 'workflow';
+                    this.$nextTick(() => this.$refs.progressTitle.focus());
+                }
+            }" x-on:case-stage-changed.window="showStage()">
+            <header class="space-y-4">
+                <div class="flex flex-wrap items-center gap-2">
+                    <flux:text size="sm">MD-{{ $matter->id }} · {{ $matter->practice }}</flux:text>
+                    <flux:badge size="sm" :color="$active ? 'teal' : ($matter->status === 'Declined' ? 'amber' : 'zinc')">
+                        {{ $matter->status }}
+                    </flux:badge>
+                </div>
+                <h1 class="desk-title">{{ $matter->title }}</h1>
+                <dl class="flex flex-wrap gap-x-8 gap-y-3 text-sm">
+                    <div><dt class="text-zinc-500 dark:text-zinc-400">Client</dt><dd class="font-medium">{{ $matter->client }}</dd></div>
+                    <div><dt class="text-zinc-500 dark:text-zinc-400">Case owner</dt><dd class="font-medium">{{ $matter->owner }}</dd></div>
+                    @if ($matter->party)
+                        <div><dt class="text-zinc-500 dark:text-zinc-400">Other party</dt><dd class="font-medium">{{ $matter->party }}</dd></div>
+                    @endif
+                </dl>
+            </header>
+
+            <section class="desk-panel space-y-4 border-s-4 border-s-teal-700 p-5 dark:border-s-teal-400" aria-labelledby="case-progress-title">
+                <div aria-live="polite" class="space-y-2">
+                    <div class="flex flex-wrap items-center gap-2">
+                        @if ($active)
+                            <flux:badge size="sm" color="teal">Current stage</flux:badge>
+                            <flux:text size="sm">Step {{ $matter->stage + 1 }} of {{ count($stages) }}</flux:text>
+                        @elseif ($closed)
+                            <flux:badge size="sm" color="teal">Workflow complete</flux:badge>
+                        @else
+                            <flux:badge size="sm" color="amber">Workflow ended</flux:badge>
+                            <flux:text size="sm">Ended at step {{ $matter->stage + 1 }} of {{ count($stages) }}</flux:text>
+                        @endif
+                    </div>
+
+                    <h2 id="case-progress-title" x-ref="progressTitle" tabindex="-1" class="text-xl font-semibold tracking-tight">
+                        {{ $active ? $name : ($closed ? 'Case closed' : 'Case declined') }}
+                    </h2>
+                    @if (! $active && ! $closed)
+                        <flux:text size="sm">{{ $name }}</flux:text>
+                    @endif
+                </div>
+
+                <ol aria-label="Workflow progress" class="grid grid-cols-9 gap-1.5">
+                    @foreach ($stages as $index => [$label])
+                        <li @class([
+                            'h-2 rounded-full',
+                            'bg-teal-400 dark:bg-teal-600' => $closed || $index < $matter->stage,
+                            'bg-teal-800 ring-1 ring-teal-800 dark:bg-teal-300 dark:ring-teal-300' => $active && $index === $matter->stage,
+                            'bg-amber-500 dark:bg-amber-400' => ! $active && ! $closed && $index === $matter->stage,
+                            'bg-zinc-200 dark:bg-zinc-700' => ! $closed && $index > $matter->stage,
+                        ]) title="{{ $label }}" @if ($active && $index === $matter->stage) aria-current="step" @endif>
+                            <span class="sr-only">
+                                Step {{ $index + 1 }}, {{ $label }}:
+                                {{ $closed || $index < $matter->stage ? 'Complete' : ($index > $matter->stage ? 'Upcoming' : ($active ? 'Current' : 'Ended here')) }}
+                            </span>
+                        </li>
+                    @endforeach
+                </ol>
+            </section>
+
+            <nav class="flex flex-wrap gap-1 border-b border-zinc-200 pb-2 dark:border-zinc-800" aria-label="Case sections">
+                @foreach (['workflow' => 'Workflow', 'contacts' => 'Contacts', 'documents' => 'Documents', 'tasks' => 'Tasks', 'history' => 'Case history'] as $panel => $label)
+                    <button type="button" class="desk-case-tab" aria-controls="case-panel-{{ $panel }}"
+                        x-bind:aria-pressed="(casePanel === '{{ $panel }}').toString()" x-on:click="casePanel = '{{ $panel }}'">
+                        {{ $label }}
+                    </button>
+                @endforeach
+            </nav>
+
+            <section id="case-panel-workflow" aria-label="Workflow" x-show="casePanel === 'workflow'" class="space-y-4" tabindex="-1">
                 @if ($active)
                     <flux:card class="desk-panel space-y-4">
-                        <div class="flex flex-wrap items-center justify-between gap-3">
-                            <flux:heading size="lg" level="2">{{ $name }}</flux:heading>
-                            <flux:badge size="sm" color="teal">Step {{ $matter->stage + 1 }} of {{ count($stages) }}</flux:badge>
-                        </div>
+                        <flux:heading size="lg" level="2">{{ $matter->stage === 2 ? 'Case decision' : 'Stage checklist' }}</flux:heading>
                         <flux:text>{{ $description }}</flux:text>
                         @if ($matter->stage === 4)<flux:text>{{ $practices[$matter->practice] }}</flux:text>@endif
                         @foreach ($items as $index => $item)
@@ -99,7 +159,7 @@
                             <flux:textarea label="Decision and reasons" wire:model="decision" maxlength="4000" />
 
                             @if ($matter->conflict === 'Cleared')
-                                <flux:text>Enter your reasons and select Accept case to move to Warrant to act &amp; retainer.</flux:text>
+                                <flux:text>Enter your reasons, then accept or decline the case.</flux:text>
                             @else
                                 <flux:callout color="amber" icon="information-circle">
                                     <flux:callout.heading>Conflict clearance required to accept</flux:callout.heading>
@@ -108,45 +168,83 @@
                             @endif
                         @endif
                         @if ($matter->stage === $last && $matter->entries->contains(fn ($entry) => $entry->kind === 'Task' && ! $entry->done))
-                            <flux:callout color="amber">Complete outstanding tasks before closing the file.</flux:callout>
+                            <flux:callout color="amber">
+                                <flux:callout.heading>Complete outstanding tasks before closing the file</flux:callout.heading>
+                                <flux:callout.text><button type="button" class="font-medium underline underline-offset-2" x-on:click="openPanel('tasks')">Review tasks</button></flux:callout.text>
+                            </flux:callout>
                         @endif
                         @unless ($matter->contacts_exists)
                             <flux:callout color="amber">
                                 <flux:callout.heading>Link a contact to continue</flux:callout.heading>
-                                <flux:callout.text>Use the <a href="#case-contacts" class="underline">Case contacts</a> panel to add a contact before advancing.</flux:callout.text>
+                                <flux:callout.text><button type="button" class="font-medium underline underline-offset-2" x-on:click="openPanel('contacts')">Go to Contacts</button></flux:callout.text>
                             </flux:callout>
                         @endunless
                         @error('workflow')<flux:callout color="red" role="alert">{{ $message }}</flux:callout>@enderror
 
-                        <div class="flex flex-wrap gap-4">
-                            @if ($matter->stage === 2)
-                                <flux:button type="button" variant="primary" wire:click="advance(2)" wire:loading.attr="disabled" :disabled="! $canMove">
-                                    Accept case
-                                </flux:button>
-                                <flux:button type="button" variant="ghost" wire:click="decline" wire:loading.attr="disabled" :disabled="! $matter->contacts_exists">Decline case</flux:button>
-                            @else
-                                <flux:button type="button" variant="primary" wire:click="advance({{ $matter->stage }})" wire:loading.attr="disabled" :disabled="! $canMove">
-                                    {{ $matter->stage === $last ? 'Close file' : 'Advance stage' }}
-                                </flux:button>
-                            @endif
+                        <div class="flex flex-wrap items-center justify-between gap-4 border-t border-zinc-200 pt-4 dark:border-zinc-800">
+                            <div class="space-y-1">
+                                <p class="text-sm font-medium">{{ $matter->stage === $last ? 'Final step' : 'Next stage' }}</p>
+                                <flux:text size="sm">{{ $nextStage ?? 'Close the file' }}</flux:text>
+                                @if (! $canMove && $matter->contacts_exists && $items
+                                    && collect($items)->keys()->contains(fn ($index) => ! ($matter->checks['stage_'.$matter->stage][$index] ?? false)))
+                                    <flux:text size="sm">Complete the checklist to continue.</flux:text>
+                                @endif
+                            </div>
+
+                            <div class="flex flex-wrap items-center gap-2">
+                                @if ($matter->stage === 2)
+                                    <flux:button type="button" variant="primary" wire:click="advance(2)" wire:loading.attr="disabled" :disabled="! $canMove">
+                                        Accept case
+                                    </flux:button>
+                                    <flux:button type="button" variant="ghost" wire:click="decline" wire:loading.attr="disabled" :disabled="! $matter->contacts_exists">Decline case</flux:button>
+                                @else
+                                    <flux:button type="button" variant="primary" wire:click="advance({{ $matter->stage }})" wire:loading.attr="disabled" :disabled="! $canMove">
+                                        {{ $matter->stage === $last ? 'Close file' : 'Advance stage' }}
+                                    </flux:button>
+                                @endif
+                            </div>
                         </div>
                     </flux:card>
                 @endif
+                <details class="desk-panel p-4">
+                    <summary class="cursor-pointer text-sm font-semibold">All workflow stages</summary>
+                    <ol class="mt-3 divide-y divide-zinc-200 dark:divide-zinc-800">
+                        @foreach ($stages as $index => [$label, $detail, $checklist])
+                            <li class="space-y-2 py-3" @if ($active && $index === $matter->stage) aria-current="step" @endif>
+                                <div class="flex flex-wrap items-center justify-between gap-2">
+                                    <div class="flex items-center gap-2">
+                                        <span class="grid size-6 shrink-0 place-items-center rounded-full bg-zinc-100 text-xs font-medium dark:bg-zinc-800">{{ $index + 1 }}</span>
+                                        <span class="text-sm {{ $active && $index === $matter->stage ? 'font-semibold text-teal-800 dark:text-teal-300' : '' }}">{{ $label }}</span>
+                                    </div>
+                                    @if ($closed || $index < $matter->stage)
+                                        <flux:badge size="sm" color="zinc">Complete</flux:badge>
+                                    @elseif ($active && $index === $matter->stage)
+                                        <flux:badge size="sm" color="teal">Current</flux:badge>
+                                    @elseif (! $active && $index === $matter->stage)
+                                        <flux:badge size="sm" color="amber">Ended here</flux:badge>
+                                    @endif
+                                </div>
+                                @if ($checklist && ($closed || $index < $matter->stage))
+                                    <details class="ms-8 text-sm">
+                                        <summary class="cursor-pointer text-zinc-600 dark:text-zinc-300">Recorded checklist</summary>
+                                        <ul class="ms-4 mt-2 list-disc">
+                                            @foreach ($checklist as $checkIndex => $check)
+                                                @if ($matter->checks['stage_'.$index][$checkIndex] ?? false)<li>{{ $check }}</li>@endif
+                                            @endforeach
+                                        </ul>
+                                    </details>
+                                @endif
+                            </li>
+                        @endforeach
+                    </ol>
+                </details>
+            </section>
+            <section id="case-panel-contacts" aria-label="Contacts"
+                x-show="casePanel === 'contacts'" x-cloak tabindex="-1">
                 <livewire:case-contacts :matter-id="$matter->id" :key="'case-contacts-'.$matter->id" @case-contacts-changed="$refresh" />
-
-                <flux:card class="desk-panel space-y-4">
-                    <flux:heading size="lg" level="2">Tasks &amp; deadlines</flux:heading>
-                    @forelse ($matter->entries->where('kind', 'Task') as $task)
-                        <div class="border-t border-zinc-200 pt-3 dark:border-zinc-700" wire:key="task-{{ $task->id }}-{{ (int) $task->done }}">
-                            <flux:checkbox :label="$task->body" :checked="$task->done" :disabled="! $active"
-                                :description="$task->assignee.' · '.($task->due_on?->format('j M Y') ?? 'No due date')"
-                                wire:change="toggleTask({{ $task->id }}, {{ $task->done ? 'false' : 'true' }})"
-                                wire:loading.attr="disabled" />
-                        </div>
-                    @empty
-                        <p>No tasks recorded.</p>
-                    @endforelse
-                </flux:card>
+            </section>
+            <section id="case-panel-documents" aria-label="Documents"
+                x-show="casePanel === 'documents'" x-cloak tabindex="-1">
                 <flux:card class="desk-panel space-y-4">
                     <flux:heading size="lg" level="2">Documents</flux:heading>
 
@@ -213,7 +311,25 @@
                         <flux:text>No documents uploaded.</flux:text>
                     @endforelse
                 </flux:card>
-
+            </section>
+            <section id="case-panel-tasks" aria-label="Tasks"
+                x-show="casePanel === 'tasks'" x-cloak tabindex="-1">
+                <flux:card class="desk-panel space-y-4">
+                    <flux:heading size="lg" level="2">Tasks &amp; deadlines</flux:heading>
+                    @forelse ($matter->entries->where('kind', 'Task') as $task)
+                        <div class="border-t border-zinc-200 pt-3 dark:border-zinc-700" wire:key="task-{{ $task->id }}-{{ (int) $task->done }}">
+                            <flux:checkbox :label="$task->body" :checked="$task->done" :disabled="! $active"
+                                :description="$task->assignee.' · '.($task->due_on?->format('j M Y') ?? 'No due date')"
+                                wire:change="toggleTask({{ $task->id }}, {{ $task->done ? 'false' : 'true' }})"
+                                wire:loading.attr="disabled" />
+                        </div>
+                    @empty
+                        <p>No tasks recorded.</p>
+                    @endforelse
+                </flux:card>
+            </section>
+            <section id="case-panel-history" aria-label="Case history"
+                x-show="casePanel === 'history'" x-cloak tabindex="-1">
                 <flux:card class="desk-panel space-y-5" x-data="{ composing: false }">
                     <div class="flex flex-wrap items-center justify-between gap-3">
                         <div>
@@ -289,29 +405,7 @@
                         </ol>
                     @endif
                 </flux:card>
-            </div>
-            <flux:card class="desk-panel self-start">
-                <flux:heading size="lg" level="2" class="mb-4">Workflow</flux:heading>
-                <ol class="space-y-3">
-                    @foreach ($stages as $index => [$label, $detail, $checklist])
-                        <li class="border-t border-zinc-200 dark:border-zinc-700 pt-2 {{ $index === $matter->stage && $active ? 'font-semibold text-zinc-900 dark:text-white' : '' }}">
-                            {{ $index + 1 }}. {{ $label }}
-                            @if ($index === $matter->stage && $active)<span class="text-sm">· Current</span>@endif
-                            @if ($index < $matter->stage || $matter->status === 'Closed')
-                                @if ($checklist)
-                                    <details class="ml-4 text-sm"><summary class="cursor-pointer">Recorded checklist</summary>
-                                        <ul class="ml-4 list-disc">
-                                            @foreach ($checklist as $checkIndex => $check)
-                                                @if ($matter->checks['stage_'.$index][$checkIndex] ?? false)<li>{{ $check }}</li>@endif
-                                            @endforeach
-                                        </ul>
-                                    </details>
-                                @endif
-                            @endif
-                        </li>
-                    @endforeach
-                </ol>
-            </flux:card>
+            </section>
         </div>
     @else
         <div class="flex flex-wrap items-center justify-between gap-3">

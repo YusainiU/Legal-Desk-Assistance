@@ -34,6 +34,14 @@
         @apply mx-auto w-full max-w-md space-y-6 rounded-2xl border border-zinc-200 bg-white shadow-lg shadow-zinc-950/5 sm:p-8 dark:border-white/10 dark:bg-zinc-900;
     }
 
+    .desk-case-tab {
+        @apply rounded-lg px-3 py-2 text-sm font-medium text-zinc-600 transition-colors hover:bg-zinc-200/70 hover:text-zinc-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 dark:text-zinc-300 dark:hover:bg-zinc-800 dark:hover:text-white dark:focus-visible:outline-teal-300;
+    }
+
+    .desk-case-tab[aria-pressed="true"] {
+        @apply bg-teal-100 font-semibold text-teal-950 hover:bg-teal-100 hover:text-teal-950 dark:bg-teal-900/60 dark:text-teal-100 dark:hover:bg-teal-900/60 dark:hover:text-teal-100;
+    }
+
     .desk-timeline-item {
         @apply relative ms-2 border-s border-zinc-200 ps-6 pb-6 last:border-transparent last:pb-0 dark:border-zinc-700 dark:last:border-transparent;
     }
