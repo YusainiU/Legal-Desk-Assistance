@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Matterdesk</title>
+    <title>Legal Desk Assistance</title>
     @vite('resources/css/app.css')
     @livewireStyles
     @fluxAppearance
@@ -12,7 +12,7 @@
     @auth
         <flux:sidebar sticky collapsible="mobile" class="border-e border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-950">
             <flux:sidebar.header>
-                <flux:brand :href="route('workspace')" name="Matterdesk" />
+                <flux:brand :href="route('workspace')" name="Legal Desk Assistance" />
                 <flux:sidebar.collapse class="lg:hidden" />
             </flux:sidebar.header>
 
@@ -35,7 +35,7 @@
 
         <flux:header class="lg:hidden">
             <flux:sidebar.toggle icon="bars-2" inset="left" />
-            <flux:brand :href="route('workspace')" name="Matterdesk" />
+            <flux:brand :href="route('workspace')" name="Legal Desk Assistance" />
         </flux:header>
 
         <flux:main>
@@ -45,7 +45,7 @@
         <main class="grid min-h-screen place-items-center px-6 py-10">
             <div class="w-full max-w-sm space-y-6">
                 <div class="flex justify-center">
-                    <flux:brand name="Matterdesk" />
+                    <flux:brand name="Legal Desk Assistance" />
                 </div>
                 {{ $slot }}
             </div>
