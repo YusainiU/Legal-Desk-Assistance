@@ -39,7 +39,7 @@ Tasks appear under **Tasks & deadlines**. Tick a task there when it’s complete
 
 Open a case and find **Documents**. Choose a file and select **Upload document**. Each file can be up to 10 MB. Accepted formats include PDF, Word, Excel, PowerPoint, plain text, JPEG, and PNG.
 
-Use **Preview** to open a PDF, image, or plain-text file in a new tab. Use **Download** to save any attachment, including Office files. Closed and declined cases keep their existing documents available for preview and download.
+Use **Preview** to open a PDF, image, or plain-text file in a new tab. Use **Download** to save any attachment, including Office files. On an open case, use **Delete** next to a document and confirm **Delete document** to remove the attachment. Closed and declined cases keep their existing documents available for preview and download.
 
 ## 5. Work through the nine stages
 

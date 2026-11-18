@@ -119,8 +119,8 @@
                         </form>
                     @endif
 
-                    @if ($documentUploaded)
-                        <flux:callout color="green" role="status">Document uploaded.</flux:callout>
+                    @if ($documentStatus)
+                        <flux:callout color="green" role="status">{{ $documentStatus }}</flux:callout>
                     @endif
 
                     @forelse ($matter->documents as $document)
@@ -140,6 +140,30 @@
                                 @endif
                                 <flux:button size="sm" variant="ghost" :href="route('case-documents.download', $document)"
                                     :aria-label="'Download '.$document->name">Download</flux:button>
+                                @if ($active)
+                                    <flux:modal.trigger :name="'delete-document-'.$document->id">
+                                        <flux:button type="button" size="sm" variant="ghost"
+                                            :aria-label="'Delete '.$document->name">Delete</flux:button>
+                                    </flux:modal.trigger>
+
+                                    <flux:modal :name="'delete-document-'.$document->id" class="max-w-md">
+                                        <form class="space-y-4" wire:submit="deleteDocument({{ $document->id }})">
+                                            <flux:heading size="lg">Delete document?</flux:heading>
+                                            <flux:text class="break-all">{{ $document->name }} will be removed from this case.</flux:text>
+                                            @error('documentDeletion.'.$document->id)
+                                                <flux:callout color="red" role="alert">{{ $message }}</flux:callout>
+                                            @enderror
+
+                                            <div class="flex justify-end gap-2">
+                                                <flux:modal.close>
+                                                    <flux:button type="button" variant="ghost">Cancel</flux:button>
+                                                </flux:modal.close>
+                                                <flux:button type="submit" variant="danger"
+                                                    wire:loading.attr="disabled" wire:target="deleteDocument">Delete document</flux:button>
+                                            </div>
+                                        </form>
+                                    </flux:modal>
+                                @endif
                             </div>
                         </div>
                     @empty

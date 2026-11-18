@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
@@ -44,12 +45,12 @@ class Workspace extends Component
 
     public $document;
 
-    public bool $documentUploaded = false;
+    public ?string $documentStatus = null;
 
     public function show(string $screen): void
     {
         abort_unless(in_array($screen, ['register', 'guide', 'new'], true), 404);
-        $this->reset('selected', 'form', 'decision', 'body', 'assignee', 'due', 'document', 'documentUploaded');
+        $this->reset('selected', 'form', 'decision', 'body', 'assignee', 'due', 'document', 'documentStatus');
         $this->resetValidation();
         $this->screen = $screen;
     }
@@ -165,7 +166,7 @@ class Workspace extends Component
         $matter = $this->matters()->findOrFail($this->selected);
         abort_unless($matter->status === 'Open', 422);
 
-        $this->documentUploaded = false;
+        $this->documentStatus = null;
         $extensions = implode(',', CaseDocument::EXTENSIONS);
         $this->validate(['document' => ['required', 'file', 'max:10240', 'mimes:'.$extensions, 'extensions:'.$extensions]]);
 
@@ -197,7 +198,28 @@ class Workspace extends Component
         }
 
         $this->reset('document');
-        $this->documentUploaded = true;
+        $this->documentStatus = 'Document uploaded.';
+    }
+
+    public function deleteDocument(int $id): void
+    {
+        $this->documentStatus = null;
+        $errorKey = 'documentDeletion.'.$id;
+        $this->resetValidation($errorKey);
+
+        $this->change(function (Matter $matter) use ($id, $errorKey) {
+            $document = $matter->documents()->findOrFail($id);
+
+            $document->delete();
+
+            if (! Storage::disk('local')->delete($document->path)) {
+                throw ValidationException::withMessages([
+                    $errorKey => 'The file could not be removed. Please try again.',
+                ]);
+            }
+        });
+
+        $this->documentStatus = 'Document deleted.';
     }
 
     public function toggleTask(int $id, bool $checked): void
