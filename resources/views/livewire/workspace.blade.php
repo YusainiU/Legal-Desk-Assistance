@@ -1,34 +1,32 @@
 <div class="space-y-6">
     <nav class="flex flex-wrap items-center gap-5 text-sm" aria-label="Workspace">
-        <button type="button" class="link" wire:click="show('register')">Matters</button>
-        <button type="button" class="link" wire:click="show('guide')">Workflow guide</button>
+        <flux:button type="button" :variant="$screen === 'guide' ? 'ghost' : 'filled'" icon="briefcase" wire:click="show('register')">Matters</flux:button>
+        <flux:button type="button" :variant="$screen === 'guide' ? 'filled' : 'ghost'" icon="book-open" wire:click="show('guide')">Workflow guide</flux:button>
     </nav>
 
     @if ($screen === 'guide')
-        <h1 class="font-serif text-4xl">Workflow guide</h1>
+        <flux:heading size="xl" level="1">Workflow guide</flux:heading>
         @foreach ($stages as [$name, $description, $items])
-            <section class="panel">
-                <h2 class="font-serif text-2xl">{{ $loop->iteration }}. {{ $name }}</h2>
-                <p>{{ $description }}</p>
+            <flux:card>
+                <flux:heading size="lg" level="2">{{ $loop->iteration }}. {{ $name }}</flux:heading>
+                <flux:text>{{ $description }}</flux:text>
                 <ul class="ml-5 mt-2 list-disc">@foreach ($items as $item)<li>{{ $item }}</li>@endforeach</ul>
-            </section>
+            </flux:card>
         @endforeach
     @elseif ($screen === 'new')
-        <form class="panel max-w-xl space-y-4" wire:submit="createMatter">
-            <h1 class="font-serif text-3xl">New matter</h1>
-            @foreach (['title' => 'Matter title', 'client' => 'Prospective client', 'party' => 'Other party', 'owner' => 'Matter owner'] as $key => $label)
-                <label class="block">{{ $label }}<input class="field" wire:model="form.{{ $key }}" maxlength="160" @required($key !== 'party')></label>
-                @error('form.'.$key)<p class="text-red-800" role="alert">{{ $message }}</p>@enderror
-            @endforeach
-            <label class="block">Practice area
-                <select class="field" wire:model="form.practice" required>
-                    <option value="">Choose a practice area</option>
-                    @foreach ($practices as $name => $guidance)<option>{{ $name }}</option>@endforeach
-                </select>
-            </label>
-            @error('form.practice')<p class="text-red-800" role="alert">{{ $message }}</p>@enderror
-            <button class="btn">Create matter</button>
-        </form>
+        <flux:card class="max-w-xl">
+            <form class="space-y-4" wire:submit="createMatter">
+                <flux:heading size="xl" level="1">New matter</flux:heading>
+                @foreach (['title' => 'Matter title', 'client' => 'Prospective client', 'party' => 'Other party', 'owner' => 'Matter owner'] as $key => $label)
+                    <flux:input :label="$label" :wire:model="'form.'.$key" maxlength="160" :required="$key !== 'party'" />
+                @endforeach
+                <flux:select label="Practice area" wire:model="form.practice" required>
+                        <option value="">Choose a practice area</option>
+                        @foreach ($practices as $name => $guidance)<option>{{ $name }}</option>@endforeach
+                </flux:select>
+                <flux:button type="submit" variant="primary">Create matter</flux:button>
+            </form>
+        </flux:card>
     @elseif ($screen === 'detail' && $matter)
         @php
             [$name, $description, $items] = $stages[$matter->stage];
@@ -36,91 +34,88 @@
             $last = count($stages) - 1;
         @endphp
         <div>
-            <p class="text-sm text-emerald-900">MD-{{ $matter->id }} · {{ $matter->practice }} · {{ $matter->status }}</p>
-            <h1 class="mt-1 font-serif text-4xl">{{ $matter->title }}</h1>
+            <div class="flex flex-wrap items-center gap-2"><flux:text>MD-{{ $matter->id }} · {{ $matter->practice }}</flux:text><flux:badge size="sm">{{ $matter->status }}</flux:badge></div>
+            <flux:heading size="xl" level="1" class="mt-2">{{ $matter->title }}</flux:heading>
             <p class="mt-2">{{ $matter->client }} · {{ $matter->owner }}@if ($matter->party) · Other party {{ $matter->party }}@endif</p>
         </div>
         <div class="grid gap-5 lg:grid-cols-[2fr_1fr]">
             <div class="space-y-5">
                 @if ($active)
-                    <section class="panel space-y-3">
-                        <h2 class="font-serif text-2xl">{{ $name }}</h2>
-                        <p>{{ $description }}</p>
-                        @if ($matter->stage === 4)<p>{{ $practices[$matter->practice] }}</p>@endif
+                    <flux:card class="space-y-3">
+                        <flux:heading size="lg" level="2">{{ $name }}</flux:heading>
+                        <flux:text>{{ $description }}</flux:text>
+                        @if ($matter->stage === 4)<flux:text>{{ $practices[$matter->practice] }}</flux:text>@endif
                         @foreach ($items as $index => $item)
-                            <label class="flex items-start gap-2">
-                                <input type="checkbox" class="mt-1" wire:change="toggleCheck({{ $matter->stage }}, {{ $index }}, $event.target.checked)" wire:loading.attr="disabled" @checked($matter->checks['stage_'.$matter->stage][$index] ?? false)>
-                                {{ $item }}
-                            </label>
+                            @php($checked = $matter->checks['stage_'.$matter->stage][$index] ?? false)
+                            <flux:checkbox :label="$item" :checked="$checked"
+                                wire:key="stage-{{ $matter->stage }}-check-{{ $index }}-{{ (int) $checked }}"
+                                wire:change="toggleCheck({{ $matter->stage }}, {{ $index }}, {{ $checked ? 'false' : 'true' }})"
+                                wire:loading.attr="disabled" />
                         @endforeach
                         @if (in_array($matter->stage, [1, 2], true))
-                            <label class="block">Conflict decision
-                                <select class="field" wire:change="recordConflict($event.target.value)">
-                                    @foreach (['Pending', 'Cleared', 'Escalated'] as $result)
-                                        <option @selected($matter->conflict === $result)>{{ $result }}</option>
-                                    @endforeach
-                                </select>
-                            </label>
-                            <p class="text-sm text-stone-600">Record the reviewer and basis for the decision in the matter history.</p>
+                            <flux:select label="Conflict decision" wire:change="recordConflict($event.target.value)">
+                                @foreach (['Pending', 'Cleared', 'Escalated'] as $result)
+                                    <option value="{{ $result }}" @selected($matter->conflict === $result)>{{ $result }}</option>
+                                @endforeach
+                            </flux:select>
+                            <p class="text-sm text-zinc-600 dark:text-zinc-300">Record the reviewer and basis for the decision in the matter history.</p>
                         @endif
                         @if ($matter->stage === 2)
-                            <label class="block">Decision and reasons<textarea class="field" wire:model="decision" maxlength="4000"></textarea></label>
-                            @error('decision')<p class="text-red-800" role="alert">{{ $message }}</p>@enderror
+                            <flux:textarea label="Decision and reasons" wire:model="decision" maxlength="4000" />
                         @endif
                         @if ($matter->stage === $last && $matter->entries->contains(fn ($entry) => $entry->kind === 'Task' && ! $entry->done))
-                            <p class="text-amber-900">Complete outstanding tasks before closing the file.</p>
+                            <flux:callout color="amber">Complete outstanding tasks before closing the file.</flux:callout>
                         @endif
-                        @error('workflow')<p class="text-red-800" role="alert">{{ $message }}</p>@enderror
+                        @error('workflow')<flux:callout color="red" role="alert">{{ $message }}</flux:callout>@enderror
                         <div class="flex flex-wrap gap-4">
-                            <button type="button" class="btn" wire:click="advance({{ $matter->stage }})" wire:loading.attr="disabled" @disabled(! $canMove)>{{ match ($matter->stage) {2 => 'Accept case', $last => 'Close file', default => 'Advance stage'} }}</button>
-                            @if ($matter->stage === 2)<button type="button" class="link" wire:click="decline" wire:loading.attr="disabled">Decline case</button>@endif
+                            <flux:button type="button" variant="primary" wire:click="advance({{ $matter->stage }})" wire:loading.attr="disabled" :disabled="! $canMove">{{ match ($matter->stage) {2 => 'Accept case', $last => 'Close file', default => 'Advance stage'} }}</flux:button>
+                            @if ($matter->stage === 2)<flux:button type="button" variant="ghost" wire:click="decline" wire:loading.attr="disabled">Decline case</flux:button>@endif
                         </div>
-                    </section>
+                    </flux:card>
                 @endif
-                <section class="panel space-y-3">
-                    <h2 class="font-serif text-2xl">Tasks &amp; deadlines</h2>
+                <flux:card class="space-y-3">
+                    <flux:heading size="lg" level="2">Tasks &amp; deadlines</flux:heading>
                     @forelse ($matter->entries->where('kind', 'Task') as $task)
-                        <label class="flex items-start gap-2 border-t border-stone-200 pt-3" wire:key="task-{{ $task->id }}">
-                            <input type="checkbox" class="mt-1" wire:change="toggleTask({{ $task->id }}, $event.target.checked)" wire:loading.attr="disabled" @checked($task->done) @disabled(! $active)>
-                            <span>{{ $task->body }}<small class="block text-stone-600">{{ $task->assignee }} · {{ $task->due_on?->format('j M Y') ?? 'No due date' }}</small></span>
-                        </label>
+                        <div class="border-t border-zinc-200 pt-3 dark:border-zinc-700" wire:key="task-{{ $task->id }}-{{ (int) $task->done }}">
+                            <flux:checkbox :label="$task->body" :checked="$task->done" :disabled="! $active"
+                                :description="$task->assignee.' · '.($task->due_on?->format('j M Y') ?? 'No due date')"
+                                wire:change="toggleTask({{ $task->id }}, {{ $task->done ? 'false' : 'true' }})"
+                                wire:loading.attr="disabled" />
+                        </div>
                     @empty
                         <p>No tasks recorded.</p>
                     @endforelse
-                </section>
-                <section class="panel space-y-3">
-                    <h2 class="font-serif text-2xl">Matter history</h2>
+                </flux:card>
+                <flux:card class="space-y-3">
+                    <flux:heading size="lg" level="2">Matter history</flux:heading>
                     @if ($active)
                         <form class="space-y-3" wire:submit="addEntry">
-                            <label class="block">Entry type<select class="field" wire:model.live="kind">
+                            <flux:select label="Entry type" wire:model.live="kind">
                                 @foreach (['Note', 'Task', 'Client update', 'Billing'] as $type)<option>{{ $type }}</option>@endforeach
-                            </select></label>
-                            <label class="block">Details<textarea class="field" wire:model="body" required maxlength="4000"></textarea></label>
+                            </flux:select>
+                            <flux:textarea label="Details" wire:model="body" required maxlength="4000" />
                             @if ($kind === 'Task')
-                                <label class="block">Assigned to<input class="field" wire:model="assignee" required maxlength="160"></label>
-                                <label class="block">Due date<input class="field" wire:model="due" type="date"></label>
+                                <flux:input label="Assigned to" wire:model="assignee" required maxlength="160" />
+                                <flux:input label="Due date" wire:model="due" type="date" />
                             @endif
-                            @foreach (['kind', 'body', 'assignee', 'due'] as $field)
-                                @error($field)<p class="text-red-800" role="alert">{{ $message }}</p>@enderror
-                            @endforeach
-                            <button class="btn">Add entry</button>
+                            <flux:button type="submit" variant="primary">Add entry</flux:button>
                         </form>
                     @endif
                     @forelse ($matter->entries->where('kind', '!=', 'Task')->sortByDesc('id') as $entry)
-                        <article class="border-t border-stone-200 pt-3" wire:key="entry-{{ $entry->id }}">
-                            <p class="text-sm text-stone-600">{{ $entry->kind }} · {{ $entry->created_at->format('j M Y') }}</p>
+                        <article class="border-t border-zinc-200 dark:border-zinc-700 pt-3" wire:key="entry-{{ $entry->id }}">
+                            <p class="text-sm text-zinc-600 dark:text-zinc-300">{{ $entry->kind }} · {{ $entry->created_at->format('j M Y') }}</p>
                             <p class="whitespace-pre-wrap">{{ $entry->body }}</p>
                         </article>
                     @empty
                         <p>No history recorded.</p>
                     @endforelse
-                </section>
+                </flux:card>
             </div>
-            <section class="panel self-start">
-                <h2 class="mb-3 font-serif text-2xl">Workflow</h2>
+            <flux:card class="self-start">
+                <flux:heading size="lg" level="2" class="mb-3">Workflow</flux:heading>
                 <ol class="space-y-3">
                     @foreach ($stages as $index => [$label, $detail, $checklist])
-                        <li class="border-t border-stone-200 pt-2 {{ $index === $matter->stage && $active ? 'font-semibold text-emerald-900' : '' }}">
+                        <li class="border-t border-zinc-200 dark:border-zinc-700 pt-2 {{ $index === $matter->stage && $active ? 'font-semibold text-zinc-900 dark:text-white' : '' }}">
                             {{ $index + 1 }}. {{ $label }}
                             @if ($index === $matter->stage && $active)<span class="text-sm">· Current</span>@endif
                             @if ($index < $matter->stage || $matter->status === 'Closed')
@@ -137,39 +132,45 @@
                         </li>
                     @endforeach
                 </ol>
-            </section>
+            </flux:card>
         </div>
     @else
         <div class="flex flex-wrap items-center justify-between gap-3">
-            <h1 class="font-serif text-4xl">Matters</h1>
-            <button type="button" class="btn" wire:click="show('new')">+ New matter</button>
+            <flux:heading size="xl" level="1">Matters</flux:heading>
+            <flux:button type="button" variant="primary" icon="plus" wire:click="show('new')">New matter</flux:button>
         </div>
-        <section class="panel space-y-4">
-            <h2 class="font-serif text-2xl">Matter register</h2>
+        <flux:card class="space-y-4">
+            <flux:heading size="lg" level="2">Matter register</flux:heading>
             <div class="grid gap-3 sm:grid-cols-2">
-                <input class="field" type="search" wire:model.live.debounce.250ms="search" aria-label="Search matters" placeholder="Search matters">
-                <select class="field" wire:model.live="status" aria-label="Filter by status">
+                <flux:input type="search" icon="magnifying-glass" wire:model.live.debounce.250ms="search" aria-label="Search matters" placeholder="Search matters" />
+                <flux:select wire:model.live="status" aria-label="Filter by status">
                     <option value="">All statuses</option>
                     @foreach (['Open', 'Closed', 'Declined'] as $value)<option>{{ $value }}</option>@endforeach
-                </select>
+                </flux:select>
             </div>
-            <div class="overflow-x-auto">
-                <table class="w-full min-w-xl text-left">
-                    <thead><tr><th class="p-2">Matter</th><th class="p-2">Stage / status</th><th class="p-2">Owner</th><th class="p-2">Next due date</th></tr></thead>
-                    <tbody>
-                        @forelse ($register as $row)
-                            <tr class="border-t border-stone-200" wire:key="matter-{{ $row->id }}">
-                                <td class="p-2"><button type="button" class="link text-left" wire:click="open({{ $row->id }})">{{ $row->title }}</button><small class="block text-stone-600">MD-{{ $row->id }} · {{ $row->practice }}</small></td>
-                                <td class="p-2">{{ $row->status === 'Open' ? $stages[$row->stage][0] : $row->status }}</td>
-                                <td class="p-2">{{ $row->owner }}</td>
-                                <td class="p-2">{{ $row->status === 'Open' ? ($row->next_due ?? 'No due date') : '—' }}</td>
-                            </tr>
-                        @empty
-                            <tr><td class="p-2" colspan="4">No matching matters.</td></tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-        </section>
+            <flux:table>
+                <flux:table.columns>
+                    <flux:table.column>Matter</flux:table.column>
+                    <flux:table.column>Stage / status</flux:table.column>
+                    <flux:table.column>Owner</flux:table.column>
+                    <flux:table.column>Next due date</flux:table.column>
+                </flux:table.columns>
+                <flux:table.rows>
+                    @forelse ($register as $row)
+                        <flux:table.row :key="$row->id">
+                            <flux:table.cell>
+                                <flux:button type="button" variant="ghost" size="sm" class="-ms-2" wire:click="open({{ $row->id }})">{{ $row->title }}</flux:button>
+                                <flux:text size="sm">MD-{{ $row->id }} · {{ $row->practice }}</flux:text>
+                            </flux:table.cell>
+                            <flux:table.cell><flux:badge size="sm">{{ $row->status === 'Open' ? $stages[$row->stage][0] : $row->status }}</flux:badge></flux:table.cell>
+                            <flux:table.cell>{{ $row->owner }}</flux:table.cell>
+                            <flux:table.cell>{{ $row->status === 'Open' ? ($row->next_due ?? 'No due date') : '—' }}</flux:table.cell>
+                        </flux:table.row>
+                    @empty
+                        <flux:table.row><flux:table.cell colspan="4">No matching matters.</flux:table.cell></flux:table.row>
+                    @endforelse
+                </flux:table.rows>
+            </flux:table>
+        </flux:card>
     @endif
 </div>
