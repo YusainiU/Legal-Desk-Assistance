@@ -17,6 +17,11 @@ class Matter extends Model
         return $this->belongsToMany(Contact::class);
     }
 
+    public function allowsContactLink(): bool
+    {
+        return $this->status === 'Open' || ! $this->contacts()->exists();
+    }
+
     public function documents(): HasMany
     {
         return $this->hasMany(CaseDocument::class)->latest('id');

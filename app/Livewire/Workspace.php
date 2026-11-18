@@ -64,6 +64,17 @@ class Workspace extends Component
         $this->assignee = $matter->owner;
     }
 
+    public function selectCreatedContact(int $contactId): void
+    {
+        if ($this->screen !== 'new') {
+            return;
+        }
+
+        $contact = auth()->user()->contacts()->findOrFail($contactId);
+        $this->form['contact_id'] = (string) $contact->id;
+        $this->resetValidation('form.contact_id');
+    }
+
     public function createMatter(): void
     {
         $data = $this->validate([

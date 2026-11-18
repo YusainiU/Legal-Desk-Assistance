@@ -48,15 +48,21 @@ class CaseContacts extends Component
 
         DB::transaction(function () {
             $matter = $this->caseQuery()->lockForUpdate()->findOrFail($this->matterId);
-            abort_unless($matter->status === 'Open' || ! $matter->contacts()->exists(), 422);
+            abort_unless($matter->allowsContactLink(), 422);
 
             $contact = auth()->user()->contacts()->findOrFail($this->linkContactId);
             $matter->contacts()->syncWithoutDetaching([$contact->id]);
         }, 3);
 
-        $this->reset('linkContactId');
-        $this->linkStatus = 'Contact linked.';
-        $this->dispatch('case-contacts-changed');
+        $this->reportLinkedContact('Contact linked.');
+    }
+
+    public function contactCreated(int $contactId): void
+    {
+        $this->caseQuery()->findOrFail($this->matterId)
+            ->contacts()->where('contacts.user_id', auth()->id())->findOrFail($contactId);
+
+        $this->reportLinkedContact('Contact created and linked to this case.');
     }
 
     public function sendMessage(): void
@@ -139,6 +145,13 @@ class CaseContacts extends Component
             'canEmail' => $matter->status === 'Open',
             'mailReady' => $this->deliveryMailer() !== null,
         ]);
+    }
+
+    private function reportLinkedContact(string $message): void
+    {
+        $this->reset('linkContactId');
+        $this->linkStatus = $message;
+        $this->dispatch('case-contacts-changed');
     }
 
     private function caseQuery(): Builder

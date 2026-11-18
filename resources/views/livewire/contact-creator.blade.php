@@ -7,6 +7,9 @@
             <div class="space-y-1">
                 <flux:heading size="lg">New contact</flux:heading>
                 <flux:text>Enter an email address, a phone number, or both.</flux:text>
+                @if ($matterId !== null)
+                    <flux:text>This contact will be linked to the case when you save.</flux:text>
+                @endif
             </div>
 
             <flux:input label="Name" wire:model="name" maxlength="160" required autofocus />
@@ -18,7 +21,9 @@
                 <flux:modal.close>
                     <flux:button type="button" variant="ghost">Cancel</flux:button>
                 </flux:modal.close>
-                <flux:button type="submit" variant="primary" wire:loading.attr="disabled" wire:target="save">Create contact</flux:button>
+                <flux:button type="submit" variant="primary" wire:loading.attr="disabled" wire:target="save">
+                    {{ $matterId === null ? 'Create contact' : 'Create and link contact' }}
+                </flux:button>
             </div>
         </form>
     </flux:modal>

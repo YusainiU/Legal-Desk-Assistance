@@ -2,7 +2,7 @@
     <div class="flex flex-wrap items-center justify-between gap-3">
         <flux:heading size="lg" level="2">Case contacts</flux:heading>
         @if ($canLink)
-            <livewire:contact-creator @contact-created="$refresh" />
+            <livewire:contact-creator :matter-id="$matterId" @contact-created="contactCreated($event.detail.contactId)" />
         @endif
     </div>
 

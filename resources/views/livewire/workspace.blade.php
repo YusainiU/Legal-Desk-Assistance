@@ -18,7 +18,7 @@
     @elseif ($screen === 'new')
         <div class="flex max-w-xl flex-wrap items-center justify-between gap-3">
             <h1 class="desk-title">New case</h1>
-            <livewire:contact-creator @contact-created="$refresh" />
+            <livewire:contact-creator @contact-created="selectCreatedContact($event.detail.contactId)" />
         </div>
 
         <flux:card class="desk-panel max-w-xl">
@@ -29,7 +29,7 @@
                 @if ($contactOptions->isEmpty())
                     <flux:callout color="amber">
                         <flux:callout.heading>A contact is required</flux:callout.heading>
-                        <flux:callout.text>Use New contact above, then select the contact for this case.</flux:callout.text>
+                        <flux:callout.text>Use New contact above. The contact will be selected for this case after you save it.</flux:callout.text>
                     </flux:callout>
                 @else
                     <flux:select label="Client contact" wire:model="form.contact_id" required>

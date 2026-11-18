@@ -2,7 +2,9 @@
 
 namespace App\Livewire;
 
+use App\Models\Matter;
 use App\Support\ContactDetails;
+use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
 
@@ -10,6 +12,9 @@ class ContactCreator extends Component
 {
     #[Locked]
     public bool $returnToIndex = false;
+
+    #[Locked]
+    public ?int $matterId = null;
 
     public bool $showModal = false;
 
@@ -26,12 +31,26 @@ class ContactCreator extends Component
         $owner = auth()->user();
         abort_unless($owner, 403);
 
-        $owner->contacts()->create(ContactDetails::validate([
+        $details = ContactDetails::validate([
             'name' => $this->name,
             'email' => $this->email,
             'phone' => $this->phone,
             'organisation' => $this->organisation,
-        ], $owner));
+        ], $owner);
+
+        $contact = DB::transaction(function () use ($owner, $details) {
+            $matter = $this->matterId === null ? null : Matter::query()
+                ->where('user_id', $owner->id)
+                ->lockForUpdate()
+                ->findOrFail($this->matterId);
+
+            abort_if($matter && ! $matter->allowsContactLink(), 422);
+
+            $contact = $owner->contacts()->create($details);
+            $matter?->contacts()->attach($contact->id);
+
+            return $contact;
+        }, 3);
 
         $this->reset('name', 'email', 'phone', 'organisation', 'showModal');
         $this->resetValidation();
@@ -43,7 +62,7 @@ class ContactCreator extends Component
             return;
         }
 
-        $this->dispatch('contact-created');
+        $this->dispatch('contact-created', contactId: $contact->id);
     }
 
     public function render()
