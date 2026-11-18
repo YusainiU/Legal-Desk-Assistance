@@ -6,25 +6,25 @@ Follow a fictional matter from the first client interview to file closure. Use f
 
 Open Legal Desk Assistance and sign in with your email and password. If the application runs locally, use the Laravel address printed by `composer run dev`, usually `http://127.0.0.1:8000`. See the [README](../README.md) for local setup and the optional demo account.
 
-Select **Matters** to see each matter’s stage or status, owner, and next due date. Use **Search matters** to find a record, or filter by **Open**, **Closed**, or **Declined**. Select a matter’s title to open it. **Workflow guide** explains what each stage requires.
+Select **Case register** to see each matter’s stage or status, owner, and next due date. Use **Search cases** to find a record, or filter by **Open**, **Closed**, or **Declined**. Select a matter’s title to open it. **Workflow guide** explains what each stage requires.
 
 ## 2. Create a practice matter
 
-Select **New matter**, enter the following example, and select **Create matter**.
+Select **New case**, enter the following example, and select **Create case**.
 
 | Field | Example |
 | --- | --- |
-| Matter title | Cedar Vale supplier dispute |
+| Case title | Cedar Vale supplier dispute |
 | Prospective client | Cedar Vale Studio |
 | Other party | Northbank Supplies |
-| Matter owner | Your name |
+| Case owner | Your name |
 | Practice area | Litigation |
 
 The matter opens at **Interview client**. The current stage shows its checklist. The **Workflow** panel shows the full sequence and lets you review recorded checklists for earlier stages.
 
 ## 3. Record notes, tasks, and updates
 
-While the matter is open, go to **Matter history**, choose an **Entry type**, enter the **Details**, and select **Add entry**.
+While the case is open, go to **Case history** and select **Add entry**. Choose an **Entry type**, enter the **Details**, and select **Save entry**. The timeline shows the newest entries first, with a date and time on each entry.
 
 | Entry type | Example |
 | --- | --- |

@@ -2,7 +2,7 @@
     <div class="space-y-6">
         <div class="flex flex-wrap items-start justify-between gap-4">
             <div>
-                <flux:heading size="xl" level="1">Users</flux:heading>
+                <h1 class="desk-title">Users</h1>
                 <flux:text>Manage accounts and access to Legal Desk.</flux:text>
             </div>
             <flux:button variant="primary" icon="plus" :href="route('users.create')">New user</flux:button>
@@ -12,7 +12,7 @@
             <flux:callout color="green" role="status">{{ session('status') }}</flux:callout>
         @endif
 
-        <flux:card class="space-y-4">
+        <flux:card class="desk-panel space-y-4">
             <flux:table>
                 <flux:table.columns>
                     <flux:table.column>User</flux:table.column>
@@ -27,7 +27,9 @@
                                 <flux:heading>{{ $user->name }}</flux:heading>
                                 <flux:text size="sm">{{ $user->email }}</flux:text>
                             </flux:table.cell>
-                            <flux:table.cell>{{ $user->is_admin ? 'Administrator' : 'Staff' }}</flux:table.cell>
+                            <flux:table.cell>
+                                <flux:badge size="sm" :color="$user->is_admin ? 'teal' : 'zinc'">{{ $user->is_admin ? 'Administrator' : 'Staff' }}</flux:badge>
+                            </flux:table.cell>
                             <flux:table.cell>
                                 <flux:badge size="sm" :color="$user->has_access ? 'green' : 'zinc'">
                                     {{ $user->has_access ? 'Granted' : 'Revoked' }}

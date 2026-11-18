@@ -1,7 +1,7 @@
 <x-layouts.app>
-    <flux:card class="mx-auto max-w-sm space-y-5">
+    <flux:card class="desk-auth-card">
         <div class="space-y-2">
-            <flux:heading size="xl" level="1">Confirm password</flux:heading>
+            <h1 class="desk-title">Confirm password</h1>
             <flux:text>Enter your current password to continue.</flux:text>
         </div>
 

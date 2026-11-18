@@ -1,7 +1,7 @@
 <x-layouts.app>
-    <flux:card class="space-y-6">
+    <flux:card class="desk-auth-card">
         <div class="space-y-2 text-center">
-            <flux:heading size="xl" level="1">Sign in to Legal Desk</flux:heading>
+            <h1 class="desk-title">Sign in to Legal Desk</h1>
             <flux:text>Enter your email and password to access your workspace.</flux:text>
         </div>
 

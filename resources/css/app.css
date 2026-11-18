@@ -3,9 +3,47 @@
 @custom-variant dark (&:where(.dark, .dark *));
 @source "../views";
 
+@theme {
+    --color-accent: var(--color-teal-800);
+    --color-accent-content: var(--color-teal-800);
+    --color-accent-foreground: var(--color-white);
+}
+
+@layer theme {
+    .dark {
+        --color-accent: var(--color-teal-300);
+        --color-accent-content: var(--color-teal-300);
+        --color-accent-foreground: var(--color-zinc-950);
+    }
+}
+
 @layer components {
-    .panel { @apply rounded-xl border border-stone-200 bg-white p-5; }
-    .field { @apply block w-full rounded-lg border border-stone-300 bg-white px-3 py-2; }
-    .btn { @apply inline-block cursor-pointer rounded-lg bg-emerald-900 px-4 py-2 font-semibold text-white hover:bg-emerald-800 disabled:cursor-default disabled:opacity-50; }
-    .link { @apply cursor-pointer font-semibold text-emerald-900 underline underline-offset-4; }
+    [x-cloak] {
+        display: none !important;
+    }
+
+    .desk-title {
+        @apply break-words font-serif text-3xl leading-tight font-medium tracking-tight text-zinc-950 sm:text-4xl dark:text-zinc-50;
+    }
+
+    .desk-panel {
+        @apply rounded-xl border border-zinc-200/80 bg-white shadow-sm shadow-zinc-950/5 dark:border-white/10 dark:bg-zinc-900;
+    }
+
+    .desk-auth-card {
+        @apply mx-auto w-full max-w-md space-y-6 rounded-2xl border border-zinc-200 bg-white shadow-lg shadow-zinc-950/5 sm:p-8 dark:border-white/10 dark:bg-zinc-900;
+    }
+
+    .desk-timeline-item {
+        @apply relative ms-2 border-s border-zinc-200 ps-6 pb-6 last:border-transparent last:pb-0 dark:border-zinc-700 dark:last:border-transparent;
+    }
+
+    .desk-timeline-item::before {
+        content: "";
+        @apply absolute start-0 top-1.5 size-3 -translate-x-1/2 rounded-full border-2 border-white bg-zinc-400 ring-1 ring-zinc-300 rtl:translate-x-1/2 dark:border-zinc-900 dark:bg-zinc-500 dark:ring-zinc-600;
+    }
+
+    .desk-timeline-item:first-child::before {
+        @apply bg-teal-700 ring-teal-600 dark:bg-teal-300 dark:ring-teal-400;
+    }
 }

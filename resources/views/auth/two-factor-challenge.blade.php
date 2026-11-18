@@ -1,7 +1,7 @@
 <x-layouts.app>
-    <flux:card class="mx-auto max-w-sm space-y-5">
+    <flux:card class="desk-auth-card">
         <div class="space-y-2">
-            <flux:heading size="xl" level="1">Two-factor authentication</flux:heading>
+            <h1 class="desk-title">Two-factor authentication</h1>
             <flux:text>Enter a code from your authenticator app or use one of your recovery codes.</flux:text>
         </div>
 

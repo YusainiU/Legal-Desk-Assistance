@@ -1,7 +1,7 @@
 <x-layouts.app>
-    <flux:card class="mx-auto max-w-sm space-y-5">
+    <flux:card class="desk-auth-card">
         <div class="space-y-2">
-            <flux:heading size="xl" level="1">Reset password</flux:heading>
+            <h1 class="desk-title">Reset password</h1>
             <flux:text>Enter the new password for your Legal Desk account.</flux:text>
         </div>
 

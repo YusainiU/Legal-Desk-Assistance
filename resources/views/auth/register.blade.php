@@ -1,7 +1,7 @@
 <x-layouts.app>
-    <flux:card class="mx-auto max-w-sm space-y-5">
+    <flux:card class="desk-auth-card">
         <div class="space-y-2">
-            <flux:heading size="xl" level="1">Create an account</flux:heading>
+            <h1 class="desk-title">Create an account</h1>
             <flux:text>Enter your details to create a Legal Desk account.</flux:text>
         </div>
 

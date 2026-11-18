@@ -1,7 +1,7 @@
 <x-layouts.app>
-    <flux:card class="mx-auto max-w-sm space-y-5">
+    <flux:card class="desk-auth-card">
         <div class="space-y-2">
-            <flux:heading size="xl" level="1">Forgot password</flux:heading>
+            <h1 class="desk-title">Forgot password</h1>
             <flux:text>Enter your email address to request a password reset link.</flux:text>
         </div>
 

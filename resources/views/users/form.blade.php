@@ -6,9 +6,9 @@
 
     <div class="max-w-xl space-y-6">
         <flux:link :href="route('users.index')">Back to users</flux:link>
-        <flux:heading size="xl" level="1">{{ $editing ? 'Edit user' : 'New user' }}</flux:heading>
+        <h1 class="desk-title">{{ $editing ? 'Edit user' : 'New user' }}</h1>
 
-        <flux:card>
+        <flux:card class="desk-panel">
             <form method="post" action="{{ $editing ? route('users.update', $user) : route('users.store') }}" class="space-y-5">
                 @csrf
                 @if ($editing)
