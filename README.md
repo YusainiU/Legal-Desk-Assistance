@@ -1,6 +1,8 @@
-# Matterdesk · Legal Desk Assistance
+# Legal Desk Assistance
 
 An authenticated legal matter workflow prototype built with Laravel 13, Livewire 4, Tailwind CSS 4, and MySQL. The matter register keeps a case history, checklists, tasks, deadlines, client updates, and billing records for each signed-in account.
+
+See the [user tutorial](Docs/User-Tutorial.md) for a walkthrough from sign-in to file closure.
 
 ## Run locally
 
