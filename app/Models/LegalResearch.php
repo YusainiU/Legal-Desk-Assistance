@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class LegalResearch extends Model
 {
+    protected $table = 'legal_research';
+
     protected $fillable = [
         'user_id', 'matter_id', 'question', 'court_filter', 'status',
         'analysis', 'analysis_status',
