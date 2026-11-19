@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Models\CaseDocument;
 use App\Models\Matter;
+use App\Models\Team;
 use App\Support\CaseBilling;
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
@@ -43,6 +44,10 @@ class Workspace extends Component
 
     public bool $descriptionSaved = false;
 
+    public string $caseTeamId = '';
+
+    public bool $showTeamEditor = false;
+
     public string $decision = '';
 
     public string $stageNote = '';
@@ -60,7 +65,7 @@ class Workspace extends Component
     public function show(string $screen): void
     {
         abort_unless(in_array($screen, ['register', 'guide', 'new'], true), 404);
-        $this->reset('selected', 'reviewingStage', 'form', 'caseDescription', 'showDescriptionEditor', 'descriptionSaved', 'decision', 'stageNote', 'stageNoteSaved', 'body', 'document', 'documentStatus');
+        $this->reset('selected', 'reviewingStage', 'form', 'caseTeamId', 'showTeamEditor', 'caseDescription', 'showDescriptionEditor', 'descriptionSaved', 'decision', 'stageNote', 'stageNoteSaved', 'body', 'document', 'documentStatus');
         $this->resetValidation();
         $this->screen = $screen;
     }
@@ -71,6 +76,28 @@ class Workspace extends Component
         $this->show('register');
         $this->selected = $matter->id;
         $this->screen = 'detail';
+    }
+
+    public function editCaseTeam(): void
+    {
+        $matter = $this->matters()->findOrFail($this->selected);
+        abort_unless($matter->status === 'Open', 422);
+
+        $this->caseTeamId = (string) ($matter->team_id ?? '');
+        $this->resetValidation('caseTeamId');
+        $this->showTeamEditor = true;
+    }
+
+    public function saveCaseTeam(): void
+    {
+        $data = $this->validate(['caseTeamId' => 'nullable|integer|min:1']);
+
+        $this->change(function (Matter $matter) use ($data) {
+            $team = Team::assignmentId(auth()->user(), $data['caseTeamId'] ?? null, 'caseTeamId', $matter->team_id);
+            $matter->update(['team_id' => $team]);
+        });
+
+        $this->reset('showTeamEditor', 'caseTeamId');
     }
 
     public function editDescription(): void
@@ -145,6 +172,7 @@ class Workspace extends Component
     {
         $data = $this->validate([
             'form.title' => 'required|string|max:160',
+            'form.team_id' => 'nullable|integer|min:1',
             'form.description' => 'required|string|max:4000',
             'form.contact_id' => ['required', 'integer', Rule::exists('contacts', 'id')->where('user_id', auth()->id())],
             'form.party' => 'nullable|string|max:160',
@@ -155,6 +183,7 @@ class Workspace extends Component
         $matter = DB::transaction(function () use ($data) {
             $contact = auth()->user()->contacts()->findOrFail($data['contact_id']);
             unset($data['contact_id']);
+            $data['team_id'] = Team::assignmentId(auth()->user(), $data['team_id'] ?? null, 'form.team_id');
             $data['description'] = trim($data['description']);
 
             $matter = Matter::create($data + ['user_id' => auth()->id(), 'client' => $contact->name]);
@@ -352,7 +381,7 @@ class Workspace extends Component
 
     public function render()
     {
-        $matter = $this->selected === null ? null : $this->matters()->with(['entries' => fn ($query) => $query->where('kind', '!=', 'Task'), 'documents'])
+        $matter = $this->selected === null ? null : $this->matters()->with(['entries' => fn ($query) => $query->where('kind', '!=', 'Task'), 'documents', 'team'])
             ->withExists('contacts')
             ->findOrFail($this->selected);
         $reviewedStage = $matter && $this->reviewingStage !== null && $matter->hasCompletedStage($this->reviewingStage)
@@ -379,6 +408,9 @@ class Workspace extends Component
             'stages' => config('matterdesk.stages'),
             'practices' => config('matterdesk.practices'),
             'canMove' => $matter && $matter->status === 'Open' && $matter->contacts_exists && $this->canAdvance($matter),
+            'teamOptions' => ($this->screen === 'new' || $this->showTeamEditor)
+                ? Team::assignmentOptions(auth()->user(), $matter?->team_id)
+                : collect(),
             'contactOptions' => $this->screen === 'new' ? auth()->user()->contacts()->orderBy('name')->get() : collect(),
         ]);
     }

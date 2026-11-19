@@ -4,19 +4,26 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Matter extends Model
 {
-    protected $fillable = ['user_id', 'title', 'description', 'client', 'party', 'owner', 'practice', 'stage', 'status', 'checks', 'conflict'];
+    protected $fillable = ['user_id', 'team_id', 'title', 'description', 'client', 'party', 'owner', 'practice', 'stage', 'status', 'checks', 'conflict'];
 
     protected $casts = [
         'checks' => 'array',
+        'team_id' => 'integer',
         'stage' => 'integer',
         'final_charge_minutes' => 'integer',
         'final_charge_minor' => 'integer',
     ];
+
+    public function team(): BelongsTo
+    {
+        return $this->belongsTo(Team::class);
+    }
 
     public function contacts(): BelongsToMany
     {

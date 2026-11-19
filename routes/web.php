@@ -5,6 +5,7 @@ use App\Http\Controllers\CaseSummaryController;
 use App\Http\Controllers\CaseTimeChargeExportController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\FirmSettingsController;
+use App\Http\Controllers\TeamController;
 use App\Http\Controllers\UserController;
 use App\Livewire\KnowledgeBase;
 use App\Livewire\Workspace;
@@ -23,6 +24,10 @@ Route::get('/cases/{matter}/time-charges.csv', [CaseTimeChargeExportController::
 Route::resource('contacts', ContactController::class)
     ->only(['index', 'edit', 'update'])
     ->middleware('auth');
+
+Route::get('/teams', [TeamController::class, 'index'])->middleware('auth')->name('teams.index');
+Route::resource('teams', TeamController::class)->only(['create', 'store', 'edit', 'update'])
+    ->middleware(['auth', 'can:manage-users']);
 
 Route::resource('users', UserController::class)
     ->except('show')

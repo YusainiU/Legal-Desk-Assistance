@@ -40,6 +40,14 @@
                         @endforeach
                     </flux:select>
                 @endif
+                @if ($teamOptions->isNotEmpty())
+                    <flux:select label="Team (optional)" wire:model="form.team_id">
+                        <option value="">No team</option>
+                        @foreach ($teamOptions as $team)
+                            <option value="{{ $team->id }}">{{ $team->name }}</option>
+                        @endforeach
+                    </flux:select>
+                @endif
                 <flux:select label="Practice area" wire:model="form.practice" required>
                     <option value="">Choose a practice area</option>
                     @foreach ($practices as $name => $guidance)<option>{{ $name }}</option>@endforeach
@@ -84,7 +92,33 @@
                     @if ($matter->party)
                         <div><dt class="text-zinc-500 dark:text-zinc-400">Other party</dt><dd class="font-medium">{{ $matter->party }}</dd></div>
                     @endif
+                    <div>
+                        <dt class="text-zinc-500 dark:text-zinc-400">Team</dt>
+                        <dd class="font-medium">{{ $matter->team?->name ?? 'No team assigned' }}</dd>
+                        @if ($active)
+                            <flux:button type="button" size="sm" variant="ghost" wire:click="editCaseTeam">Change team</flux:button>
+                        @endif
+                    </div>
                 </dl>
+                @if ($active)
+                    <flux:modal wire:model.self="showTeamEditor" class="w-full max-w-md">
+                        <form wire:submit="saveCaseTeam" class="space-y-4">
+                            <flux:heading size="lg">Assign a case team</flux:heading>
+                            <flux:select label="Team (optional)" wire:model="caseTeamId">
+                                <option value="">No team</option>
+                                @foreach ($teamOptions as $team)
+                                    <option value="{{ $team->id }}">{{ $team->name }}</option>
+                                @endforeach
+                            </flux:select>
+                            <div class="flex justify-end gap-2">
+                                <flux:modal.close>
+                                    <flux:button type="button" variant="ghost">Cancel</flux:button>
+                                </flux:modal.close>
+                                <flux:button type="submit" variant="primary" wire:loading.attr="disabled" wire:target="saveCaseTeam">Save team</flux:button>
+                            </div>
+                        </form>
+                    </flux:modal>
+                @endif
                 <div class="space-y-1 text-sm">
                     <div class="flex flex-wrap items-center gap-2">
                         <h2 class="text-sm text-zinc-500 dark:text-zinc-400">Case Description</h2>

@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\Matter;
+use App\Models\Team;
 use Closure;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Locked;
@@ -27,6 +28,8 @@ class CaseTasks extends Component
 
     public string $due = '';
 
+    public string $teamId = '';
+
     public ?string $notice = null;
 
     public function mount(int $matterId): void
@@ -40,7 +43,7 @@ class CaseTasks extends Component
         $matter = $this->caseRecord();
         $this->ensureEditable($matter);
 
-        $this->reset('editingTaskId', 'title', 'due');
+        $this->reset('editingTaskId', 'title', 'due', 'teamId');
         $this->assignee = $matter->owner;
         $this->resetValidation();
         $this->showEditor = true;
@@ -56,6 +59,7 @@ class CaseTasks extends Component
         $this->title = $task->body;
         $this->assignee = $task->assignee ?? '';
         $this->due = $task->due_on?->format('Y-m-d') ?? '';
+        $this->teamId = (string) ($task->team_id ?? '');
         $this->resetValidation();
         $this->showEditor = true;
     }
@@ -66,18 +70,21 @@ class CaseTasks extends Component
             'title' => 'required|string|max:4000',
             'assignee' => 'required|string|max:160',
             'due' => 'nullable|date_format:Y-m-d',
+            'teamId' => 'nullable|integer|min:1',
         ]);
         $editing = $this->editingTaskId !== null;
 
         $this->change(function (Matter $matter) use ($data, $editing) {
+            $task = $editing ? $matter->tasks()->findOrFail($this->editingTaskId) : null;
             $attributes = [
+                'team_id' => Team::assignmentId(auth()->user(), $data['teamId'] ?? null, 'teamId', $task?->team_id),
                 'body' => trim($data['title']),
                 'assignee' => trim($data['assignee']),
                 'due_on' => $data['due'] ?: null,
             ];
 
-            if ($editing) {
-                $matter->tasks()->findOrFail($this->editingTaskId)->update($attributes);
+            if ($task) {
+                $task->update($attributes);
 
                 return;
             }
@@ -85,7 +92,7 @@ class CaseTasks extends Component
             $matter->tasks()->create($attributes + ['kind' => 'Task', 'task_stage' => $matter->stage]);
         });
 
-        $this->reset('showEditor', 'editingTaskId', 'title', 'assignee', 'due');
+        $this->reset('showEditor', 'editingTaskId', 'title', 'assignee', 'due', 'teamId');
         $this->taskChanged($editing ? 'Task updated.' : 'Task added to this stage.');
     }
 
@@ -104,9 +111,12 @@ class CaseTasks extends Component
     public function render()
     {
         $matter = $this->caseRecord();
-        $tasks = $matter->tasks()->orderByDesc('task_stage')->orderBy('done')->latest('id')->get();
+        $tasks = $matter->tasks()->with('team')->orderByDesc('task_stage')->orderBy('done')->latest('id')->get();
 
         return view('livewire.case-tasks', [
+            'teamOptions' => $this->showEditor ? Team::assignmentOptions(
+                auth()->user(), $tasks->firstWhere('id', $this->editingTaskId)?->team_id,
+            ) : collect(),
             'taskGroups' => $tasks->groupBy(fn ($task) => $task->task_stage ?? $matter->stage),
             'stages' => config('matterdesk.stages'),
             'active' => $matter->status === 'Open' && $matter->stage === $this->stage,

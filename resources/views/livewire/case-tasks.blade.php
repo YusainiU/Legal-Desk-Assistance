@@ -36,7 +36,7 @@
                                     {{ $task->done ? 'Complete' : 'To do' }}
                                 </flux:badge>
                             </div>
-                            <flux:text size="sm">{{ $task->assignee ?? 'Unassigned' }} · {{ $task->due_on?->format('j M Y') ?? 'No due date' }}</flux:text>
+                            <flux:text size="sm">{{ $task->assignee ?? 'Unassigned' }} · {{ $task->due_on?->format('j M Y') ?? 'No due date' }}@if ($task->team) · {{ $task->team->name }} @endif</flux:text>
                         </div>
                         @if ($active)
                             <div class="flex flex-wrap items-center gap-1">
@@ -82,6 +82,14 @@
                     <flux:input label="Assigned to" wire:model="assignee" required maxlength="160" />
                     <flux:input label="Due date" wire:model="due" type="date" />
                 </div>
+                @if ($teamOptions->isNotEmpty())
+                    <flux:select label="Team (optional)" wire:model="teamId">
+                        <option value="">No team</option>
+                        @foreach ($teamOptions as $team)
+                            <option value="{{ $team->id }}">{{ $team->name }}</option>
+                        @endforeach
+                    </flux:select>
+                @endif
                 <div class="flex flex-wrap justify-end gap-2">
                     <flux:modal.close>
                         <flux:button type="button" variant="ghost">Cancel</flux:button>
