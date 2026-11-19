@@ -43,7 +43,7 @@
             $externalQuery = trim($question);
             $searchTerms = $externalQuery !== '' ? $externalQuery : 'contract termination reasonable notice';
             $officialSearch = 'https://ejudgment.kehakiman.gov.my/ejudgmentweb/SearchPage.aspx?JurisdictionType=ALL';
-            $commonLiiSearch = 'https://www.google.com/search?q='.rawurlencode('site:commonlii.org/my/cases/ '.$searchTerms);
+            $commonLiiSearch = 'https://commonlii.org/cgi-bin/sinosrch.cgi?meta=/commonlii&query='.rawurlencode($searchTerms).'&method=auto&mask_world=:commonlii:my&mask_path=+my';
             $openIndexSearch = 'https://malaysiacaselaw.com/search?q='.urlencode($searchTerms);
         @endphp
         <div class="grid gap-3 sm:grid-cols-3">
