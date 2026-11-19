@@ -33,6 +33,9 @@
                 <flux:sidebar.item icon="book-open" :href="route('knowledge-base')" :current="request()->routeIs('knowledge-base')">
                     Knowledge base
                 </flux:sidebar.item>
+                <flux:sidebar.item icon="scale" :href="route('legal-research')" :current="request()->routeIs('legal-research*')">
+                    Case Law Research
+                </flux:sidebar.item>
                 <flux:sidebar.item icon="user-group" :href="route('teams.index')" :current="request()->routeIs('teams.*')">
                     Teams
                 </flux:sidebar.item>
