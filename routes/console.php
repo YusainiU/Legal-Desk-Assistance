@@ -4,6 +4,7 @@ use App\Models\Matter;
 use App\Models\User;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Validator;
 
 Artisan::command('matterdesk:user {email} {--demo}', function () {
@@ -32,17 +33,36 @@ Artisan::command('matterdesk:user {email} {--demo}', function () {
     return 0;
 });
 
-Artisan::command('legal-desk:grant-admin {email}', function () {
-    $user = User::query()->where('email', $this->argument('email'))->first();
+Artisan::command('legal-desk:setup-super-admin', function () {
+    $password = $this->secret('Set a password for '.User::DEFAULT_SUPER_ADMIN_EMAIL);
+    $confirmation = $this->secret('Confirm password');
 
-    if (! $user) {
-        $this->error('No account found for that email.');
+    $validator = Validator::make([
+        'password' => $password,
+        'password_confirmation' => $confirmation,
+    ], ['password' => 'required|string|min:12|max:72|confirmed']);
+
+    if ($validator->fails() || strlen((string) $password) > 72) {
+        $this->error('Enter matching passwords with at least 12 characters and no more than 72 bytes.');
 
         return 1;
     }
 
-    $user->forceFill(['is_admin' => true, 'has_access' => true])->save();
-    $this->info('Administrator access granted.');
+    DB::transaction(function () use ($password) {
+        $user = User::withTrashed()->where('email', User::DEFAULT_SUPER_ADMIN_EMAIL)->lockForUpdate()->firstOrFail();
+
+        Password::broker()->deleteToken($user);
+        $user->forceFill([
+            'password' => $password,
+            'is_super_admin' => true,
+            'has_access' => true,
+            'deleted_at' => null,
+        ]);
+        $user->setRememberToken(null);
+        $user->save();
+    });
+
+    $this->info('Super Admin access is ready for '.User::DEFAULT_SUPER_ADMIN_EMAIL.'.');
 
     return 0;
-})->purpose('Grant an existing account administrator access');
+})->purpose('Set the password and enable the default Super Admin account');

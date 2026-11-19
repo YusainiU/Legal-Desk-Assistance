@@ -16,7 +16,7 @@
                 @endif
 
                 <flux:input name="name" label="Name" :value="old('name', $user->name)" maxlength="160" required />
-                <flux:input name="email" type="email" label="Email address" :value="old('email', $user->email)" maxlength="255" required />
+                <flux:input name="email" type="email" label="Email address" :value="old('email', $user->email)" maxlength="255" :readonly="$user->is_super_admin" required />
 
                 @if ($editing)
                     <flux:text>Leave both password fields blank to keep the current password.</flux:text>
@@ -28,10 +28,12 @@
                     minlength="12" maxlength="72" autocomplete="new-password" :required="! $editing" />
 
                 @unless ($editingSelf)
-                    <flux:select name="is_admin" label="Role" required>
-                        <option value="0" @selected((string) old('is_admin', (int) $user->is_admin) === '0')>Staff</option>
-                        <option value="1" @selected((string) old('is_admin', (int) $user->is_admin) === '1')>Administrator</option>
-                    </flux:select>
+                    @can('grant-admin')
+                        <flux:select name="is_admin" label="Role" required>
+                            <option value="0" @selected((string) old('is_admin', (int) $user->is_admin) === '0')>Staff</option>
+                            <option value="1" @selected((string) old('is_admin', (int) $user->is_admin) === '1')>Administrator</option>
+                        </flux:select>
+                    @endcan
                     <flux:select name="has_access" label="Workspace access" required>
                         <option value="0" @selected((string) old('has_access', (int) $user->has_access) === '0')>Revoked</option>
                         <option value="1" @selected((string) old('has_access', (int) $user->has_access) === '1')>Granted</option>

@@ -20,6 +20,11 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
      */
     public function update(User $user, array $input): void
     {
+        if ($user->is_super_admin && ($input['email'] ?? null) !== $user->email) {
+            throw ValidationException::withMessages(['email' => 'The Super Admin email is fixed.'])
+                ->errorBag('updateProfileInformation');
+        }
+
         Validator::make($input, [
             'name' => ['required', 'string', 'max:255'],
 

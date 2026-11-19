@@ -19,6 +19,11 @@ class AppServiceProvider extends ServiceProvider
                 ->withQuery(fn (Builder $query) => $query->where('has_access', true));
         });
 
-        Gate::define('manage-users', fn (User $user): bool => $user->has_access && $user->is_admin);
+        Gate::define('manage-users', fn (User $user): bool => $user->has_access && ($user->is_super_admin || $user->is_admin));
+        Gate::define('manage-user', fn (User $actor, User $target): bool => $actor->has_access
+            && ($actor->is_super_admin || $actor->is_admin)
+            && ($actor->is($target) || (! $target->is_super_admin && ($actor->is_super_admin || ! $target->is_admin))));
+        Gate::define('grant-admin', fn (User $user): bool => $user->has_access && $user->is_super_admin);
+        Gate::define('update-firm-settings', fn (User $user): bool => $user->has_access && $user->is_super_admin);
     }
 }

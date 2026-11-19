@@ -31,8 +31,12 @@ class UserController
             $actor = User::query()->lockForUpdate()->findOrFail($request->user()->id);
             Gate::forUser($actor)->authorize('manage-users');
 
+            if ($data['is_admin'] ?? false) {
+                Gate::forUser($actor)->authorize('grant-admin');
+            }
+
             $user = new User(['name' => $data['name'], 'email' => $data['email'], 'password' => $data['password']]);
-            $user->forceFill(['has_access' => $data['has_access'], 'is_admin' => $data['is_admin']])->save();
+            $user->forceFill(['has_access' => $data['has_access'], 'is_admin' => $data['is_admin'] ?? false])->save();
         }, 3);
 
         return to_route('users.index')->with('status', 'User created.');
@@ -40,6 +44,8 @@ class UserController
 
     public function edit(User $user): View
     {
+        Gate::authorize('manage-user', $user);
+
         return view('users.form', compact('user'));
     }
 
@@ -48,8 +54,14 @@ class UserController
         $data = $this->validateUser($request, $user);
 
         DB::transaction(function () use ($request, $user, $data) {
-            $target = $this->lockTarget($request, $user);
-            $self = $target->is($request->user());
+            [$actor, $target] = $this->lockTarget($request, $user);
+            $self = $target->is($actor);
+            abort_if($target->is_super_admin && $data['email'] !== $target->email, 403, 'The Super Admin email is fixed.');
+
+            if (! $self && ($data['is_admin'] ?? false)) {
+                Gate::forUser($actor)->authorize('grant-admin');
+            }
+
             $passwordChanged = filled($data['password'] ?? null);
             $accessRevoked = ! $self && $target->has_access && ! $data['has_access'];
 
@@ -64,7 +76,11 @@ class UserController
             }
 
             if (! $self) {
-                $target->forceFill(['has_access' => $data['has_access'], 'is_admin' => $data['is_admin']]);
+                $target->forceFill(['has_access' => $data['has_access']]);
+
+                if ($actor->is_super_admin && array_key_exists('is_admin', $data)) {
+                    $target->forceFill(['is_admin' => $data['is_admin']]);
+                }
             }
 
             if ($passwordChanged || $accessRevoked) {
@@ -80,8 +96,8 @@ class UserController
     public function destroy(Request $request, User $user): RedirectResponse
     {
         DB::transaction(function () use ($request, $user) {
-            $target = $this->lockTarget($request, $user);
-            abort_if($target->is($request->user()), 403, 'You cannot delete your own account.');
+            [$actor, $target] = $this->lockTarget($request, $user);
+            abort_if($target->is($actor), 403, 'You cannot delete your own account.');
 
             Password::broker()->deleteToken($target);
             $target->setRememberToken(null);
@@ -123,13 +139,13 @@ class UserController
 
         if (! $user || ! $user->is($request->user())) {
             $rules['has_access'] = 'required|boolean';
-            $rules['is_admin'] = 'required|boolean';
+            $rules['is_admin'] = 'sometimes|boolean';
         }
 
         return $request->validate($rules);
     }
 
-    private function lockTarget(Request $request, User $user): User
+    private function lockTarget(Request $request, User $user): array
     {
         $actorId = $request->user()->id;
         $accounts = User::query()->whereKey([$actorId, $user->id])->orderBy('id')->lockForUpdate()->get()->keyBy('id');
@@ -138,6 +154,9 @@ class UserController
         abort_unless($actor, 403);
         Gate::forUser($actor)->authorize('manage-users');
 
-        return $accounts->get($user->id) ?? abort(404);
+        $target = $accounts->get($user->id) ?? abort(404);
+        Gate::forUser($actor)->authorize('manage-user', $target);
+
+        return [$actor, $target];
     }
 }

@@ -28,7 +28,7 @@
                                 <flux:text size="sm">{{ $user->email }}</flux:text>
                             </flux:table.cell>
                             <flux:table.cell>
-                                <flux:badge size="sm" :color="$user->is_admin ? 'teal' : 'zinc'">{{ $user->is_admin ? 'Administrator' : 'Staff' }}</flux:badge>
+                                <flux:badge size="sm" :color="$user->is_super_admin ? 'blue' : ($user->is_admin ? 'teal' : 'zinc')">{{ $user->is_super_admin ? 'Super Admin' : ($user->is_admin ? 'Administrator' : 'Staff') }}</flux:badge>
                             </flux:table.cell>
                             <flux:table.cell>
                                 <flux:badge size="sm" :color="$user->has_access ? 'green' : 'zinc'">
@@ -36,6 +36,7 @@
                                 </flux:badge>
                             </flux:table.cell>
                             <flux:table.cell>
+                                @can('manage-user', $user)
                                 <div class="flex items-center gap-2">
                                     <flux:button size="sm" variant="ghost" :href="route('users.edit', $user)">Edit</flux:button>
                                     @unless ($user->is(auth()->user()))
@@ -61,6 +62,7 @@
                                         </flux:modal>
                                     @endunless
                                 </div>
+                                @endcan
                             </flux:table.cell>
                         </flux:table.row>
                     @endforeach

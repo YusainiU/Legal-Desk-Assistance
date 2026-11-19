@@ -43,13 +43,15 @@ Record minutes and hourly rates by stage under **Time & charges**. Each charge i
 
 ## User administration
 
-After migrating, grant administrator access to an existing account:
+The migration reserves `legaldesk@admin.test` as the default **Super Admin**. If the account is new, set its password and enable sign-in from the server:
 
 ```sh
-php artisan legal-desk:grant-admin demo@example.test
+php artisan legal-desk:setup-super-admin
 ```
 
-Use your actual account email if you did not create the demo account. Sign in and select **Users** in the sidebar. Administrators can create and edit accounts, grant or revoke workspace access, and select the **Staff** or **Administrator** role. Newly created accounts need **Granted** workspace access before they can sign in. The application does not email credentials. Users can use **Forgot password?** when mail is configured.
+This command prompts for a password and confirmation. An existing enabled account at that address keeps its password and gains the Super Admin role on migration. Use the command to reset its password if needed.
+
+Sign in as Super Admin, select **Users**, and set a user’s role to **Administrator** to grant admin access. Administrators can manage staff accounts and view **Firm settings**. Only the Super Admin can grant the Administrator role or change Firm settings. New users need **Granted** workspace access to sign in.
 
 Deleting an account blocks sign-in and removes it from the Users page while retaining its existing case records. Use **Revoked** to suspend an account you may need to reactivate. Cases remain scoped to their owning account. Public self-registration is disabled.
 

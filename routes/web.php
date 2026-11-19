@@ -28,5 +28,5 @@ Route::middleware('auth')->prefix('case-documents')->name('case-documents.')->gr
 
 Route::middleware(['auth', 'can:manage-users'])->group(function () {
     Route::get('/settings/firm', [FirmSettingsController::class, 'edit'])->name('settings.firm.edit');
-    Route::put('/settings/firm', [FirmSettingsController::class, 'update'])->name('settings.firm.update');
+    Route::put('/settings/firm', [FirmSettingsController::class, 'update'])->middleware('can:update-firm-settings')->name('settings.firm.update');
 });

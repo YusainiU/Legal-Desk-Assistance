@@ -4,7 +4,7 @@ Follow a fictional matter from the first client interview to file closure. Use f
 
 ## 1. Sign in and open the matter register
 
-Open the application and sign in with your email and password. Administrators can set the name shown to everyone from **Firm settings** in the sidebar. If the application runs locally, use the Laravel address printed by `composer run dev`, usually `http://127.0.0.1:8000`. See the [README](../README.md) for local setup and the optional demo account.
+Open the application and sign in with your email and password. The Super Admin can set the name shown to everyone from **Firm settings** in the sidebar. Administrators can view the setting. If the application runs locally, use the Laravel address printed by `composer run dev`, usually `http://127.0.0.1:8000`. See the [README](../README.md) for local setup and the optional demo account.
 
 Select **Case register** to see each matter’s stage or status, owner, and next due date. Use **Search cases** to find a record, or filter by **Open**, **Closed**, or **Declined**. Select a matter’s title to open it. **Workflow guide** explains what each stage requires.
 

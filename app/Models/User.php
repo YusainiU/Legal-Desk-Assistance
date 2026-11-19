@@ -12,6 +12,8 @@ class User extends Authenticatable
 {
     use Notifiable, SoftDeletes, TwoFactorAuthenticatable;
 
+    public const DEFAULT_SUPER_ADMIN_EMAIL = 'legaldesk@admin.test';
+
     protected $fillable = ['name', 'email', 'password'];
 
     protected $hidden = ['password', 'remember_token', 'two_factor_secret', 'two_factor_recovery_codes'];
@@ -19,8 +21,10 @@ class User extends Authenticatable
     protected $casts = [
         'password' => 'hashed',
         'is_admin' => 'boolean',
+        'is_super_admin' => 'boolean',
         'has_access' => 'boolean',
     ];
+
     public function contacts(): HasMany
     {
         return $this->hasMany(Contact::class);
