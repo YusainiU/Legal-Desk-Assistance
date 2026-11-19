@@ -55,6 +55,14 @@ Sign in as Super Admin, select **Users**, and set a user’s role to **Administr
 
 Deleting an account blocks sign-in and removes it from the Users page while retaining its existing case records. Use **Revoked** to suspend an account you may need to reactivate. Cases remain scoped to their owning account. Public self-registration is disabled.
 
+## Teams
+
+Administrators can open **Teams → New team**, enter the required name and description, and select members. Use **Edit team** to update the team or change its membership.
+
+Assign an optional team when creating a case or use **Change team** on an open case. The case retains its owner. Tasks have a separate optional team field, so a task can be assigned to a different team from its case.
+
+The **Teams** page lists members, assigned open cases, and incomplete tasks on open cases. Staff see the teams they belong to. Administrators can see all teams. Access to full case records and documents remains scoped to the owning account.
+
 ## Workflow
 
 1. Interview the client and review urgent dates.
@@ -69,4 +77,4 @@ Deleting an account blocks sign-in and removes it from the Users page while reta
 
 Client updates and billing entries can be recorded throughout an open matter. The app records milestones and notes for work handled externally, including signing, issuing invoices, collecting payments, and communicating with clients.
 
-The Laravel application starts with its own database. The existing static demonstration uses browser storage. The Laravel port does not import those records. Access is account-scoped, and assigning a task records an assignee name. Shared teams, delegated access, and live client records are outside this prototype's scope.
+The Laravel application starts with its own database. The existing static demonstration uses browser storage. The Laravel port does not import those records. Case access is account-scoped. Task assignees are recorded by name, and team assignments appear in the Teams page.

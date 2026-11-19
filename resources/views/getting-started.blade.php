@@ -8,6 +8,7 @@
                 <flux:link href="#working-a-stage">Work on a stage</flux:link>
                 <flux:link href="#workflow-stages">Follow the nine stages</flux:link>
                 <flux:link href="#reference-search">Find and reuse references</flux:link>
+                <flux:link href="#using-teams">Use teams</flux:link>
             </nav>
         </header>
 
@@ -85,6 +86,16 @@
                 <li>Open <flux:link :href="route('knowledge-base')">Knowledge base</flux:link> in the sidebar. Search for a title, citation, jurisdiction, or previous reasoning. Use <strong>Reference type</strong> to narrow the results.</li>
                 <li>Select <strong>Copy to case</strong>, pick another open case, and write why the authority applies there. The citation and source carry over, and the new explanation stays with the destination case.</li>
             </ol>
+        </flux:card>
+
+        <flux:card id="using-teams" class="desk-panel space-y-3 scroll-mt-6">
+            <flux:heading size="lg" level="2">5. Assign work to teams</flux:heading>
+            <ol class="list-decimal space-y-2 ps-6 text-sm leading-relaxed">
+                <li>Administrators can go to <strong>Teams → New team</strong>, enter a name and description, and select members. Use <strong>Edit team</strong> to update membership.</li>
+                <li>Choose <strong>Team (optional)</strong> when creating a case, or select <strong>Change team</strong> on an open case. A team can also be set separately when creating or editing a task.</li>
+                <li>Open <flux:link :href="route('teams.index')">Teams</flux:link> to see each team’s members, open cases, and incomplete tasks. Staff see their own teams, and administrators can see all teams.</li>
+            </ol>
+            <flux:text size="sm">The case keeps its owner. Full case details and documents are available to that owner.</flux:text>
         </flux:card>
 
         <flux:card class="desk-panel flex flex-wrap items-center justify-between gap-3">

@@ -97,10 +97,10 @@ Open **Knowledge base** from the sidebar to search references recorded in your c
 
 Open a case and select **Print case summary**. The PDF preview shows the firm name, full case details, completed stages, and all recorded case history. Review the contents before sharing, then select **Print** or **Download PDF**. Attach the downloaded file using your email application.
 
-## Teams and assigned work
+## 11. Teams and assigned work
 
 Administrators can open **Teams → New team**, enter a name and description, and select the team’s members. **Edit team** lets them change those details and memberships.
 
 When creating a case, use **Team (optional)** to assign it alongside the owner. On an existing open case, use **Change team**. In **Tasks**, select a team when creating or editing a task. A task can have a different team from its case.
 
-Open **Teams** to see the members, open cases, and incomplete tasks assigned to each team you belong to. Administrators can see all teams. The team list shows assigned work; the case owner still controls access to full case details and documents.
+Open **Teams** to see the members, open cases, and incomplete tasks assigned to each team you belong to. Administrators can see all teams. The team list shows assigned work. Full case details and documents are available to the case owner.
