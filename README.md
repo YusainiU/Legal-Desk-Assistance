@@ -59,7 +59,7 @@ Deleting an account blocks sign-in and removes it from the Users page while reta
 
 Administrators can open **Teams → New team**, enter the required name and description, and select members. Use **Edit team** to update the team or change its membership.
 
-Assign an optional team when creating a case or use **Change team** on an open case. The case retains its owner. Tasks have a separate optional team field, so a task can be assigned to a different team from its case.
+Assign an optional team when creating a case or select **Assign Team** or the assigned team’s name on an open case. The case retains its owner. Tasks have a separate optional team field, so a task can be assigned to a different team from its case.
 
 The **Teams** page lists members, assigned open cases, and incomplete tasks on open cases. Staff see the teams they belong to. Administrators can see all teams. Access to full case records and documents remains scoped to the owning account.
 

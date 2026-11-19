@@ -87,7 +87,7 @@ Use the matter history to record work performed outside the application, includi
 
 ## 8. Record legal references
 
-Open **References → Add reference** to record a statute, provision, legal or contract clause, precedent, or other authority. Choose a type and title and explain **Why it applies to this case**. Add a citation or section number, jurisdiction or court, and a source URL when available. References stay with the case and can be edited or deleted while the case is open.
+Open **Legal References → Add reference** to record a statute, provision, legal or contract clause, precedent, or other authority. Choose a type and title and explain **Why it applies to this case**. Add a citation or section number, jurisdiction or court, and a source URL when available. References stay with the case and can be edited or deleted while the case is open.
 
 ## 9. Search and reuse references
 
@@ -101,6 +101,6 @@ Open a case and select **Print case summary**. The PDF preview shows the firm na
 
 Administrators can open **Teams → New team**, enter a name and description, and select the team’s members. **Edit team** lets them change those details and memberships.
 
-When creating a case, use **Team (optional)** to assign it alongside the owner. On an existing open case, use **Change team**. In **Tasks**, select a team when creating or editing a task. A task can have a different team from its case.
+When creating a case, use **Team (optional)** to assign it alongside the owner. On an existing open case, select **Assign Team** or the assigned team’s name. In **Tasks**, select a team when creating or editing a task. A task can have a different team from its case.
 
 Open **Teams** to see the members, open cases, and incomplete tasks assigned to each team you belong to. Administrators can see all teams. The team list shows assigned work. Full case details and documents are available to the case owner.

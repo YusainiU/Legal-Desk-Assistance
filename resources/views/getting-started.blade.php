@@ -53,7 +53,7 @@
             @php
                 $stageTips = [
                     'Save the interview summary as a stage note and add tasks for urgent dates.',
-                    'Record the conflict decision and its basis. Use References to capture the authorities or clauses that apply to the case.',
+                    'Record the conflict decision and its basis. Use Legal References to capture the authorities or clauses that apply to the case.',
                     'Enter the decision and reasons. Accept case requires conflict clearance. Decline case ends the workflow.',
                     'Confirm the warrant was executed and the retainer was requested and paid before advancing.',
                     'Follow the practice-area guidance and track work, dates, and charges as you go.',
@@ -82,7 +82,7 @@
         <flux:card id="reference-search" class="desk-panel space-y-3 scroll-mt-6">
             <flux:heading size="lg" level="2">4. Record and reuse legal references</flux:heading>
             <ol class="list-decimal space-y-2 ps-6 text-sm leading-relaxed">
-                <li>In an open case, select <strong>References → Add reference</strong>. Choose the authority type, enter its title, and explain why it applies. Add a citation, court or jurisdiction, and source link if available.</li>
+                <li>In an open case, select <strong>Legal References → Add reference</strong>. Choose the authority type, enter its title, and explain why it applies. Add a citation, court or jurisdiction, and source link if available.</li>
                 <li>Open <flux:link :href="route('knowledge-base')">Knowledge base</flux:link> in the sidebar. Search for a title, citation, jurisdiction, or previous reasoning. Use <strong>Reference type</strong> to narrow the results.</li>
                 <li>Select <strong>Copy to case</strong>, pick another open case, and write why the authority applies there. The citation and source carry over, and the new explanation stays with the destination case.</li>
             </ol>
@@ -92,7 +92,7 @@
             <flux:heading size="lg" level="2">5. Assign work to teams</flux:heading>
             <ol class="list-decimal space-y-2 ps-6 text-sm leading-relaxed">
                 <li>Administrators can go to <strong>Teams → New team</strong>, enter a name and description, and select members. Use <strong>Edit team</strong> to update membership.</li>
-                <li>Choose <strong>Team (optional)</strong> when creating a case, or select <strong>Change team</strong> on an open case. A team can also be set separately when creating or editing a task.</li>
+                <li>Choose <strong>Team (optional)</strong> when creating a case, or select <strong>Assign Team</strong> or the assigned team’s name on an open case. A team can also be set separately when creating or editing a task.</li>
                 <li>Open <flux:link :href="route('teams.index')">Teams</flux:link> to see each team’s members, open cases, and incomplete tasks. Staff see their own teams, and administrators can see all teams.</li>
             </ol>
             <flux:text size="sm">The case keeps its owner. Full case details and documents are available to that owner.</flux:text>

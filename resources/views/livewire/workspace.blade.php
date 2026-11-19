@@ -94,10 +94,16 @@
                     @endif
                     <div>
                         <dt class="text-zinc-500 dark:text-zinc-400">Team</dt>
-                        <dd class="font-medium">{{ $matter->team?->name ?? 'No team assigned' }}</dd>
-                        @if ($active)
-                            <flux:button type="button" size="sm" variant="ghost" wire:click="editCaseTeam">Change team</flux:button>
-                        @endif
+                        <dd class="font-medium">
+                            @if ($active)
+                                <button type="button" class="text-accent-content underline underline-offset-2"
+                                    wire:click="editCaseTeam" aria-haspopup="dialog">
+                                    {{ $matter->team?->name ?? 'Assign Team' }}
+                                </button>
+                            @else
+                                {{ $matter->team?->name ?? 'No team assigned' }}
+                            @endif
+                        </dd>
                     </div>
                 </dl>
                 @if ($active)
@@ -227,7 +233,7 @@
             </section>
 
             <nav class="flex flex-wrap gap-1 border-b border-zinc-200 pb-2 dark:border-zinc-800" aria-label="Case sections">
-                @foreach (['workflow' => 'Workflow', 'contacts' => 'Contacts', 'documents' => 'Documents', 'references' => 'References', 'tasks' => 'Tasks', 'charges' => 'Time & charges', 'history' => 'Case history'] as $panel => $label)
+                @foreach (['workflow' => 'Workflow', 'contacts' => 'Contacts', 'documents' => 'Documents', 'references' => 'Legal References', 'tasks' => 'Tasks', 'charges' => 'Time & charges', 'history' => 'Case history'] as $panel => $label)
                     <button type="button" class="desk-case-tab" aria-controls="case-panel-{{ $panel }}"
                         x-bind:aria-pressed="(casePanel === '{{ $panel }}').toString()" x-on:click="casePanel = '{{ $panel }}'">
                         {{ $label }}
@@ -458,7 +464,7 @@
                 x-show="casePanel === 'charges'" x-cloak tabindex="-1">
                 <livewire:case-time-charges :matter-id="$matter->id" :key="'case-time-charges-'.$matter->id.'-'.$matter->stage.'-'.$matter->status" />
             </section>
-            <section id="case-panel-references" aria-label="References"
+            <section id="case-panel-references" aria-label="Legal References"
                 x-show="casePanel === 'references'" x-cloak tabindex="-1">
                 <livewire:case-references :matter-id="$matter->id" :key="'case-references-'.$matter->id.'-'.$matter->status" />
             </section>
