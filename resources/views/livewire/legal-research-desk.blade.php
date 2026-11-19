@@ -36,6 +36,36 @@
         <flux:text size="sm">Results come only from judgments imported into this application; this is not a live CLJ/MLJ search.</flux:text>
     </flux:card>
 
+    <flux:card class="desk-panel space-y-3">
+        <flux:heading size="lg">Find real Malaysian judgments — public sources</flux:heading>
+        <flux:text size="sm">Search publicly accessible judgment portals. These links open external websites; results are not automatically imported or verified by Legal Desk Assistance.</flux:text>
+        @php
+            $externalQuery = trim($question);
+            $searchTerms = $externalQuery !== '' ? $externalQuery : 'contract termination reasonable notice';
+            $officialSearch = 'https://ejudgment.kehakiman.gov.my/ejudgmentweb/SearchPage.aspx?JurisdictionType=ALL';
+            $commonLiiSearch = 'https://www.google.com/search?q='.rawurlencode('site:commonlii.org/my/cases/ '.$searchTerms);
+            $openIndexSearch = 'https://www.google.com/search?q='.rawurlencode('site:malaysiacaselaw.com '.$searchTerms);
+        @endphp
+        <div class="grid gap-3 sm:grid-cols-3">
+            <div class="rounded-xl border border-zinc-700 p-4 space-y-2">
+                <flux:heading level="3">Malaysian Judiciary</flux:heading>
+                <flux:text size="sm">Official e-Judgment portal. Enter your keywords on the court website.</flux:text>
+                <flux:link :href="$officialSearch" target="_blank" rel="noopener noreferrer">Open official judgment search</flux:link>
+            </div>
+            <div class="rounded-xl border border-zinc-700 p-4 space-y-2">
+                <flux:heading level="3">CommonLII</flux:heading>
+                <flux:text size="sm">Free Malaysian court decisions. Searches the indexed CommonLII pages using your question.</flux:text>
+                <flux:link :href="$commonLiiSearch" target="_blank" rel="noopener noreferrer">Search CommonLII</flux:link>
+            </div>
+            <div class="rounded-xl border border-zinc-700 p-4 space-y-2">
+                <flux:heading level="3">MY Case Law</flux:heading>
+                <flux:text size="sm">Independent free-access judgment index. Searches indexed pages using your question.</flux:text>
+                <flux:link :href="$openIndexSearch" target="_blank" rel="noopener noreferrer">Search MY Case Law</flux:link>
+            </div>
+        </div>
+        <flux:text size="sm">Tip: Enter a few legal keywords above, e.g. <strong>termination contract reasonable notice</strong>. The external links use those words. Public access does not imply permission to bulk copy or redistribute judgments.</flux:text>
+    </flux:card>
+
     @if ($research)
         <flux:card class="desk-panel space-y-4">
             <div class="flex flex-wrap items-start justify-between gap-3">

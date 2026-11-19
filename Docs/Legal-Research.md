@@ -51,3 +51,14 @@ Existing ownership restrictions on case references remain in place.
 MVP does not automatically set it. A citation's existence in the index does not
 verify the proposition or subsequent treatment. Never use AI research in court
 filings without checking the original judgment.
+
+## Public judgment source discovery (first integration stage)
+
+The research desk now links to three public discovery sources:
+- Malaysian Judiciary official e-Judgment portal: https://ejudgment.kehakiman.gov.my/ejudgmentweb/SearchPage.aspx?JurisdictionType=ALL
+- CommonLII Malaysian decisions: external site-restricted web search of `commonlii.org/my/cases/`
+- MY Case Law independent index: external site-restricted web search of `malaysiacaselaw.com`
+
+The latter two links use Google site-restricted search and pass the user's currently entered keywords in the URL. The official court link opens its own search form. They do **not** query external APIs, download PDFs, scrape pages, index results into MySQL, or verify citations. They are a usable discovery starting point, not integrated live search. Public access alone is not a licence to bulk ingest or republish.
+
+Next phase: evaluate source-specific terms and available official APIs/feeds, then add permitted retrieval of judgment metadata and document content with source attribution and human verification.
