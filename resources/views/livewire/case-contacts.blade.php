@@ -1,4 +1,4 @@
-<flux:card class="desk-panel space-y-4" id="case-contacts">
+<flux:card class="desk-panel space-y-4" id="case-contacts" x-data>
     <div class="flex flex-wrap items-center justify-between gap-3">
         <flux:heading size="lg" level="2">Case contacts</flux:heading>
         @if ($canLink)
@@ -11,15 +11,11 @@
     @else
         <ul class="divide-y divide-zinc-200 dark:divide-zinc-800">
             @foreach ($contacts as $contact)
-                <li class="flex flex-wrap items-start justify-between gap-2 py-3" wire:key="case-contact-{{ $contact->id }}">
-                    <div class="min-w-0">
-                        <flux:heading class="break-words">{{ $contact->name }}</flux:heading>
-                        @if ($contact->organisation)<flux:text size="sm">{{ $contact->organisation }}</flux:text>@endif
-                    </div>
-                    <div class="min-w-0 break-words text-sm text-zinc-600 dark:text-zinc-300">
-                        @if ($contact->email)<div>{{ $contact->email }}</div>@endif
-                        @if ($contact->phone)<div>{{ $contact->phone }}</div>@endif
-                    </div>
+                <li class="py-2" wire:key="case-contact-{{ $contact->id }}">
+                    <flux:button type="button" size="sm" variant="ghost" class="-ms-2 text-left"
+                        x-on:click="$dispatch('show-contact-details', { contactId: {{ $contact->id }} })">
+                        {{ $contact->name }}
+                    </flux:button>
                 </li>
             @endforeach
         </ul>
@@ -77,4 +73,5 @@
             @endif
         </div>
     @endif
+    <livewire:contact-address :matter-id="$matterId" />
 </flux:card>

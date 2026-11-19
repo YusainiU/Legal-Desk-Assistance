@@ -26,6 +26,8 @@ The case opens at **Interview client**. The **Current stage** header stays visib
 
 ## 3. Link and email contacts
 
+Select a saved contact’s name in **Contacts** or **Case contacts** to open its details. You can add or update the optional address there. The new-contact form only asks for the contact’s basic details.
+
 In an open case, open **Contacts** to link more contacts from your address book. Select **New contact**, then **Create and link contact** to add a new contact directly to the case. For a contact already in your address book, choose it from the list and select **Link contact**. For an older case without a contact, link one before moving to the next stage.
 
 To send email, select a linked contact under **Email a contact**, enter a subject and message, then select **Send email**. A linked contact needs an email address, and the deployment needs a working delivery mailer. Case history records each attempt and whether the mail provider accepted it. Use a mailbox you control to test sending.

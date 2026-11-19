@@ -1,5 +1,5 @@
 <x-layouts.app>
-    <div class="space-y-6">
+    <div class="space-y-6" x-data>
         <div class="flex flex-wrap items-start justify-between gap-4">
             <h1 class="desk-title">Contacts</h1>
             <livewire:contact-creator :return-to-index="true" />
@@ -20,25 +20,19 @@
             <flux:table>
                 <flux:table.columns>
                     <flux:table.column>Name</flux:table.column>
-                    <flux:table.column>Email</flux:table.column>
-                    <flux:table.column>Phone</flux:table.column>
-                    <flux:table.column>Actions</flux:table.column>
                 </flux:table.columns>
                 <flux:table.rows>
                     @forelse ($contacts as $contact)
                         <flux:table.row :key="$contact->id">
                             <flux:table.cell>
-                                <flux:heading>{{ $contact->name }}</flux:heading>
-                                @if ($contact->organisation)<flux:text size="sm">{{ $contact->organisation }}</flux:text>@endif
-                            </flux:table.cell>
-                            <flux:table.cell>{{ $contact->email ?? '—' }}</flux:table.cell>
-                            <flux:table.cell>{{ $contact->phone ?? '—' }}</flux:table.cell>
-                            <flux:table.cell>
-                                <flux:button size="sm" variant="ghost" :href="route('contacts.edit', $contact)">Edit</flux:button>
+                                <flux:button type="button" size="sm" variant="ghost" class="-ms-2 text-left"
+                                    x-on:click="$dispatch('show-contact-details', { contactId: {{ $contact->id }} })">
+                                    {{ $contact->name }}
+                                </flux:button>
                             </flux:table.cell>
                         </flux:table.row>
                     @empty
-                        <flux:table.row><flux:table.cell colspan="4">No contacts found.</flux:table.cell></flux:table.row>
+                        <flux:table.row><flux:table.cell>No contacts found.</flux:table.cell></flux:table.row>
                     @endforelse
                 </flux:table.rows>
             </flux:table>
@@ -47,5 +41,7 @@
                 <flux:pagination :paginator="$contacts" />
             @endif
         </flux:card>
+
+        <livewire:contact-address />
     </div>
 </x-layouts.app>
