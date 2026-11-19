@@ -3,7 +3,7 @@
         <div class="flex flex-wrap items-start justify-between gap-4">
             <div>
                 <h1 class="desk-title">Users</h1>
-                <flux:text>Manage accounts and access to Legal Desk.</flux:text>
+                <flux:text>Manage accounts and workspace access.</flux:text>
             </div>
             <flux:button variant="primary" icon="plus" :href="route('users.create')">New user</flux:button>
         </div>

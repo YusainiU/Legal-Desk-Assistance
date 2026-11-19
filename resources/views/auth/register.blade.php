@@ -2,7 +2,7 @@
     <flux:card class="desk-auth-card">
         <div class="space-y-2">
             <h1 class="desk-title">Create an account</h1>
-            <flux:text>Enter your details to create a Legal Desk account.</flux:text>
+            <flux:text>Enter your details to create an account.</flux:text>
         </div>
 
         <form method="post" action="{{ route('register') }}" class="space-y-4">

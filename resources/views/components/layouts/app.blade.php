@@ -1,9 +1,14 @@
+@php
+    $brandName = \App\Models\FirmSetting::displayName();
+    $brandInitials = \Illuminate\Support\Str::of($brandName)->explode(' ')
+        ->filter()->take(2)->map(fn ($word) => mb_strtoupper(mb_substr($word, 0, 1)))->implode('');
+@endphp
 <!doctype html>
 <html class="dark" lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Legal Desk</title>
+    <title>{{ $brandName }}</title>
     @vite('resources/css/app.css')
     @livewireStyles
 </head>
@@ -11,9 +16,9 @@
     @auth
         <flux:sidebar sticky collapsible="mobile" class="desk-sidebar border-e">
             <flux:sidebar.header class="pb-5">
-                <a href="{{ route('workspace') }}" class="inline-flex items-center gap-2.5 text-xl font-medium tracking-tight">
-                    <span aria-hidden="true" class="desk-brand-mark">LD</span>
-                    Legal Desk
+                <a href="{{ route('workspace') }}" class="inline-flex items-center gap-2.5 min-w-0 break-words text-xl font-medium tracking-tight">
+                    <span aria-hidden="true" class="desk-brand-mark">{{ $brandInitials }}</span>
+                    <span class="min-w-0 wrap-anywhere">{{ $brandName }}</span>
                 </a>
                 <flux:sidebar.collapse class="lg:hidden" />
             </flux:sidebar.header>
@@ -28,6 +33,9 @@
                 @can('manage-users')
                     <flux:sidebar.item icon="users" :href="route('users.index')" :current="request()->routeIs('users.*')">
                         Users
+                    </flux:sidebar.item>
+                    <flux:sidebar.item icon="cog-6-tooth" :href="route('settings.firm.edit')" :current="request()->routeIs('settings.firm.*')">
+                        Firm settings
                     </flux:sidebar.item>
                 @endcan
             </flux:sidebar.nav>
@@ -48,7 +56,7 @@
 
         <flux:header class="desk-mobile-header border-b lg:hidden">
             <flux:sidebar.toggle icon="bars-2" inset="left" />
-            <a href="{{ route('workspace') }}" class="text-lg font-semibold">Legal Desk</a>
+            <a href="{{ route('workspace') }}" class="text-lg font-semibold">{{ $brandName }}</a>
         </flux:header>
 
         <flux:main>
@@ -58,9 +66,9 @@
         <main class="grid min-h-screen place-items-center px-5 py-12">
             <div class="w-full max-w-md space-y-6">
                 <div class="flex justify-center">
-                    <div class="inline-flex items-center gap-2.5 text-xl font-medium tracking-tight">
-                        <span aria-hidden="true" class="desk-brand-mark">LD</span>
-                        Legal Desk
+                    <div class="inline-flex items-center gap-2.5 min-w-0 break-words text-xl font-medium tracking-tight">
+                        <span aria-hidden="true" class="desk-brand-mark">{{ $brandInitials }}</span>
+                        <span class="min-w-0 wrap-anywhere">{{ $brandName }}</span>
                     </div>
                 </div>
                 {{ $slot }}

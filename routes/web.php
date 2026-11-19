@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\CaseDocumentController;
 use App\Http\Controllers\ContactController;
+use App\Http\Controllers\FirmSettingsController;
 use App\Http\Controllers\UserController;
 use App\Livewire\Workspace;
 use Illuminate\Support\Facades\Route;
@@ -19,4 +20,9 @@ Route::resource('users', UserController::class)
 Route::middleware('auth')->prefix('case-documents')->name('case-documents.')->group(function () {
     Route::get('/{document}/preview', [CaseDocumentController::class, 'preview'])->name('preview');
     Route::get('/{document}/download', [CaseDocumentController::class, 'download'])->name('download');
+});
+
+Route::middleware(['auth', 'can:manage-users'])->group(function () {
+    Route::get('/settings/firm', [FirmSettingsController::class, 'edit'])->name('settings.firm.edit');
+    Route::put('/settings/firm', [FirmSettingsController::class, 'update'])->name('settings.firm.update');
 });

@@ -2,7 +2,7 @@
     <flux:card class="desk-auth-card">
         <div class="space-y-2">
             <h1 class="desk-title">Reset password</h1>
-            <flux:text>Enter the new password for your Legal Desk account.</flux:text>
+            <flux:text>Enter the new password for your account.</flux:text>
         </div>
 
         <form method="post" action="{{ route('password.update') }}" class="space-y-4">
