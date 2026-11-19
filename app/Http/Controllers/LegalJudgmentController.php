@@ -7,7 +7,7 @@ use App\Services\LegalResearch\JudgmentImporter;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
-class LegalJudgmentController extends Controller
+class LegalJudgmentController
 {
     public function store(Request $request, JudgmentImporter $importer)
     {
