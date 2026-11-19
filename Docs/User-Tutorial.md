@@ -26,7 +26,7 @@ The case opens at **Interview client**. The **Current stage** header stays visib
 
 ## 3. Link and email contacts
 
-Select a saved contact’s name in **Contacts** or **Case contacts** to open its details. You can add or update the optional address there. The new-contact form only asks for the contact’s basic details.
+Select a saved contact’s name in **Contacts** or **Case contacts** to open its details. You can add or update the optional address there. The new-contact form only asks for the contact’s basic details. Select the email address to open your default mail app. Under the phone number, choose **Call** to use your default calling app or **WhatsApp** to open a chat. WhatsApp requires the saved number to include an international prefix and country code, such as `+60`.
 
 In an open case, open **Contacts** to link more contacts from your address book. Select **New contact**, then **Create and link contact** to add a new contact directly to the case. For a contact already in your address book, choose it from the list and select **Link contact**. For an older case without a contact, link one before moving to the next stage.
 

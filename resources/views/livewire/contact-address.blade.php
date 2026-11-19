@@ -5,14 +5,41 @@
                 <div class="space-y-2">
                     <flux:heading size="lg">{{ $contact->name }}</flux:heading>
                     <dl class="grid gap-2 text-sm sm:grid-cols-2">
-                        @foreach (['Organisation' => $contact->organisation, 'Email' => $contact->email, 'Phone' => $contact->phone] as $label => $value)
-                            @if (filled($value))
-                                <div class="min-w-0">
-                                    <dt class="text-zinc-500 dark:text-zinc-400">{{ $label }}</dt>
-                                    <dd class="wrap-break-word">{{ $value }}</dd>
-                                </div>
-                            @endif
-                        @endforeach
+                        @if ($contact->organisation)
+                            <div class="min-w-0">
+                                <dt class="text-zinc-500 dark:text-zinc-400">Organisation</dt>
+                                <dd class="wrap-break-word">{{ $contact->organisation }}</dd>
+                            </div>
+                        @endif
+
+                        @if ($contact->email)
+                            <div class="min-w-0">
+                                <dt class="text-zinc-500 dark:text-zinc-400">Email</dt>
+                                <dd class="wrap-break-word">
+                                    <flux:link :href="$contact->emailUrl()">{{ $contact->email }}</flux:link>
+                                </dd>
+                            </div>
+                        @endif
+
+                        @if ($contact->phone)
+                            <div class="space-y-1">
+                                <dt class="text-zinc-500 dark:text-zinc-400">Phone</dt>
+                                <dd class="space-y-1">
+                                    <p class="wrap-break-word">{{ $contact->phone }}</p>
+                                    <div class="flex flex-wrap gap-x-4 gap-y-1">
+                                        @if ($contact->phoneUrl())
+                                            <flux:link :href="$contact->phoneUrl()">Call</flux:link>
+                                        @endif
+                                        @if ($contact->whatsAppUrl())
+                                            <flux:link :href="$contact->whatsAppUrl()" target="_blank" rel="noopener noreferrer">WhatsApp</flux:link>
+                                        @endif
+                                    </div>
+                                    @unless ($contact->whatsAppUrl())
+                                        <flux:text size="sm">Include the country code, such as +60, to use WhatsApp.</flux:text>
+                                    @endunless
+                                </dd>
+                            </div>
+                        @endif
                     </dl>
                     <flux:link :href="route('contacts.edit', $contact)">Edit contact details</flux:link>
                 </div>
