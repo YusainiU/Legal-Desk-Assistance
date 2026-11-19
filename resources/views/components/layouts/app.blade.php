@@ -9,7 +9,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ $brandName }}</title>
-    @vite('resources/css/app.css')
+    @vite(['resources/css/app.css', 'resources/js/case-summary.js'])
     @livewireStyles
 </head>
 <body class="desk-shell min-h-screen font-sans text-zinc-50 antialiased">

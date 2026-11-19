@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\CaseDocumentController;
+use App\Http\Controllers\CaseSummaryController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\FirmSettingsController;
 use App\Http\Controllers\UserController;
@@ -8,6 +9,9 @@ use App\Livewire\Workspace;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', Workspace::class)->middleware('auth')->name('workspace');
+
+Route::get('/cases/{matter}/summary', [CaseSummaryController::class, 'show'])
+    ->whereNumber('matter')->middleware('auth')->name('cases.summary');
 
 Route::resource('contacts', ContactController::class)
     ->only(['index', 'edit', 'update'])

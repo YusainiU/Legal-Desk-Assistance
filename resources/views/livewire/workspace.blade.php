@@ -74,7 +74,10 @@
                         {{ $matter->status }}
                     </flux:badge>
                 </div>
-                <h1 class="desk-title">{{ $matter->title }}</h1>
+                <div class="flex flex-wrap items-start justify-between gap-3">
+                    <h1 class="desk-title">{{ $matter->title }}</h1>
+                    @include('livewire.partials.case-summary')
+                </div>
                 <dl class="flex flex-wrap gap-x-8 gap-y-3 text-sm">
                     <div><dt class="text-zinc-500 dark:text-zinc-400">Client</dt><dd class="font-medium">{{ $matter->client }}</dd></div>
                     <div><dt class="text-zinc-500 dark:text-zinc-400">Case owner</dt><dd class="font-medium">{{ $matter->owner }}</dd></div>

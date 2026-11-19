@@ -82,3 +82,7 @@ Tick each checklist item after completing the work it describes. Select **Advanc
 | **9. Close the file** | Record the closing review and retention decision. Complete the closing checklist and any remaining tasks, then select **Close file**. The matter appears as **Closed** in the register. |
 
 Use the matter history to record work performed outside the application, including signing the warrant, sending client communications, issuing invoices, and receiving payments.
+
+## 8. Print a case summary
+
+Open a case and select **Print case summary**. The PDF preview shows the firm name, full case details, completed stages, and all recorded case history. Review the contents before sharing, then select **Print** or **Download PDF**. Attach the downloaded file using your email application.
