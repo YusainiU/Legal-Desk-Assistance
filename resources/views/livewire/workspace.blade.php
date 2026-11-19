@@ -87,7 +87,43 @@
                         <h2 class="text-sm text-zinc-500 dark:text-zinc-400">Case Description</h2>
                         <flux:button type="button" size="sm" variant="ghost" wire:click="editDescription">Edit description</flux:button>
                     </div>
-                    <p class="wrap-break-word whitespace-pre-wrap font-medium">{{ $matter->description ?? 'No description recorded.' }}</p>
+                    @if ($matter->description)
+                        <div class="min-w-0 space-y-1" wire:key="case-description-{{ $matter->id }}-{{ sha1($matter->description) }}"
+                            x-data="{
+                                expanded: false,
+                                overflows: false,
+                                observer: null,
+                                init() {
+                                    this.observer = new ResizeObserver(() => this.measure());
+                                    this.observer.observe(this.$refs.description);
+                                    this.$nextTick(() => this.measure());
+                                    document.fonts?.ready.then(() => this.measure());
+                                },
+                                measure() {
+                                    const description = this.$refs.description;
+                                    if (!this.expanded && description?.clientWidth) {
+                                        this.overflows = description.scrollWidth > description.clientWidth || description.textContent.includes('\n');
+                                    }
+                                },
+                                toggle() {
+                                    this.expanded = !this.expanded;
+                                    this.$nextTick(() => this.measure());
+                                },
+                                destroy() {
+                                    this.observer?.disconnect();
+                                }
+                            }">
+                            <p id="case-description-text" x-ref="description" class="truncate font-medium"
+                                x-bind:class="{ 'truncate': !expanded, 'wrap-break-word whitespace-pre-wrap': expanded }">{{ $matter->description }}</p>
+                            <button type="button" class="font-medium text-teal-800 underline underline-offset-2 dark:text-teal-300"
+                                x-cloak x-show="overflows || expanded" x-on:click="toggle()"
+                                x-bind:aria-expanded="expanded.toString()" aria-controls="case-description-text">
+                                <span x-text="expanded ? 'Show less' : 'Show more'">Show more</span>
+                            </button>
+                        </div>
+                    @else
+                        <p class="font-medium">No description recorded.</p>
+                    @endif
                     @if ($descriptionSaved)
                         <p role="status" class="text-sm text-teal-800 dark:text-teal-300">Description saved.</p>
                     @endif
