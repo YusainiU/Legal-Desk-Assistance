@@ -1,5 +1,7 @@
 # Legal Desk Assistance user tutorial
 
+In the app, select **Getting started** below your name in the sidebar to open the quick-start tutorial.
+
 Follow a fictional matter from the first client interview to file closure. Use fictional names and details when practising or demonstrating the application.
 
 ## 1. Sign in and open the matter register

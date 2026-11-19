@@ -47,6 +47,11 @@
                     <flux:avatar size="sm" :name="auth()->user()->name" />
                     <flux:heading class="truncate">{{ auth()->user()->name }}</flux:heading>
                 </div>
+                <flux:button :href="route('getting-started')" icon="book-open" class="w-full justify-start"
+                    :variant="request()->routeIs('getting-started') ? 'filled' : 'ghost'"
+                    :aria-current="request()->routeIs('getting-started') ? 'page' : null">
+                    Getting started
+                </flux:button>
                 <form method="post" action="{{ route('logout') }}">
                     @csrf
                     <flux:button type="submit" variant="ghost" icon="arrow-right-start-on-rectangle">Sign out</flux:button>
