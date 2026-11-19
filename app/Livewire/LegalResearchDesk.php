@@ -82,9 +82,13 @@ class LegalResearchDesk extends Component
 
         try {
             $analysis = $service->search(trim($data['question']), $data['court']);
+        } catch (\RuntimeException $error) {
+            report($error);
+            $this->notice = $error->getMessage();
+            return;
         } catch (\Throwable $error) {
             report($error);
-            $this->notice = 'AI web search unavailable. Check OPENAI_API_KEY, API web-search support, billing and Laravel logs.';
+            $this->notice = 'AI web search could not connect or process the response. Check storage/logs/laravel.log for the exception class.';
             return;
         }
 
