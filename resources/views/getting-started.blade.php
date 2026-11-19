@@ -51,7 +51,7 @@
             @php
                 $stageTips = [
                     'Save the interview summary as a stage note and add tasks for urgent dates.',
-                    'Record the reviewer’s decision under Conflict decision and note the basis in Case history.',
+                    'Record the conflict decision and its basis. Use References to capture the authorities or clauses that apply to the case.',
                     'Enter the decision and reasons. Accept case requires conflict clearance. Decline case ends the workflow.',
                     'Confirm the warrant was executed and the retainer was requested and paid before advancing.',
                     'Follow the practice-area guidance and track work, dates, and charges as you go.',

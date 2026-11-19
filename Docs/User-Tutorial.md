@@ -85,6 +85,10 @@ Tick each checklist item after completing the work it describes. Select **Advanc
 
 Use the matter history to record work performed outside the application, including signing the warrant, sending client communications, issuing invoices, and receiving payments.
 
-## 8. Print a case summary
+## 8. Record legal references
+
+Open **References → Add reference** to record a statute, provision, legal or contract clause, precedent, or other authority. Choose a type and title and explain **Why it applies to this case**. Add a citation or section number, jurisdiction or court, and a source URL when available. References stay with the case and can be edited or deleted while the case is open.
+
+## 9. Print a case summary
 
 Open a case and select **Print case summary**. The PDF preview shows the firm name, full case details, completed stages, and all recorded case history. Review the contents before sharing, then select **Print** or **Download PDF**. Attach the downloaded file using your email application.

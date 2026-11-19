@@ -55,6 +55,11 @@ class Matter extends Model
         return $this->hasMany(CaseTimeCharge::class);
     }
 
+    public function references(): HasMany
+    {
+        return $this->hasMany(CaseReference::class);
+    }
+
     public function entries(): HasMany
     {
         return $this->hasMany(MatterEntry::class);
