@@ -12,7 +12,7 @@ Select **Case register** to see each matter’s stage or status, owner, and next
 
 First, open **Contacts** from the sidebar and select **New contact**. In the modal, enter **Cedar Vale Studio** as the name and a fictional phone number or `cedar-vale@example.test` as the email address. Select **Create contact**.
 
-Return to **Workspace**, select **New case**, enter the following example, and select **Create case**. You can also use **New contact** on that screen to create and select a contact without leaving the form.
+Return to **Case Register**, select **New case**, enter the following example, and select **Create case**. You can also use **New contact** on that screen to create and select a contact without leaving the form.
 
 | Field | Example |
 | --- | --- |
