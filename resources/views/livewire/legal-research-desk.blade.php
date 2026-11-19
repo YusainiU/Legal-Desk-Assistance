@@ -81,6 +81,16 @@
                         wire:loading.attr="disabled" wire:target="analyse">Generate AI draft (optional)</flux:button>
                 @endif
             </div>
+            @if ($research->analysis_status === 'web_research_unverified' && filled($research->analysis))
+                <div class="flex flex-wrap items-center gap-3">
+                    <flux:button type="button" variant="primary" wire:click="saveAiToKnowledgeBase"
+                        wire:loading.attr="disabled" wire:target="saveAiToKnowledgeBase"
+                        :disabled="in_array($research->id, $savedResearchIds)">
+                        {{ in_array($research->id, $savedResearchIds) ? 'Saved to Knowledge Base' : 'Save AI result to Knowledge Base' }}
+                    </flux:button>
+                    <flux:text size="sm">Saved as an unverified research note, not a verified court authority.</flux:text>
+                </div>
+            @endif
             @if ($research->analysis)
                 <flux:callout color="amber">Unverified AI research. Confirm every proposition, citation, source and subsequent treatment against the original judgments.</flux:callout>
                 <div class="whitespace-pre-wrap wrap-break-word text-sm">{{ $research->analysis }}</div>

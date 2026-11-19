@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Models\CaseReference;
 use App\Models\Matter;
+use App\Models\SavedLegalResearch;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -77,6 +78,12 @@ class KnowledgeBase extends Component
         $this->notice = 'Reference added to the selected case.';
     }
 
+    public function removeSavedResearch(int $id): void
+    {
+        SavedLegalResearch::where('user_id', auth()->id())->findOrFail($id)->delete();
+        $this->notice = 'Saved AI research removed from your Knowledge Base.';
+    }
+
     public function render()
     {
         $term = Str::limit(trim($this->search), 160, '');
@@ -98,6 +105,12 @@ class KnowledgeBase extends Component
 
         return view('livewire.knowledge-base', [
             'references' => $references,
+            'savedAiResearch' => SavedLegalResearch::where('user_id', auth()->id())
+                ->when(trim($this->search) !== '', fn (Builder $query) => $query
+                    ->where(fn (Builder $match) => $match
+                        ->where('question', 'like', '%'.trim($this->search).'%')
+                        ->orWhere('analysis', 'like', '%'.trim($this->search).'%')))
+                ->latest('id')->limit(30)->get(),
             'types' => CaseReference::TYPES,
             'source' => $source,
             'targets' => $source ? $this->targetCases($source)->orderBy('title')->get(['id', 'title']) : collect(),

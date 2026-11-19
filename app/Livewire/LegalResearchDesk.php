@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Models\LegalCase;
 use App\Models\LegalResearch;
+use App\Models\SavedLegalResearch;
 use App\Models\Matter;
 use App\Services\LegalResearch\CaseSearchService;
 use App\Services\LegalResearch\CitationVerificationService;
@@ -107,6 +108,28 @@ class LegalResearchDesk extends Component
         $this->notice = 'AI web research saved. Check the original judgments and subsequent treatment before citing.';
     }
 
+    public function saveAiToKnowledgeBase(): void
+    {
+        abort_unless($this->researchId !== null, 404);
+
+        $research = LegalResearch::query()->where('user_id', auth()->id())
+            ->findOrFail($this->researchId);
+
+        abort_unless($research->analysis_status === 'web_research_unverified'
+            && filled($research->analysis), 422);
+
+        SavedLegalResearch::query()->firstOrCreate(
+            ['user_id' => auth()->id(), 'legal_research_id' => $research->id],
+            [
+                'question' => $research->question,
+                'analysis' => $research->analysis,
+                'analysis_status' => $research->analysis_status,
+            ]
+        );
+
+        $this->notice = 'AI research saved to your Knowledge Base as an unverified research note.';
+    }
+
     public function openResearch(int $id): void
     {
         $research = LegalResearch::where('user_id', auth()->id())->findOrFail($id);
@@ -188,6 +211,7 @@ class LegalResearchDesk extends Component
 
         return view('livewire.legal-research-desk', [
             'research' => $research,
+            'savedResearchIds' => SavedLegalResearch::where('user_id', auth()->id())->pluck('legal_research_id')->all(),
             'history' => LegalResearch::where('user_id', auth()->id())->latest()->limit(10)->get(),
             'matters' => Matter::where('user_id', auth()->id())
                 ->where('status', 'Open')->orderBy('title')->get(['id', 'title']),
