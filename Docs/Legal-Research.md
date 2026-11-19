@@ -66,3 +66,9 @@ Next phase: evaluate source-specific terms and available official APIs/feeds, th
 ## AI public web research
 
 Set `OPENAI_API_KEY` and run `php artisan config:clear`. Use **AI Search (public web)** to request web-grounded Malaysian legal research through OpenAI Responses API `web_search_preview`. This requires supported API model, billing and outbound internet. Research text and source URLs are saved in the existing `analysis` field, labelled `web_research_unverified`. URL links are displayed as plain text in the analysis output; users can copy them to review original sources. No web content is automatically imported into local judgments. An answer without cited web URLs is rejected. Web results may be incomplete or incorrect and must be verified against original judgments. Do not submit confidential client facts without appropriate authorisation.
+
+## AI Search troubleshooting and compatibility
+
+This implementation follows the Responses API pattern already used by the Case-Management-Application: Laravel `Http::withToken()`, configurable `OPENAI_BASE_URL`, JSON response extraction and provider HTTP error inspection. Unlike that app's ordinary text-generation request, legal web research requires the Responses `web_search` tool (the current documented tool, not legacy `web_search_preview`).
+
+Optional `.env` values: `OPENAI_BASE_URL=https://api.openai.com/v1`, `LEGAL_RESEARCH_WEB_SEARCH_MODEL=gpt-4.1-mini`. Set `OPENAI_API_KEY` and run `php artisan optimize:clear`. The research UI now shows sanitized provider HTTP error status/code/message for 400/401/403/429 etc.; sensitive keys are redacted. Source URLs still require verification against real judgments. API web-search access and account billing may differ from ordinary AI text generation. Check `storage/logs/laravel.log` for unexpected connection errors. No migration required for this fix.
