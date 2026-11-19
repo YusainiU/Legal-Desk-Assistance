@@ -19,6 +19,27 @@
         </flux:select>
     </flux:card>
 
+    @if ($type === '')
+        <section class="space-y-3">
+            <flux:heading size="lg">Saved AI legal research</flux:heading>
+            <flux:text size="sm">Personal AI research notes. These are not verified judgments or precedents; check every cited source before relying on them.</flux:text>
+            @forelse ($savedAiResearch as $saved)
+                <flux:card class="desk-panel space-y-3" wire:key="saved-ai-research-{{ $saved->id }}">
+                    <div class="flex flex-wrap items-center justify-between gap-3">
+                        <flux:heading level="3">{{ $saved->question }}</flux:heading>
+                        <flux:button size="sm" variant="outline" wire:click="removeSavedResearch({{ $saved->id }})"
+                            wire:confirm="Remove this saved research note from your Knowledge Base?">Remove</flux:button>
+                    </div>
+                    <flux:badge color="amber">AI-generated · unverified</flux:badge>
+                    <div class="whitespace-pre-wrap wrap-break-word text-sm">{{ $saved->analysis }}</div>
+                </flux:card>
+            @empty
+                <flux:text size="sm">No saved AI research notes match your search.</flux:text>
+            @endforelse
+        </section>
+    @endif
+
+    <flux:heading size="lg">Case references</flux:heading>
     <ul class="space-y-3">
         @forelse ($references as $reference)
             <li wire:key="knowledge-reference-{{ $reference->id }}">
