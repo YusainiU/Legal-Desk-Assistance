@@ -19,8 +19,11 @@ Return to **Case Register**, select **New case**, enter the following example, a
 | Case title | Cedar Vale supplier dispute |
 | Client contact | Cedar Vale Studio |
 | Other party | Northbank Supplies |
+| Case Description | The client wants advice about late deliveries under its supply agreement. |
 | Case owner | Your name |
 | Practice area | Litigation |
+
+**Case Description** is required for new cases. After creating a case, select **Edit description** below its client and owner details to update it at any time.
 
 The case opens at **Interview client**. The **Current stage** header stays visible as you switch between case sections. Under **Workflow**, use the current checklist and look for **Next stage** next to the advance button. Select **Previous stage**, or expand **All workflow stages** and select **View stage**, to review a completed step. Completed checklists, stage notes, and tasks are read-only. On an open case, select **Reinstate stage** and confirm to make that step current again. Later stages become upcoming and their recorded information stays on file.
 

@@ -37,6 +37,12 @@ class Workspace extends Component
 
     public array $form = [];
 
+    public string $caseDescription = '';
+
+    public bool $showDescriptionEditor = false;
+
+    public bool $descriptionSaved = false;
+
     public string $decision = '';
 
     public string $stageNote = '';
@@ -54,7 +60,7 @@ class Workspace extends Component
     public function show(string $screen): void
     {
         abort_unless(in_array($screen, ['register', 'guide', 'new'], true), 404);
-        $this->reset('selected', 'reviewingStage', 'form', 'decision', 'stageNote', 'stageNoteSaved', 'body', 'document', 'documentStatus');
+        $this->reset('selected', 'reviewingStage', 'form', 'caseDescription', 'showDescriptionEditor', 'descriptionSaved', 'decision', 'stageNote', 'stageNoteSaved', 'body', 'document', 'documentStatus');
         $this->resetValidation();
         $this->screen = $screen;
     }
@@ -65,6 +71,25 @@ class Workspace extends Component
         $this->show('register');
         $this->selected = $matter->id;
         $this->screen = 'detail';
+    }
+
+    public function editDescription(): void
+    {
+        $matter = $this->matters()->findOrFail($this->selected);
+        $this->caseDescription = $matter->description ?? '';
+        $this->descriptionSaved = false;
+        $this->resetValidation('caseDescription');
+        $this->showDescriptionEditor = true;
+    }
+
+    public function saveDescription(): void
+    {
+        $matter = $this->matters()->findOrFail($this->selected);
+        $data = $this->validate(['caseDescription' => 'required|string|max:4000']);
+
+        $matter->update(['description' => trim($data['caseDescription'])]);
+        $this->reset('showDescriptionEditor', 'caseDescription');
+        $this->descriptionSaved = true;
     }
 
     public function viewCompletedStage(int $stage): void
@@ -120,6 +145,7 @@ class Workspace extends Component
     {
         $data = $this->validate([
             'form.title' => 'required|string|max:160',
+            'form.description' => 'required|string|max:4000',
             'form.contact_id' => ['required', 'integer', Rule::exists('contacts', 'id')->where('user_id', auth()->id())],
             'form.party' => 'nullable|string|max:160',
             'form.owner' => 'required|string|max:160',
@@ -129,6 +155,7 @@ class Workspace extends Component
         $matter = DB::transaction(function () use ($data) {
             $contact = auth()->user()->contacts()->findOrFail($data['contact_id']);
             unset($data['contact_id']);
+            $data['description'] = trim($data['description']);
 
             $matter = Matter::create($data + ['user_id' => auth()->id(), 'client' => $contact->name]);
             $matter->contacts()->attach($contact->id);

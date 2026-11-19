@@ -26,6 +26,7 @@
                 @foreach (['title' => 'Case title', 'party' => 'Other party', 'owner' => 'Case owner'] as $key => $label)
                     <flux:input :label="$label" :wire:model="'form.'.$key" maxlength="160" :required="$key !== 'party'" />
                 @endforeach
+                <flux:textarea label="Case Description" wire:model="form.description" rows="4" maxlength="4000" required />
                 @if ($contactOptions->isEmpty())
                     <flux:callout color="amber">
                         <flux:callout.heading>A contact is required</flux:callout.heading>
@@ -81,6 +82,29 @@
                         <div><dt class="text-zinc-500 dark:text-zinc-400">Other party</dt><dd class="font-medium">{{ $matter->party }}</dd></div>
                     @endif
                 </dl>
+                <div class="space-y-1 text-sm">
+                    <div class="flex flex-wrap items-center gap-2">
+                        <h2 class="text-sm text-zinc-500 dark:text-zinc-400">Case Description</h2>
+                        <flux:button type="button" size="sm" variant="ghost" wire:click="editDescription">Edit description</flux:button>
+                    </div>
+                    <p class="wrap-break-word whitespace-pre-wrap font-medium">{{ $matter->description ?? 'No description recorded.' }}</p>
+                    @if ($descriptionSaved)
+                        <p role="status" class="text-sm text-teal-800 dark:text-teal-300">Description saved.</p>
+                    @endif
+                </div>
+                <flux:modal wire:model.self="showDescriptionEditor" class="w-full max-w-xl">
+                    <form wire:submit="saveDescription" class="space-y-4">
+                        <flux:heading size="lg">Edit case description</flux:heading>
+                        <flux:textarea label="Case Description" wire:model="caseDescription" rows="5" maxlength="4000" required />
+                        <div class="flex flex-wrap justify-end gap-2">
+                            <flux:modal.close>
+                                <flux:button type="button" variant="ghost">Cancel</flux:button>
+                            </flux:modal.close>
+                            <flux:button type="submit" variant="primary" wire:loading.attr="disabled"
+                                wire:target="saveDescription">Save description</flux:button>
+                        </div>
+                    </form>
+                </flux:modal>
             </header>
 
             <section class="desk-panel space-y-4 border-s-4 border-s-teal-700 p-5 dark:border-s-teal-400" aria-labelledby="case-progress-title">
