@@ -6,16 +6,25 @@
 
 @theme {
     --font-sans: "Inter Variable", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    --color-accent: var(--color-teal-800);
-    --color-accent-content: var(--color-teal-800);
-    --color-accent-foreground: var(--color-white);
+    --color-zinc-50: #f1f5f9;
+    --color-zinc-100: #e2e8f0;
+    --color-zinc-200: #c5d2e5;
+    --color-zinc-300: #b2bfd3;
+    --color-zinc-400: #9aa9bd;
+    --color-zinc-500: #8797b1;
+    --color-zinc-600: #637692;
+    --color-zinc-700: #384861;
+    --color-zinc-800: #202e46;
+    --color-zinc-900: #141e31;
+    --color-zinc-950: #0b1120;
+    --color-accent: #8ba7ff;
+    --color-accent-content: #a6bcff;
+    --color-accent-foreground: #0b1120;
 }
 
-@layer theme {
-    .dark {
-        --color-accent: var(--color-teal-300);
-        --color-accent-content: var(--color-teal-300);
-        --color-accent-foreground: var(--color-zinc-950);
+@layer base {
+    html.dark {
+        color-scheme: dark;
     }
 }
 
@@ -24,24 +33,76 @@
         display: none !important;
     }
 
-    .desk-title {
-        @apply break-words font-sans text-3xl leading-tight font-medium tracking-tight text-zinc-950 sm:text-4xl dark:text-zinc-50;
+    .desk-shell {
+        --desk-border: rgb(148 163 184 / 0.20);
+        --desk-surface: rgb(20 30 49 / 0.88);
+        background:
+            radial-gradient(ellipse at 15% 0%, rgb(59 100 210 / 0.18), transparent 42%),
+            radial-gradient(ellipse at 95% 70%, rgb(20 184 166 / 0.10), transparent 36%),
+            #0b1120;
     }
 
-    .desk-panel {
-        @apply rounded-xl border border-zinc-200/80 bg-white shadow-sm shadow-zinc-950/5 dark:border-white/10 dark:bg-zinc-900;
+    .desk-content {
+        @apply mx-auto w-full max-w-[1080px] py-2 sm:py-5;
+    }
+
+    .desk-sidebar,
+    .desk-mobile-header {
+        background: #0f182a;
+        border-color: var(--desk-border);
+    }
+
+    .desk-brand-mark {
+        @apply grid size-10 shrink-0 place-items-center rounded-xl text-xs font-bold tracking-wide text-white;
+        background: linear-gradient(135deg, #527cff 0%, #7d68e8 100%);
+        box-shadow: 0 8px 24px rgb(82 124 255 / 0.25);
+    }
+
+    .desk-title {
+        @apply wrap-break-word font-sans text-3xl leading-tight font-bold tracking-tight text-zinc-50 sm:text-4xl;
+    }
+
+    @media (forced-colors: none) {
+        .desk-title {
+            color: #a6bcff;
+            background: linear-gradient(100deg, #a6bcff 5%, #85e2d1 95%);
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+    }
+
+    .desk-panel,
+    .desk-auth-card {
+        position: relative;
+        background: var(--desk-surface);
+        border: 1px solid var(--desk-border);
+        border-radius: 1.375rem;
+        box-shadow: 0 20px 60px rgb(0 0 0 / 0.12);
+    }
+
+    .desk-panel::before,
+    .desk-auth-card::before {
+        content: "";
+        position: absolute;
+        inset: 0 1.75rem auto;
+        height: 2px;
+        background: linear-gradient(90deg, #8ba7ff, transparent);
+        pointer-events: none;
     }
 
     .desk-auth-card {
-        @apply mx-auto w-full max-w-md space-y-6 rounded-2xl border border-zinc-200 bg-white shadow-lg shadow-zinc-950/5 sm:p-8 dark:border-white/10 dark:bg-zinc-900;
+        @apply mx-auto w-full max-w-md space-y-6 sm:p-8;
     }
 
     .desk-case-tab {
-        @apply rounded-lg px-3 py-2 text-sm font-medium text-zinc-600 transition-colors hover:bg-zinc-200/70 hover:text-zinc-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 dark:text-zinc-300 dark:hover:bg-zinc-800 dark:hover:text-white dark:focus-visible:outline-teal-300;
+        @apply rounded-lg px-3 py-2 text-sm font-medium text-zinc-300 transition-colors hover:bg-zinc-800 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2;
+        outline-color: var(--color-accent);
     }
 
     .desk-case-tab[aria-pressed="true"] {
-        @apply bg-teal-100 font-semibold text-teal-950 hover:bg-teal-100 hover:text-teal-950 dark:bg-teal-900/60 dark:text-teal-100 dark:hover:bg-teal-900/60 dark:hover:text-teal-100;
+        color: var(--color-accent-content);
+        background: rgb(139 167 255 / 0.15);
+        font-weight: 650;
     }
 
     .desk-timeline-item {
@@ -54,6 +115,7 @@
     }
 
     .desk-timeline-item:first-child::before {
-        @apply bg-teal-700 ring-teal-600 dark:bg-teal-300 dark:ring-teal-400;
+        background: #63dfba;
+        --tw-ring-color: #63dfba;
     }
 }

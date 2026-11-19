@@ -1,19 +1,18 @@
 <!doctype html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html class="dark" lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Legal Desk</title>
     @vite('resources/css/app.css')
     @livewireStyles
-    @fluxAppearance
 </head>
-<body class="min-h-screen bg-zinc-100/75 font-sans text-zinc-900 antialiased dark:bg-zinc-950 dark:text-zinc-100">
+<body class="desk-shell min-h-screen font-sans text-zinc-50 antialiased">
     @auth
-        <flux:sidebar sticky collapsible="mobile" class="border-e border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
+        <flux:sidebar sticky collapsible="mobile" class="desk-sidebar border-e">
             <flux:sidebar.header class="pb-5">
                 <a href="{{ route('workspace') }}" class="inline-flex items-center gap-2.5 text-xl font-medium tracking-tight">
-                    <span aria-hidden="true" class="grid size-9 place-items-center rounded-lg bg-teal-900 text-xs font-semibold tracking-wide text-white">LD</span>
+                    <span aria-hidden="true" class="desk-brand-mark">LD</span>
                     Legal Desk
                 </a>
                 <flux:sidebar.collapse class="lg:hidden" />
@@ -47,20 +46,20 @@
             </div>
         </flux:sidebar>
 
-        <flux:header class="border-b border-zinc-200 bg-white lg:hidden dark:border-zinc-800 dark:bg-zinc-900">
+        <flux:header class="desk-mobile-header border-b lg:hidden">
             <flux:sidebar.toggle icon="bars-2" inset="left" />
-            <a href="{{ route('workspace') }}" class="font-serif text-lg font-medium">Legal Desk</a>
+            <a href="{{ route('workspace') }}" class="text-lg font-semibold">Legal Desk</a>
         </flux:header>
 
         <flux:main>
-            <div class="mx-auto max-w-7xl">{{ $slot }}</div>
+            <div class="desk-content">{{ $slot }}</div>
         </flux:main>
     @else
-        <main class="grid min-h-screen place-items-center border-t-4 border-teal-800 px-5 py-12 dark:border-teal-400">
+        <main class="grid min-h-screen place-items-center px-5 py-12">
             <div class="w-full max-w-md space-y-6">
                 <div class="flex justify-center">
                     <div class="inline-flex items-center gap-2.5 text-xl font-medium tracking-tight">
-                        <span aria-hidden="true" class="grid size-9 place-items-center rounded-lg bg-teal-900 text-xs font-semibold tracking-wide text-white">LD</span>
+                        <span aria-hidden="true" class="desk-brand-mark">LD</span>
                         Legal Desk
                     </div>
                 </div>
