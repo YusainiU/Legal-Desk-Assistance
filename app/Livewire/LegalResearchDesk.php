@@ -8,6 +8,7 @@ use App\Models\Matter;
 use App\Services\LegalResearch\CaseSearchService;
 use App\Services\LegalResearch\CitationVerificationService;
 use App\Services\LegalResearch\LegalAnalysisService;
+use App\Services\LegalResearch\PublicJudgmentAiSearchService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
@@ -66,6 +67,40 @@ class LegalResearchDesk extends Component
             ? 'No matching indexed judgments. Import licensed or authorised judgments before researching.'
             : 'Search complete. Check original judgments and later treatment before relying on results.';
         $this->verification = [];
+    }
+
+    public function runAiSearch(PublicJudgmentAiSearchService $service): void
+    {
+        $data = $this->validate([
+            'question' => 'required|string|min:5|max:2000',
+            'court' => ['required', Rule::in(['all', 'Federal Court', 'Court of Appeal', 'High Court'])],
+            'matterId' => 'nullable|integer',
+        ]);
+
+        $matter = filled($data['matterId'] ?? null)
+            ? Matter::where('user_id', auth()->id())->findOrFail($data['matterId']) : null;
+
+        try {
+            $analysis = $service->search(trim($data['question']), $data['court']);
+        } catch (\Throwable $error) {
+            report($error);
+            $this->notice = 'AI web search unavailable. Check OPENAI_API_KEY, API web-search support, billing and Laravel logs.';
+            return;
+        }
+
+        $research = LegalResearch::create([
+            'user_id' => auth()->id(),
+            'matter_id' => $matter?->id,
+            'question' => trim($data['question']),
+            'court_filter' => $data['court'],
+            'status' => 'completed',
+            'analysis' => $analysis,
+            'analysis_status' => 'web_research_unverified',
+        ]);
+
+        $this->researchId = $research->id;
+        $this->verification = [];
+        $this->notice = 'AI web research saved. Check the original judgments and subsequent treatment before citing.';
     }
 
     public function openResearch(int $id): void

@@ -30,10 +30,12 @@
                 </flux:select>
             </div>
             <flux:button type="submit" variant="primary" icon="magnifying-glass" wire:loading.attr="disabled" wire:target="runSearch">
-                Search judgments
+                Search imported judgments
             </flux:button>
+            <flux:button type="button" variant="primary" wire:click="runAiSearch" wire:loading.attr="disabled" wire:target="runAiSearch">AI Search (public web)</flux:button>
+            <flux:text size="sm" wire:loading wire:target="runAiSearch">Searching public web sources; this may take up to two minutes.</flux:text>
         </form>
-        <flux:text size="sm">Results come only from judgments imported into this application; this is not a live CLJ/MLJ search.</flux:text>
+        <flux:text size="sm">AI Search uses your OpenAI API key to research public web sources. Imported judgment search uses only your database; neither includes paid CLJ/MLJ access.</flux:text>
     </flux:card>
 
     <flux:card class="desk-panel space-y-3">
@@ -80,7 +82,7 @@
                 @endif
             </div>
             @if ($research->analysis)
-                <flux:callout color="amber">Unverified AI draft. Confirm every proposition and subsequent treatment against the original judgments.</flux:callout>
+                <flux:callout color="amber">Unverified AI research. Confirm every proposition, citation, source and subsequent treatment against the original judgments.</flux:callout>
                 <div class="whitespace-pre-wrap wrap-break-word text-sm">{{ $research->analysis }}</div>
             @endif
             <ul class="space-y-4">
@@ -108,7 +110,9 @@
                         </li>
                     @endif
                 @empty
-                    <li><flux:text>No matching indexed passages. An administrator can import authorised judgment text below.</flux:text></li>
+                    @if ($research->analysis_status !== 'web_research_unverified')
+                        <li><flux:text>No matching indexed passages. An administrator can import authorised judgment text below.</flux:text></li>
+                    @endif
                 @endforelse
             </ul>
         </flux:card>

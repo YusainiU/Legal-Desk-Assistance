@@ -62,3 +62,7 @@ The research desk now links to three public discovery sources:
 CommonLII uses its native SinoSearch endpoint with Malaysian jurisdiction filters; MY Case Law uses its native `/search?q=` endpoint. Both pass the user's currently entered keywords in the URL. The official court link opens its own search form. They do **not** query external APIs, download PDFs, scrape pages, index results into MySQL, or verify citations. They are a usable discovery starting point, not integrated live search. Public access alone is not a licence to bulk ingest or republish.
 
 Next phase: evaluate source-specific terms and available official APIs/feeds, then add permitted retrieval of judgment metadata and document content with source attribution and human verification.
+
+## AI public web research
+
+Set `OPENAI_API_KEY` and run `php artisan config:clear`. Use **AI Search (public web)** to request web-grounded Malaysian legal research through OpenAI Responses API `web_search_preview`. This requires supported API model, billing and outbound internet. Research text and source URLs are saved in the existing `analysis` field, labelled `web_research_unverified`. URL links are displayed as plain text in the analysis output; users can copy them to review original sources. No web content is automatically imported into local judgments. An answer without cited web URLs is rejected. Web results may be incomplete or incorrect and must be verified against original judgments. Do not submit confidential client facts without appropriate authorisation.
