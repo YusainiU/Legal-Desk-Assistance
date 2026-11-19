@@ -56,7 +56,7 @@ return new class extends Migration
             $table->unique(['citing_case_id', 'cited_case_id', 'treatment'], 'legal_treatment_unique');
         });
 
-        Schema::create('legal_researches', function (Blueprint $table) {
+        Schema::create('legal_research', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->foreignId('matter_id')->nullable()->constrained('matters')->nullOnDelete();
@@ -71,7 +71,7 @@ return new class extends Migration
 
         Schema::create('legal_research_authorities', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('legal_research_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('legal_research_id')->constrained('legal_research')->cascadeOnDelete();
             $table->foreignId('legal_case_id')->constrained()->cascadeOnDelete();
             $table->foreignId('legal_case_passage_id')->nullable()->constrained()->nullOnDelete();
             $table->unsignedInteger('rank')->default(0);
@@ -83,6 +83,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('legal_research_authorities');
+        Schema::dropIfExists('legal_research');
         Schema::dropIfExists('legal_researches');
         Schema::dropIfExists('legal_case_treatments');
         Schema::dropIfExists('legal_case_passages');
