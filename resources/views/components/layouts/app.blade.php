@@ -30,6 +30,9 @@
                 <flux:sidebar.item icon="users" :href="route('contacts.index')" :current="request()->routeIs('contacts.*')">
                     Contacts
                 </flux:sidebar.item>
+                <flux:sidebar.item icon="book-open" :href="route('knowledge-base')" :current="request()->routeIs('knowledge-base')">
+                    Knowledge base
+                </flux:sidebar.item>
                 @can('manage-users')
                     <flux:sidebar.item icon="users" :href="route('users.index')" :current="request()->routeIs('users.*')">
                         Users

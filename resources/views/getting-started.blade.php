@@ -7,6 +7,7 @@
                 <flux:link href="#create-case">Create a case</flux:link>
                 <flux:link href="#working-a-stage">Work on a stage</flux:link>
                 <flux:link href="#workflow-stages">Follow the nine stages</flux:link>
+                <flux:link href="#reference-search">Find and reuse references</flux:link>
             </nav>
         </header>
 
@@ -75,6 +76,15 @@
             </ol>
 
             <flux:text size="sm">To review an earlier step, select <strong>Previous stage</strong> or use <strong>All workflow stages → View stage</strong>. In an open case, <strong>Reinstate stage</strong> makes a completed step current again.</flux:text>
+        </flux:card>
+
+        <flux:card id="reference-search" class="desk-panel space-y-3 scroll-mt-6">
+            <flux:heading size="lg" level="2">4. Record and reuse legal references</flux:heading>
+            <ol class="list-decimal space-y-2 ps-6 text-sm leading-relaxed">
+                <li>In an open case, select <strong>References → Add reference</strong>. Choose the authority type, enter its title, and explain why it applies. Add a citation, court or jurisdiction, and source link if available.</li>
+                <li>Open <flux:link :href="route('knowledge-base')">Knowledge base</flux:link> in the sidebar. Search for a title, citation, jurisdiction, or previous reasoning. Use <strong>Reference type</strong> to narrow the results.</li>
+                <li>Select <strong>Copy to case</strong>, pick another open case, and write why the authority applies there. The citation and source carry over, and the new explanation stays with the destination case.</li>
+            </ol>
         </flux:card>
 
         <flux:card class="desk-panel flex flex-wrap items-center justify-between gap-3">

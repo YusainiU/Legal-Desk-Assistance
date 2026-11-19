@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class CaseReference extends Model
 {
@@ -17,4 +18,8 @@ class CaseReference extends Model
     ];
 
     protected $fillable = ['type', 'title', 'citation', 'jurisdiction', 'source_url', 'applicability'];
+    public function matter(): BelongsTo
+    {
+        return $this->belongsTo(Matter::class);
+    }
 }

@@ -89,6 +89,10 @@ Use the matter history to record work performed outside the application, includi
 
 Open **References → Add reference** to record a statute, provision, legal or contract clause, precedent, or other authority. Choose a type and title and explain **Why it applies to this case**. Add a citation or section number, jurisdiction or court, and a source URL when available. References stay with the case and can be edited or deleted while the case is open.
 
-## 9. Print a case summary
+## 9. Search and reuse references
+
+Open **Knowledge base** from the sidebar to search references recorded in your cases. Search by title, citation, jurisdiction, or reasoning and filter by reference type. Use **Copy to case** to carry the citation details into another open case, then write a new explanation of why the reference applies there.
+
+## 10. Print a case summary
 
 Open a case and select **Print case summary**. The PDF preview shows the firm name, full case details, completed stages, and all recorded case history. Review the contents before sharing, then select **Print** or **Download PDF**. Attach the downloaded file using your email application.
