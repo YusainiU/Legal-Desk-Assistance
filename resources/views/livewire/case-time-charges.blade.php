@@ -1,10 +1,15 @@
 <flux:card class="desk-panel space-y-5">
     <div class="flex flex-wrap items-start justify-between gap-3">
         <flux:heading size="lg" level="2">Time &amp; charges</flux:heading>
-        @if ($active)
-            <flux:button type="button" variant="primary" icon="plus" wire:click="newCharge"
-                wire:loading.attr="disabled" wire:target="newCharge,editCharge">Log time</flux:button>
-        @endif
+        <div class="flex flex-wrap items-center gap-2">
+            <flux:button variant="outline" icon="arrow-down-tray" :href="route('cases.time-charges.csv', $matterId)">
+                Download CSV
+            </flux:button>
+            @if ($active)
+                <flux:button type="button" variant="primary" icon="plus" wire:click="newCharge"
+                    wire:loading.attr="disabled" wire:target="newCharge,editCharge">Log time</flux:button>
+            @endif
+        </div>
     </div>
 
     @if ($notice)

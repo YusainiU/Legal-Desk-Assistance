@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\CaseDocumentController;
 use App\Http\Controllers\CaseSummaryController;
+use App\Http\Controllers\CaseTimeChargeExportController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\FirmSettingsController;
 use App\Http\Controllers\UserController;
@@ -15,6 +16,9 @@ Route::get('/knowledge-base', KnowledgeBase::class)->middleware('auth')->name('k
 
 Route::get('/cases/{matter}/summary', [CaseSummaryController::class, 'show'])
     ->whereNumber('matter')->middleware('auth')->name('cases.summary');
+
+Route::get('/cases/{matter}/time-charges.csv', [CaseTimeChargeExportController::class, 'show'])
+    ->whereNumber('matter')->middleware('auth')->name('cases.time-charges.csv');
 
 Route::resource('contacts', ContactController::class)
     ->only(['index', 'edit', 'update'])

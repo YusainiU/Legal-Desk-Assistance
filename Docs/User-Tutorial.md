@@ -61,7 +61,7 @@ Use **Preview** to open a PDF, image, or plain-text file in a new tab. Use **Dow
 
 ## 6. Log time and review charges
 
-Open **Time & charges → Log time**. Select the stage, describe the work, and enter the time in minutes and the hourly rate. The first entry sets the case currency. The charge is calculated from the minutes and rate, and the panel shows a subtotal for each stage. You can edit or delete entries while the case is open.
+Open **Time & charges → Log time**. Select the stage, describe the work, and enter the time in minutes and the hourly rate. The first entry sets the case currency. The charge is calculated from the minutes and rate, and the panel shows a subtotal for each stage. You can edit or delete entries while the case is open. Select **Download CSV** in **Time & charges** to export all entries with their total minutes and charges.
 
 At **Conclude & issue final invoice**, use **Review time charges** to see the total to carry into your invoice. When you select **Close file**, Legal Desk saves the final time and charge total in **Case history** and makes the entries read-only. Use your usual invoicing process for discounts, taxes, payments, and issuing the invoice.
 
