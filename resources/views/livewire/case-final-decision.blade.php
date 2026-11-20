@@ -6,7 +6,7 @@
     @endif
     @if ($matter->status === 'Open')
         <form wire:submit="saveDecision" class="space-y-3">
-            <flux:textarea label="Final decision" wire:model="finalDecision" rows="10" maxlength="20000" required />
+            <flux:textarea label="Final decision" wire:model="finalDecision" rows="10" maxlength="8000" required />
             <flux:button type="submit" variant="primary" wire:loading.attr="disabled" wire:target="saveDecision">
                 {{ filled($matter->final_decision) ? 'Update decision' : 'Save decision' }}
             </flux:button>

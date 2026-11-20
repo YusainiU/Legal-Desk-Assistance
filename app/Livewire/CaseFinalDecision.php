@@ -24,7 +24,7 @@ class CaseFinalDecision extends Component
 
     public function saveDecision(): void
     {
-        $data = $this->validate(['finalDecision' => 'required|string|max:20000']);
+        $data = $this->validate(['finalDecision' => 'required|string|max:8000']);
         DB::transaction(function () use ($data) {
             $matter = $this->matter(lock: true);
             abort_unless($matter->status === 'Open', 422);
