@@ -2,8 +2,8 @@
 
 namespace Simplydigital\LegalDeskLawResources\Livewire;
 
-use App\Models\CaseReference;
-use App\Models\Matter;
+
+
 use Simplydigital\LegalDeskLawResources\Models\SavedLegalResearch;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
@@ -92,7 +92,7 @@ class KnowledgeBase extends Component
             : null;
 
         $references = $this->references()->with('matter:id,title')
-            ->when(array_key_exists($this->type, CaseReference::TYPES), fn (Builder $query) => $query->where('type', $this->type))
+            ->when(array_key_exists($this->type, config('legal-desk-law-resources.reference_types')), fn (Builder $query) => $query->where('type', $this->type))
             ->when($term !== '', function (Builder $query) use ($term) {
                 $pattern = '%'.$term.'%';
                 $query->where(fn (Builder $match) => $match
@@ -111,7 +111,7 @@ class KnowledgeBase extends Component
                         ->where('question', 'like', '%'.trim($this->search).'%')
                         ->orWhere('analysis', 'like', '%'.trim($this->search).'%')))
                 ->latest('id')->limit(30)->get(),
-            'types' => CaseReference::TYPES,
+            'types' => config('legal-desk-law-resources.reference_types'),
             'source' => $source,
             'targets' => $source ? $this->targetCases($source)->orderBy('title')->get(['id', 'title']) : collect(),
         ]);
@@ -121,12 +121,12 @@ class KnowledgeBase extends Component
     {
         abort_unless(auth()->check(), 403);
 
-        return CaseReference::query()->whereHas('matter', fn (Builder $query) => $query->where('user_id', auth()->id()));
+        return config('legal-desk-law-resources.reference_model')::query()->whereHas('matter', fn (Builder $query) => $query->where('user_id', auth()->id()));
     }
 
-    private function targetCases(CaseReference $source): Builder
+    private function targetCases(\Illuminate\Database\Eloquent\Model $source): Builder
     {
-        return Matter::query()->where('user_id', auth()->id())
+        return config('legal-desk-law-resources.matter_model')::query()->where('user_id', auth()->id())
             ->where('status', 'Open')
             ->where('id', '!=', $source->matter_id);
     }
