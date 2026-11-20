@@ -34,7 +34,7 @@
                     <flux:sidebar.item icon="book-open" :href="route('knowledge-base')" :current="request()->routeIs('knowledge-base')">
                         Build Resources
                     </flux:sidebar.item>
-                    <flux:sidebar.item icon="library" :href="route('library')" :current="request()->routeIs('library')">
+                    <flux:sidebar.item icon="book-open" :href="route('library')" :current="request()->routeIs('library')">
                         Library
                     </flux:sidebar.item>
                     <flux:sidebar.item icon="magnifying-glass" :href="route('legal-research', ['mode' => 'internal'])" :current="request()->routeIs('legal-research*')">
