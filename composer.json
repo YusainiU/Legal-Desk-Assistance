@@ -10,7 +10,9 @@
     "laravel/fortify": "^1.43",
     "livewire/flux": "^2.21",
     "laravel/tinker": "^3.2",
-    "simplydigital/legal-desk-law-resources": "@dev"
+    "simplydigital/legal-desk-law-resources": "@dev",
+    "simply-digital/laravel-rich-editor": "dev-main",
+    "ezyang/htmlpurifier": "^4.18"
   },
   "autoload": {
     "psr-4": {
@@ -34,6 +36,10 @@
       "options": {
         "symlink": true
       }
+    },
+    {
+      "type": "vcs",
+      "url": "https://github.com/YusainiU/Rich-HTML-Editor"
     }
   ],
   "require-dev": {
