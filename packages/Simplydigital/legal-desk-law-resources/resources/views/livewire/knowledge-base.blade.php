@@ -27,10 +27,6 @@
                 aria-selected="{{ $activeTab === 'ai' ? 'true' : 'false' }}"
                 wire:click="setActiveTab('ai')"
                 class="{{ $activeTab === 'ai' ? 'border-b-2 border-blue-400 font-semibold text-zinc-100' : 'text-zinc-400 hover:text-zinc-100' }} px-1 py-3 text-sm">AI Research</button>
-            <button type="button" role="tab" id="library-tab-internal" aria-controls="library-panel-internal"
-                aria-selected="{{ $activeTab === 'internal' ? 'true' : 'false' }}"
-                wire:click="setActiveTab('internal')"
-                class="{{ $activeTab === 'internal' ? 'border-b-2 border-blue-400 font-semibold text-zinc-100' : 'text-zinc-400 hover:text-zinc-100' }} px-1 py-3 text-sm">Internal Research</button>
             <button type="button" role="tab" id="library-tab-judgments" aria-controls="library-panel-judgments"
                 aria-selected="{{ $activeTab === 'judgments' ? 'true' : 'false' }}"
                 wire:click="setActiveTab('judgments')"
@@ -71,52 +67,6 @@
             @else
                 <flux:text size="sm">Select All types to view saved AI research.</flux:text>
             @endif
-        </div>
-        @endif
-        @if ($activeTab === 'internal')
-        <div id="library-panel-internal" role="tabpanel" aria-labelledby="library-tab-internal">
-        <section class="space-y-2">
-            <flux:heading size="lg">Internal research</flux:heading>
-            <flux:text size="sm">Select a research question to review its saved results here.</flux:text>
-            <ul class="divide-y divide-zinc-700">
-                @forelse ($internalResearchHistory as $item)
-                    <li class="py-3" wire:key="internal-research-{{ $item->id }}" x-data="{ expanded: false }">
-                        <button type="button" class="flex w-full items-center justify-between gap-3 text-left"
-                            x-on:click="expanded = !expanded" x-bind:aria-expanded="expanded.toString()">
-                            <span class="min-w-0">
-                                <span class="block font-medium wrap-break-word">{{ $item->question }}</span>
-                                <span class="text-xs text-zinc-400">{{ $item->created_at->format('d M Y') }}</span>
-                            </span>
-                            <span class="shrink-0 text-sm font-medium" x-text="expanded ? 'Less' : 'More'">More</span>
-                        </button>
-                        <div x-show="expanded" x-cloak class="mt-3 space-y-3 text-sm">
-                            <flux:text size="sm">{{ $item->authorities->count() }} indexed passages</flux:text>
-                            @if (filled($item->analysis))
-                                <flux:callout color="amber">AI-generated analysis is unverified. Check the original judgments.</flux:callout>
-                                <div class="legal-markdown">{!! \Illuminate\Support\Str::markdown($item->analysis, ['html_input' => 'strip', 'allow_unsafe_links' => false]) !!}</div>
-                            @endif
-                            @forelse ($item->authorities as $authority)
-                                @if ($authority->legalCase && $authority->passage)
-                                    <div class="space-y-2 border-l-2 border-zinc-600 pl-3">
-                                        <div class="font-medium">{{ $authority->legalCase->title }}</div>
-                                        <flux:text size="sm">{{ $authority->legalCase->court }} · {{ $authority->legalCase->citation ?? 'Unreported' }}</flux:text>
-                                        <p class="whitespace-pre-wrap wrap-break-word">{{ $authority->passage->content }}</p>
-                                        <flux:link :href="route('legal-research.cases.show', $authority->legalCase)">Inspect indexed judgment</flux:link>
-                                        @if ($authority->legalCase->source_url)
-                                            <flux:link :href="$authority->legalCase->source_url" target="_blank" rel="noopener noreferrer">Original source</flux:link>
-                                        @endif
-                                    </div>
-                                @endif
-                            @empty
-                                <flux:text size="sm">No indexed passages matched this research question.</flux:text>
-                            @endforelse
-                        </div>
-                    </li>
-                @empty
-                    <li class="py-3"><flux:text size="sm">{{ $search !== '' ? 'No internal research matches your search.' : 'No internal research searches yet.' }}</flux:text></li>
-                @endforelse
-            </ul>
-        </section>
         </div>
         @endif
         @if ($activeTab === 'judgments')

@@ -40,7 +40,7 @@ class KnowledgeBase extends Component
 
     public function setActiveTab(string $tab): void
     {
-        abort_unless(in_array($tab, ['ai', 'internal', 'judgments', 'references'], true), 422);
+        abort_unless(in_array($tab, ['ai', 'judgments', 'references'], true), 422);
         $this->activeTab = $tab;
         $this->resetPage();
     }
