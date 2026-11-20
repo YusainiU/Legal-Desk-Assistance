@@ -11,16 +11,18 @@
     <flux:card class="desk-panel grid gap-3 sm:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
         <flux:input type="search" icon="magnifying-glass" label="Search library"
             wire:model.live.debounce.300ms="search" maxlength="160" placeholder="Search research questions, analysis, citations or references" />
+        @if ($activeTab === 'references')
         <flux:select label="Reference type" wire:model.live="type">
             <option value="">All types</option>
             @foreach ($types as $value => $label)
                 <option value="{{ $value }}">{{ $label }}</option>
             @endforeach
         </flux:select>
+        @endif
     </flux:card>
 
     <div class="space-y-4">
-        <div role="tablist" aria-label="Library research categories" class="flex gap-5 border-b border-zinc-700">
+        <div role="tablist" aria-label="Library research categories" class="flex flex-wrap gap-x-5 gap-y-1 border-b border-zinc-700">
             <button type="button" role="tab" id="library-tab-ai" aria-controls="library-panel-ai"
                 aria-selected="{{ $activeTab === 'ai' ? 'true' : 'false' }}"
                 wire:click="setActiveTab('ai')"
@@ -33,6 +35,10 @@
                 aria-selected="{{ $activeTab === 'judgments' ? 'true' : 'false' }}"
                 wire:click="setActiveTab('judgments')"
                 class="{{ $activeTab === 'judgments' ? 'border-b-2 border-blue-400 font-semibold text-zinc-100' : 'text-zinc-400 hover:text-zinc-100' }} px-1 py-3 text-sm">Case Judgements</button>
+            <button type="button" role="tab" id="library-tab-references" aria-controls="library-panel-references"
+                aria-selected="{{ $activeTab === 'references' ? 'true' : 'false' }}"
+                wire:click="setActiveTab('references')"
+                class="{{ $activeTab === 'references' ? 'border-b-2 border-blue-400 font-semibold text-zinc-100' : 'text-zinc-400 hover:text-zinc-100' }} px-1 py-3 text-sm">Case References</button>
         </div>
         @if ($activeTab === 'ai')
         <div id="library-panel-ai" role="tabpanel" aria-labelledby="library-tab-ai">
@@ -137,46 +143,49 @@
                 </section>
             </div>
         @endif
-    </div>
-
-    <flux:heading size="lg">Case references</flux:heading>
-    <ul class="divide-y divide-zinc-700">
-        @forelse ($references as $reference)
-            <li class="py-3" wire:key="knowledge-reference-{{ $reference->id }}">
-                <div class="space-y-3">
-                    <div class="flex flex-wrap items-start justify-between gap-3">
-                        <div class="min-w-0 space-y-1">
-                            <flux:badge size="sm" color="blue">{{ $types[$reference->type] ?? 'Other authority' }}</flux:badge>
-                            <flux:heading level="2" class="wrap-break-word">{{ $reference->title }}</flux:heading>
-                            @if ($reference->citation || $reference->jurisdiction)
-                                <flux:text size="sm">{{ implode(' · ', array_filter([$reference->citation, $reference->jurisdiction])) }}</flux:text>
+        @if ($activeTab === 'references')
+        <div id="library-panel-references" role="tabpanel" aria-labelledby="library-tab-references" class="space-y-3">
+            <flux:heading size="lg">Case references</flux:heading>
+            <ul class="divide-y divide-zinc-700">
+                @forelse ($references as $reference)
+                    <li class="py-3" wire:key="knowledge-reference-{{ $reference->id }}">
+                        <div class="space-y-3">
+                            <div class="flex flex-wrap items-start justify-between gap-3">
+                                <div class="min-w-0 space-y-1">
+                                    <flux:badge size="sm" color="blue">{{ $types[$reference->type] ?? 'Other authority' }}</flux:badge>
+                                    <flux:heading level="2" class="wrap-break-word">{{ $reference->title }}</flux:heading>
+                                    @if ($reference->citation || $reference->jurisdiction)
+                                        <flux:text size="sm">{{ implode(' · ', array_filter([$reference->citation, $reference->jurisdiction])) }}</flux:text>
+                                    @endif
+                                    <flux:text size="sm">Source case · {{ $reference->matter->title }}</flux:text>
+                                </div>
+                                <flux:button type="button" size="sm" variant="outline"
+                                    wire:click="startCopy({{ $reference->id }})" wire:loading.attr="disabled" wire:target="startCopy">
+                                    Copy to case
+                                </flux:button>
+                            </div>
+                            <details class="text-sm">
+                                <summary class="cursor-pointer font-medium">Why it applied in the source case</summary>
+                                <p class="mt-2 wrap-break-word whitespace-pre-wrap leading-relaxed">{{ $reference->applicability }}</p>
+                            </details>
+                            @if ($reference->source_url)
+                                <flux:link :href="$reference->source_url" target="_blank" rel="noopener noreferrer">Open source</flux:link>
                             @endif
-                            <flux:text size="sm">Source case · {{ $reference->matter->title }}</flux:text>
                         </div>
-                        <flux:button type="button" size="sm" variant="outline"
-                            wire:click="startCopy({{ $reference->id }})" wire:loading.attr="disabled" wire:target="startCopy">
-                            Copy to case
-                        </flux:button>
-                    </div>
-                    <details class="text-sm">
-                        <summary class="cursor-pointer font-medium">Why it applied in the source case</summary>
-                        <p class="mt-2 wrap-break-word whitespace-pre-wrap leading-relaxed">{{ $reference->applicability }}</p>
-                    </details>
-                    @if ($reference->source_url)
-                        <flux:link :href="$reference->source_url" target="_blank" rel="noopener noreferrer">Open source</flux:link>
-                    @endif
-                </div>
-            </li>
-        @empty
-            <li class="rounded-lg border border-dashed border-zinc-700 px-4 py-5">
-                <flux:text>{{ $search !== '' || $type !== '' ? 'No references match your search.' : 'Add a reference to one of your cases to start your knowledge base.' }}</flux:text>
-            </li>
-        @endforelse
-    </ul>
-
-    @if ($references->hasPages())
-        <flux:pagination :paginator="$references" />
-    @endif
+                    </li>
+                @empty
+                    <li class="rounded-lg border border-dashed border-zinc-700 px-4 py-5">
+                        <flux:text>{{ $search !== '' || $type !== '' ? 'No references match your search.' : 'Add a reference to one of your cases to start your knowledge base.' }}</flux:text>
+                    </li>
+                @endforelse
+            </ul>
+        
+            @if ($references->hasPages())
+                <flux:pagination :paginator="$references" />
+            @endif
+        </div>
+        @endif
+    </div>
 
     @include('legal-desk-law-resources::livewire.partials.judgment-modal')
 
