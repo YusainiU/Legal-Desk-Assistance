@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "22dbef1b6f81d6029961ebadf9a3d9e7",
+    "content-hash": "34f67350e04b2cd6e8820260df542c5d",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -673,6 +673,68 @@
             ],
             "time": "2025-03-06T22:45:56+00:00",
             "published-time": "2025-03-20T21:39:03+00:00"
+        },
+        {
+            "name": "ezyang/htmlpurifier",
+            "version": "v4.19.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/ezyang/htmlpurifier.git",
+                "reference": "5e0539132d934f936fbae2c88b55d58f9438623f"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/ezyang/htmlpurifier/zipball/5e0539132d934f936fbae2c88b55d58f9438623f",
+                "reference": "5e0539132d934f936fbae2c88b55d58f9438623f",
+                "shasum": ""
+            },
+            "require": {
+                "php": "~5.6.0 || ~7.0.0 || ~7.1.0 || ~7.2.0 || ~7.3.0 || ~7.4.0 || ~8.0.0 || ~8.1.0 || ~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0"
+            },
+            "require-dev": {
+                "cerdic/css-tidy": "^1.7 || ^2.0",
+                "simpletest/simpletest": "dev-master"
+            },
+            "suggest": {
+                "cerdic/css-tidy": "If you want to use the filter 'Filter.ExtractStyleBlocks'.",
+                "ext-bcmath": "Used for unit conversion and imagecrash protection",
+                "ext-iconv": "Converts text to and from non-UTF-8 encodings",
+                "ext-tidy": "Used for pretty-printing HTML"
+            },
+            "type": "library",
+            "autoload": {
+                "files": [
+                    "library/HTMLPurifier.composer.php"
+                ],
+                "psr-0": {
+                    "HTMLPurifier": "library/"
+                },
+                "exclude-from-classmap": [
+                    "/library/HTMLPurifier/Language/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "LGPL-2.1-or-later"
+            ],
+            "authors": [
+                {
+                    "name": "Edward Z. Yang",
+                    "email": "admin@htmlpurifier.org",
+                    "homepage": "http://ezyang.com"
+                }
+            ],
+            "description": "Standards compliant HTML filter written in PHP",
+            "homepage": "http://htmlpurifier.org/",
+            "keywords": [
+                "html"
+            ],
+            "support": {
+                "issues": "https://github.com/ezyang/htmlpurifier/issues",
+                "source": "https://github.com/ezyang/htmlpurifier/tree/v4.19.1"
+            },
+            "time": "2026-09-15T15:42:51+00:00",
+            "published-time": "2026-09-15T15:42:56+00:00"
         },
         {
             "name": "fruitcake/php-cors",
@@ -4119,8 +4181,134 @@
             "published-time": "2026-11-14T23:35:39+00:00"
         },
         {
+            "name": "simply-digital/laravel-rich-editor",
+            "version": "dev-main",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/YusainiU/Rich-HTML-Editor.git",
+                "reference": "fab1e1c6c9992eb625ddfbc83354ee950a576d35"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/YusainiU/Rich-HTML-Editor/zipball/fab1e1c6c9992eb625ddfbc83354ee950a576d35",
+                "reference": "fab1e1c6c9992eb625ddfbc83354ee950a576d35",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/support": "^12.0||^13.0",
+                "livewire/livewire": "^4.4",
+                "php": "^8.3"
+            },
+            "require-dev": {
+                "larastan/larastan": "^3.9",
+                "laravel/pao": "^1.0",
+                "laravel/pint": "^1.29",
+                "orchestra/testbench": "^10.0||^11.0",
+                "pestphp/pest": "^4.6||^5.0",
+                "pestphp/pest-plugin-laravel": "^4.1||^5.0",
+                "pestphp/pest-plugin-type-coverage": "^4.0||^5.0",
+                "phpstan/extension-installer": "^1.4"
+            },
+            "default-branch": true,
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "LaravelRichEditor\\LaravelRichEditor\\LaravelRichEditorServiceProvider"
+                    ],
+                    "aliases": {
+                        "LaravelRichEditor": "LaravelRichEditor\\LaravelRichEditor\\Facades\\LaravelRichEditor"
+                    }
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "LaravelRichEditor\\LaravelRichEditor\\": "src/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "LaravelRichEditor\\LaravelRichEditor\\Tests\\": "tests/",
+                    "Workbench\\App\\": "workbench/app/",
+                    "Workbench\\Database\\Factories\\": "workbench/database/factories/",
+                    "Workbench\\Database\\Seeders\\": "workbench/database/seeders/"
+                }
+            },
+            "scripts": {
+                "post-autoload-dump": [
+                    "@clear",
+                    "@prepare"
+                ],
+                "prepare": [
+                    "@php vendor/bin/testbench package:discover --ansi"
+                ],
+                "build": [
+                    "@php vendor/bin/testbench workbench:build --ansi"
+                ],
+                "serve": [
+                    "Composer\\Config::disableProcessTimeout",
+                    "@build",
+                    "@php vendor/bin/testbench serve --ansi"
+                ],
+                "lint": [
+                    "vendor/bin/pint --parallel"
+                ],
+                "lint:check": [
+                    "vendor/bin/pint --parallel --test"
+                ],
+                "analyse": [
+                    "vendor/bin/phpstan analyse"
+                ],
+                "test:types": [
+                    "vendor/bin/pest --type-coverage --min=100"
+                ],
+                "test:unit": [
+                    "vendor/bin/pest --parallel"
+                ],
+                "test": [
+                    "@analyse",
+                    "@lint:check",
+                    "@test:types",
+                    "@test:unit"
+                ],
+                "clear": [
+                    "@php vendor/bin/testbench package:purge-skeleton --ansi"
+                ]
+            },
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Yusaini Usulludin",
+                    "email": "yusaini.usulludin@gmail.com",
+                    "role": "Developer"
+                }
+            ],
+            "description": "A lightweight rich-text HTML editor for Laravel and Livewire with image uploads",
+            "homepage": "https://github.com/YusainiU/Rich-HTML-Editor",
+            "keywords": [
+                "html-editor",
+                "laravel",
+                "livewire",
+                "rich-text-editor",
+                "wysiwyg"
+            ],
+            "support": {
+                "source": "https://github.com/YusainiU/Rich-HTML-Editor/tree/main",
+                "issues": "https://github.com/YusainiU/Rich-HTML-Editor/issues"
+            },
+            "funding": [
+                {
+                    "type": "github",
+                    "url": "https://github.com/simply-digital"
+                }
+            ],
+            "time": "2026-11-20T17:07:18+00:00"
+        },
+        {
             "name": "simplydigital/legal-desk-law-resources",
-            "version": "dev-feature/extract-law-resources-package",
+            "version": "dev-main",
             "dist": {
                 "type": "path",
                 "url": "packages/Simplydigital/legal-desk-law-resources",
@@ -9732,6 +9920,7 @@
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
+        "simply-digital/laravel-rich-editor": 20,
         "simplydigital/legal-desk-law-resources": 20
     },
     "prefer-stable": false,
