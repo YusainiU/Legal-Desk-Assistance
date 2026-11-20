@@ -30,14 +30,14 @@
                 <flux:sidebar.item icon="users" :href="route('contacts.index')" :current="request()->routeIs('contacts.*')">
                     Contacts
                 </flux:sidebar.item>
-                <flux:sidebar.group heading="Knowledge Base" expandable :expanded="request()->routeIs('knowledge-base', 'legal-research*')">
+                <flux:sidebar.group heading="Knowledge Base" expandable :expanded="request()->routeIs('knowledge-base', 'legal-research*', 'ai-resource-search')">
                     <flux:sidebar.item icon="book-open" :href="route('knowledge-base')" :current="request()->routeIs('knowledge-base')">
                         Build Resources
                     </flux:sidebar.item>
-                    <flux:sidebar.item icon="magnifying-glass" :href="route('legal-research', ['mode' => 'internal'])" :current="request()->routeIs('legal-research*') && request()->query('mode', 'internal') !== 'ai'">
+                    <flux:sidebar.item icon="magnifying-glass" :href="route('legal-research', ['mode' => 'internal'])" :current="request()->routeIs('legal-research*')">
                         Search Internal Resources
                     </flux:sidebar.item>
-                    <flux:sidebar.item icon="scale" :href="route('legal-research', ['mode' => 'ai'])" :current="request()->routeIs('legal-research*') && request()->query('mode') === 'ai'">
+                    <flux:sidebar.item icon="scale" :href="route('ai-resource-search')" :current="request()->routeIs('ai-resource-search')">
                         Search AI Resources
                     </flux:sidebar.item>
                 </flux:sidebar.group>
