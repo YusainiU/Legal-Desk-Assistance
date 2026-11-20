@@ -25,13 +25,21 @@
             <flux:text size="sm">Personal AI research notes. These are not verified judgments or precedents; check every cited source before relying on them.</flux:text>
             @forelse ($savedAiResearch as $saved)
                 <flux:card class="desk-panel space-y-3" wire:key="saved-ai-research-{{ $saved->id }}">
-                    <div class="flex flex-wrap items-center justify-between gap-3">
-                        <flux:heading level="3">{{ $saved->question }}</flux:heading>
-                        <flux:button size="sm" variant="outline" wire:click="removeSavedResearch({{ $saved->id }})"
-                            wire:confirm="Remove this saved research note from your Knowledge Base?">Remove</flux:button>
+                    <div x-data="{ expanded: false }" class="space-y-3">
+                        <div class="flex flex-wrap items-center justify-between gap-3">
+                            <flux:heading level="3" class="min-w-0 wrap-break-word">{{ $saved->question }}</flux:heading>
+                            <flux:button type="button" size="sm" variant="outline"
+                                x-on:click="expanded = !expanded" x-bind:aria-expanded="expanded.toString()">
+                                <span x-text="expanded ? 'Less' : 'More'">More</span>
+                            </flux:button>
+                        </div>
+                        <div x-show="expanded" x-cloak class="space-y-3">
+                            <flux:badge color="amber">AI-generated · unverified</flux:badge>
+                            <div class="legal-markdown text-sm">{!! \Illuminate\Support\Str::markdown($saved->analysis ?? '', ['html_input' => 'strip', 'allow_unsafe_links' => false]) !!}</div>
+                            <flux:button size="sm" variant="outline" wire:click="removeSavedResearch({{ $saved->id }})"
+                                wire:confirm="Remove this saved research note from your Knowledge Base?">Remove</flux:button>
+                        </div>
                     </div>
-                    <flux:badge color="amber">AI-generated · unverified</flux:badge>
-                    <div class="legal-markdown text-sm">{!! \Illuminate\Support\Str::markdown($saved->analysis ?? '', ['html_input' => 'strip', 'allow_unsafe_links' => false]) !!}</div>
                 </flux:card>
             @empty
                 <flux:text size="sm">No saved AI research notes match your search.</flux:text>
