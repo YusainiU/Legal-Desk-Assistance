@@ -30,7 +30,7 @@
                 <flux:sidebar.item icon="users" :href="route('contacts.index')" :current="request()->routeIs('contacts.*')">
                     Contacts
                 </flux:sidebar.item>
-                <flux:sidebar.group heading="Knowledge Base" expandable :expanded="request()->routeIs('knowledge-base', 'library', 'legal-research*', 'ai-resource-search', 'ai-search-admin')">
+                <flux:sidebar.group heading="Knowledge Base" expandable :expanded="request()->routeIs('knowledge-base', 'library', 'legal-research*', 'ai-resource-search', 'ai-search-admin', 'knowledge-base.guide')">
                     <flux:sidebar.item icon="book-open" :href="route('knowledge-base')" :current="request()->routeIs('knowledge-base')">
                         Build Resources
                     </flux:sidebar.item>
@@ -52,7 +52,7 @@
                             AI Search Settings
                         </flux:sidebar.item>
                     @endcan
-                    <flux:sidebar.item icon="book-open" href="https://github.com/YusainiU/Legal-Desk-Assistance/blob/feature/extract-law-resources-package/docs/knowledge-base-user-guide.md" target="_blank" rel="noopener noreferrer">
+                    <flux:sidebar.item icon="book-open" :href="route('knowledge-base.guide')" :current="request()->routeIs('knowledge-base.guide')">
                         User Guide
                     </flux:sidebar.item>
                 </flux:sidebar.group>

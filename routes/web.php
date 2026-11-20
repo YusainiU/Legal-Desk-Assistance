@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', Workspace::class)->middleware('auth')->name('workspace');
 Route::view('/getting-started', 'getting-started')->middleware('auth')->name('getting-started');
+Route::view('/knowledge-base/guide', 'knowledge-base-guide')->middleware('auth')->name('knowledge-base.guide');
 
 Route::get('/cases/{matter}/summary', [CaseSummaryController::class, 'show'])
     ->whereNumber('matter')->middleware('auth')->name('cases.summary');
