@@ -40,6 +40,11 @@
                     <flux:sidebar.item icon="scale" :href="route('ai-resource-search')" :current="request()->routeIs('ai-resource-search')">
                         Search AI Resources
                     </flux:sidebar.item>
+                    @can('manage-users')
+                        <flux:sidebar.item icon="cog-6-tooth" :href="route('ai-search-admin')" :current="request()->routeIs('ai-search-admin')">
+                            AI Search Settings
+                        </flux:sidebar.item>
+                    @endcan
                 </flux:sidebar.group>
                 <flux:sidebar.item icon="user-group" :href="route('teams.index')" :current="request()->routeIs('teams.*')">
                     Teams

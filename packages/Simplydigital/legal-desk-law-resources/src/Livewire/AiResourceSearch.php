@@ -9,6 +9,7 @@ use Livewire\Component;
 use Simplydigital\LegalDeskLawResources\Models\LegalResearch;
 use Simplydigital\LegalDeskLawResources\Models\SavedLegalResearch;
 use Simplydigital\LegalDeskLawResources\Services\PublicJudgmentAiSearchService;
+use Simplydigital\LegalDeskLawResources\Services\AiSearchSettings;
 
 #[Layout('components.layouts.app')]
 class AiResourceSearch extends Component
@@ -21,8 +22,13 @@ class AiResourceSearch extends Component
     #[Locked]
     public ?int $researchId = null;
 
-    public function search(PublicJudgmentAiSearchService $service): void
+    public function search(PublicJudgmentAiSearchService $service, AiSearchSettings $settings): void
     {
+        if (! $settings->enabled()) {
+            $this->notice = 'AI Search is disabled by an administrator.';
+            return;
+        }
+
         $data = $this->validate([
             'question' => ['required', 'string', 'min:5', 'max:2000'],
             'court' => ['required', Rule::in(['all', 'Federal Court', 'Court of Appeal', 'High Court'])],
@@ -100,7 +106,7 @@ class AiResourceSearch extends Component
         $this->notice = 'Research saved to Knowledge Base as an unverified AI research note.';
     }
 
-    public function render()
+    public function render(AiSearchSettings $settings)
     {
         $matterModel = config('legal-desk-law-resources.matter_model');
         $research = $this->researchId === null ? null : LegalResearch::query()
@@ -120,7 +126,8 @@ class AiResourceSearch extends Component
             'matters' => $matterModel::query()
                 ->where('user_id', auth()->id())
                 ->where('status', 'Open')->orderBy('title')->get(['id', 'title']),
-            'location' => config('ai-management.search_location', 'Malaysia'),
+            'location' => $settings->location(),
+            'searchEnabled' => $settings->enabled(),
             'provider' => config('ai-management.provider', 'openai'),
             'model' => config('legal-desk-law-resources.web_search_model', config('ai-management.model', 'gpt-4o-mini')),
         ]);

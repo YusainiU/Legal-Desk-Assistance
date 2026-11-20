@@ -15,6 +15,9 @@
 
     <flux:card class="desk-panel space-y-4">
         <form wire:submit="search" class="space-y-4">
+            @unless ($searchEnabled)
+                <flux:callout color="amber">AI Search is currently disabled by an administrator.</flux:callout>
+            @endunless
             <flux:textarea label="Legal research question" wire:model="question" rows="4" maxlength="2000"
                 placeholder="What are the legal requirements for terminating a contract without notice?" required />
             <div class="grid gap-3 sm:grid-cols-2">
@@ -32,7 +35,7 @@
                 </flux:select>
             </div>
             <flux:button type="submit" variant="primary" icon="magnifying-glass"
-                wire:loading.attr="disabled" wire:target="search">Search AI Resources</flux:button>
+                wire:loading.attr="disabled" wire:target="search" :disabled="! $searchEnabled">Search AI Resources</flux:button>
             <flux:text size="sm" wire:loading wire:target="search">Searching public sources. This may take up to two minutes.</flux:text>
         </form>
         <flux:text size="sm">Search jurisdiction is configured by AI_SEARCH_LOCATION. Do not submit confidential client information without authorisation.</flux:text>
