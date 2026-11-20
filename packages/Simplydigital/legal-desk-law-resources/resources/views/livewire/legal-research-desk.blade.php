@@ -32,40 +32,8 @@
             <flux:button type="submit" variant="primary" icon="magnifying-glass" wire:loading.attr="disabled" wire:target="runSearch">
                 Search imported judgments
             </flux:button>
-            <flux:button type="button" variant="primary" wire:click="runAiSearch" wire:loading.attr="disabled" wire:target="runAiSearch">AI Search (public web)</flux:button>
-            <flux:text size="sm" wire:loading wire:target="runAiSearch">Searching public web sources; this may take up to two minutes.</flux:text>
         </form>
-        <flux:text size="sm">AI Search uses your OpenAI API key to research public web sources. Imported judgment search uses only your database; neither includes paid CLJ/MLJ access.</flux:text>
-    </flux:card>
-
-    <flux:card class="desk-panel space-y-3">
-        <flux:heading size="lg">Find real Malaysian judgments — public sources</flux:heading>
-        <flux:text size="sm">Search publicly accessible judgment portals. These links open external websites; results are not automatically imported or verified by Legal Desk Assistance.</flux:text>
-        @php
-            $externalQuery = trim($question);
-            $searchTerms = $externalQuery !== '' ? $externalQuery : 'contract termination reasonable notice';
-            $officialSearch = 'https://ejudgment.kehakiman.gov.my/ejudgmentweb/SearchPage.aspx?JurisdictionType=ALL';
-            $commonLiiSearch = 'https://commonlii.org/cgi-bin/sinosrch.cgi?meta=/commonlii&query='.rawurlencode($searchTerms).'&method=auto&mask_world=:commonlii:my&mask_path=+my';
-            $openIndexSearch = 'https://malaysiacaselaw.com/search?q='.urlencode($searchTerms);
-        @endphp
-        <div class="grid gap-3 sm:grid-cols-3">
-            <div class="rounded-xl border border-zinc-700 p-4 space-y-2">
-                <flux:heading level="3">Malaysian Judiciary</flux:heading>
-                <flux:text size="sm">Official e-Judgment portal. Enter your keywords on the court website.</flux:text>
-                <flux:link :href="$officialSearch" target="_blank" rel="noopener noreferrer">Open official judgment search</flux:link>
-            </div>
-            <div class="rounded-xl border border-zinc-700 p-4 space-y-2">
-                <flux:heading level="3">CommonLII</flux:heading>
-                <flux:text size="sm">Free Malaysian court decisions. Searches the indexed CommonLII pages using your question.</flux:text>
-                <flux:link :href="$commonLiiSearch" target="_blank" rel="noopener noreferrer">Search CommonLII</flux:link>
-            </div>
-            <div class="rounded-xl border border-zinc-700 p-4 space-y-2">
-                <flux:heading level="3">MY Case Law</flux:heading>
-                <flux:text size="sm">Independent free-access judgment index. Searches indexed pages using your question.</flux:text>
-                <flux:link :href="$openIndexSearch" target="_blank" rel="noopener noreferrer">Search MY Case Law</flux:link>
-            </div>
-        </div>
-        <flux:text size="sm">Tip: Enter a few legal keywords above, e.g. <strong>termination contract reasonable notice</strong>. The external links use those words. Public access does not imply permission to bulk copy or redistribute judgments.</flux:text>
+        <flux:text size="sm">Searches only judgments imported into your database; paid CLJ/MLJ sources are not included.</flux:text>
     </flux:card>
 
     @if ($research)
@@ -81,16 +49,6 @@
                         wire:loading.attr="disabled" wire:target="analyse">Generate AI draft (optional)</flux:button>
                 @endif
             </div>
-            @if ($research->analysis_status === 'web_research_unverified' && filled($research->analysis))
-                <div class="flex flex-wrap items-center gap-3">
-                    <flux:button type="button" variant="primary" wire:click="saveAiToKnowledgeBase"
-                        wire:loading.attr="disabled" wire:target="saveAiToKnowledgeBase"
-                        :disabled="in_array($research->id, $savedResearchIds)">
-                        {{ in_array($research->id, $savedResearchIds) ? 'Saved to Knowledge Base' : 'Save AI result to Knowledge Base' }}
-                    </flux:button>
-                    <flux:text size="sm">Saved as an unverified research note, not a verified court authority.</flux:text>
-                </div>
-            @endif
             @if ($research->analysis)
                 <flux:callout color="amber">Unverified AI research. Confirm every proposition, citation, source and subsequent treatment against the original judgments.</flux:callout>
                 <div class="whitespace-pre-wrap wrap-break-word text-sm">{{ $research->analysis }}</div>
@@ -128,7 +86,7 @@
         </flux:card>
     @endif
 
-    <div class="grid gap-4 lg:grid-cols-2">
+    <div>
         <flux:card class="desk-panel space-y-3">
             <flux:heading size="lg">Check a citation</flux:heading>
             <flux:text size="sm">Checks against your indexed records, not external publishers or judicial treatment.</flux:text>
@@ -142,20 +100,6 @@
             @endif
         </flux:card>
 
-        <flux:card class="desk-panel space-y-3">
-            <flux:heading size="lg">Recent research</flux:heading>
-            @forelse ($history as $item)
-                <div class="flex flex-wrap items-center justify-between gap-2 border-b border-zinc-700 pb-2" wire:key="research-history-{{ $item->id }}">
-                    <div class="min-w-0">
-                        <flux:text size="sm">{{ $item->question }}</flux:text>
-                        <flux:text size="sm">#{{ $item->id }} · {{ $item->created_at->format('d M Y') }}</flux:text>
-                    </div>
-                    <flux:button size="sm" variant="ghost" wire:click="openResearch({{ $item->id }})">Open</flux:button>
-                </div>
-            @empty
-                <flux:text size="sm">No saved research yet.</flux:text>
-            @endforelse
-        </flux:card>
     </div>
 
     @can('manage-users')

@@ -4,12 +4,10 @@ namespace Simplydigital\LegalDeskLawResources\Livewire;
 
 use Simplydigital\LegalDeskLawResources\Models\LegalCase;
 use Simplydigital\LegalDeskLawResources\Models\LegalResearch;
-use Simplydigital\LegalDeskLawResources\Models\SavedLegalResearch;
 
 use Simplydigital\LegalDeskLawResources\Services\CaseSearchService;
 use Simplydigital\LegalDeskLawResources\Services\CitationVerificationService;
 use Simplydigital\LegalDeskLawResources\Services\LegalAnalysisService;
-use Simplydigital\LegalDeskLawResources\Services\PublicJudgmentAiSearchService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
@@ -29,6 +27,13 @@ class LegalResearchDesk extends Component
 
     #[Locked]
     public ?int $researchId = null;
+
+    public function mount(): void
+    {
+        if (request()->filled('research')) {
+            $this->openResearch((int) request()->query('research'));
+        }
+    }
 
     public function runSearch(CaseSearchService $search): void
     {
@@ -68,66 +73,6 @@ class LegalResearchDesk extends Component
             ? 'No matching indexed judgments. Import licensed or authorised judgments before researching.'
             : 'Search complete. Check original judgments and later treatment before relying on results.';
         $this->verification = [];
-    }
-
-    public function runAiSearch(PublicJudgmentAiSearchService $service): void
-    {
-        $data = $this->validate([
-            'question' => 'required|string|min:5|max:2000',
-            'court' => ['required', Rule::in(['all', 'Federal Court', 'Court of Appeal', 'High Court'])],
-            'matterId' => 'nullable|integer',
-        ]);
-
-        $matter = filled($data['matterId'] ?? null)
-            ? config('legal-desk-law-resources.matter_model')::where('user_id', auth()->id())->findOrFail($data['matterId']) : null;
-
-        try {
-            $analysis = $service->search(trim($data['question']), $data['court']);
-        } catch (\RuntimeException $error) {
-            report($error);
-            $this->notice = $error->getMessage();
-            return;
-        } catch (\Throwable $error) {
-            report($error);
-            $this->notice = 'AI web search could not connect or process the response. Check storage/logs/laravel.log for the exception class.';
-            return;
-        }
-
-        $research = LegalResearch::create([
-            'user_id' => auth()->id(),
-            'matter_id' => $matter?->id,
-            'question' => trim($data['question']),
-            'court_filter' => $data['court'],
-            'status' => 'completed',
-            'analysis' => $analysis,
-            'analysis_status' => 'web_research_unverified',
-        ]);
-
-        $this->researchId = $research->id;
-        $this->verification = [];
-        $this->notice = 'AI web research saved. Check the original judgments and subsequent treatment before citing.';
-    }
-
-    public function saveAiToKnowledgeBase(): void
-    {
-        abort_unless($this->researchId !== null, 404);
-
-        $research = LegalResearch::query()->where('user_id', auth()->id())
-            ->findOrFail($this->researchId);
-
-        abort_unless($research->analysis_status === 'web_research_unverified'
-            && filled($research->analysis), 422);
-
-        SavedLegalResearch::query()->firstOrCreate(
-            ['user_id' => auth()->id(), 'legal_research_id' => $research->id],
-            [
-                'question' => $research->question,
-                'analysis' => $research->analysis,
-                'analysis_status' => $research->analysis_status,
-            ]
-        );
-
-        $this->notice = 'AI research saved to your Knowledge Base as an unverified research note.';
     }
 
     public function openResearch(int $id): void
@@ -211,8 +156,6 @@ class LegalResearchDesk extends Component
 
         return view('legal-desk-law-resources::livewire.legal-research-desk', [
             'research' => $research,
-            'savedResearchIds' => SavedLegalResearch::where('user_id', auth()->id())->pluck('legal_research_id')->all(),
-            'history' => LegalResearch::where('user_id', auth()->id())->latest()->limit(10)->get(),
             'matters' => config('legal-desk-law-resources.matter_model')::where('user_id', auth()->id())
                 ->where('status', 'Open')->orderBy('title')->get(['id', 'title']),
         ]);

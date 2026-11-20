@@ -47,6 +47,24 @@
         </section>
     @endif
 
+    <section class="space-y-3">
+        <flux:heading size="lg">Recent internal research</flux:heading>
+        <flux:text size="sm">Previous searches of imported judgments. Select Open to revisit the results.</flux:text>
+        @forelse ($internalResearchHistory as $item)
+            <flux:card class="desk-panel" wire:key="internal-research-{{ $item->id }}">
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <div class="min-w-0">
+                        <flux:heading level="3">{{ $item->question }}</flux:heading>
+                        <flux:text size="sm">{{ $item->created_at->format('d M Y') }}</flux:text>
+                    </div>
+                    <flux:button size="sm" variant="outline" :href="route('legal-research', ['research' => $item->id])">Open</flux:button>
+                </div>
+            </flux:card>
+        @empty
+            <flux:text size="sm">No internal research searches yet.</flux:text>
+        @endforelse
+    </section>
+
     <flux:heading size="lg">Case references</flux:heading>
     <ul class="space-y-3">
         @forelse ($references as $reference)

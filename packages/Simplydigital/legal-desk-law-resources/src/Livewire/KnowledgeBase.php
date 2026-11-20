@@ -5,6 +5,7 @@ namespace Simplydigital\LegalDeskLawResources\Livewire;
 
 
 use Simplydigital\LegalDeskLawResources\Models\SavedLegalResearch;
+use Simplydigital\LegalDeskLawResources\Models\LegalResearch;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -105,6 +106,9 @@ class KnowledgeBase extends Component
 
         return view('legal-desk-law-resources::livewire.knowledge-base', [
             'references' => $references,
+            'internalResearchHistory' => LegalResearch::where('user_id', auth()->id())
+                ->where(function (Builder $query) { $query->whereNull('analysis_status')->orWhere('analysis_status', '!=', 'web_research_unverified'); })
+                ->latest('id')->limit(10)->get(),
             'savedAiResearch' => SavedLegalResearch::where('user_id', auth()->id())
                 ->when(trim($this->search) !== '', fn (Builder $query) => $query
                     ->where(fn (Builder $match) => $match
