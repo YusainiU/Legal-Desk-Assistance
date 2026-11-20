@@ -50,6 +50,19 @@ class KnowledgeBase extends Component
 
     public bool $showCopy = false;
 
+    public bool $showCaseSummary = false;
+
+    #[Locked]
+    public ?int $summaryMatterId = null;
+
+    public function openCaseSummary(int $referenceId): void
+    {
+        $reference = $this->references()->with('matter')->findOrFail($referenceId);
+        $this->summaryMatterId = $reference->matter_id;
+        $this->showCaseSummary = true;
+    }
+
+
     public string $targetId = '';
 
     public string $applicability = '';
@@ -127,6 +140,12 @@ class KnowledgeBase extends Component
 
         return view('legal-desk-law-resources::livewire.knowledge-base', [
             'references' => $references,
+            'summaryMatter' => $this->showCaseSummary && $this->summaryMatterId !== null
+                ? config('legal-desk-law-resources.matter_model')::query()
+                    ->where('user_id', auth()->id())
+                    ->with(['entries' => fn ($query) => $query->where('kind', '!=', 'Task')->latest('created_at')->latest('id')])
+                    ->findOrFail($this->summaryMatterId)
+                : null,
             'judgments' => LegalCase::query()
                 ->when($term !== '', fn (Builder $query) => $query->where(function (Builder $match) use ($term) {
                     $pattern = '%'.$term.'%';
