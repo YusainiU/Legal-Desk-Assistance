@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Services\AI;
+namespace Simplydigital\LegalDeskLawResources\AI\Providers;
 
-use App\Contracts\AI\AIService;
+use Simplydigital\LegalDeskLawResources\AI\Contracts\AIService;
 use Illuminate\Support\Facades\Http;
 use RuntimeException;
 
