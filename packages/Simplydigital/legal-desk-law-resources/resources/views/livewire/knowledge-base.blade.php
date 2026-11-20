@@ -19,76 +19,95 @@
         </flux:select>
     </flux:card>
 
-    @if ($type === '')
-        <section class="space-y-3">
-            <flux:heading size="lg">Saved AI legal research</flux:heading>
-            <flux:text size="sm">Personal AI research notes. These are not verified judgments or precedents; check every cited source before relying on them.</flux:text>
-            @forelse ($savedAiResearch as $saved)
-                <div class="border-b border-zinc-700 py-3" wire:key="saved-ai-research-{{ $saved->id }}">
-                    <div x-data="{ expanded: false }" class="space-y-3">
-                        <div class="flex flex-wrap items-center justify-between gap-3">
-                            <flux:heading level="3" class="min-w-0 wrap-break-word">{{ $saved->question }}</flux:heading>
-                            <flux:button type="button" size="sm" variant="outline"
-                                x-on:click="expanded = !expanded" x-bind:aria-expanded="expanded.toString()">
-                                <span x-text="expanded ? 'Less' : 'More'">More</span>
-                            </flux:button>
-                        </div>
-                        <div x-show="expanded" x-cloak class="space-y-3">
-                            <flux:badge color="amber">AI-generated · unverified</flux:badge>
-                            <div class="legal-markdown text-sm">{!! \Illuminate\Support\Str::markdown($saved->analysis ?? '', ['html_input' => 'strip', 'allow_unsafe_links' => false]) !!}</div>
-                            <flux:button size="sm" variant="outline" wire:click="removeSavedResearch({{ $saved->id }})"
-                                wire:confirm="Remove this saved research note from your Knowledge Base?">Remove</flux:button>
+    <div x-data="{ activeTab: 'ai' }" class="space-y-4">
+        <div role="tablist" aria-label="Library research categories" class="flex gap-5 border-b border-zinc-700">
+            <button type="button" role="tab" id="library-tab-ai" aria-controls="library-panel-ai"
+                x-bind:aria-selected="(activeTab === 'ai').toString()"
+                x-on:click="activeTab = 'ai'"
+                x-bind:class="activeTab === 'ai' ? 'border-b-2 border-blue-400 font-semibold text-zinc-100' : 'text-zinc-400 hover:text-zinc-100'"
+                class="px-1 py-3 text-sm">AI Research</button>
+            <button type="button" role="tab" id="library-tab-internal" aria-controls="library-panel-internal"
+                x-bind:aria-selected="(activeTab === 'internal').toString()"
+                x-on:click="activeTab = 'internal'"
+                x-bind:class="activeTab === 'internal' ? 'border-b-2 border-blue-400 font-semibold text-zinc-100' : 'text-zinc-400 hover:text-zinc-100'"
+                class="px-1 py-3 text-sm">Internal Research</button>
+        </div>
+        <div id="library-panel-ai" role="tabpanel" aria-labelledby="library-tab-ai" x-show="activeTab === 'ai'" x-cloak>
+            @if ($type === '')
+            <section class="space-y-3">
+                <flux:heading size="lg">Saved AI legal research</flux:heading>
+                <flux:text size="sm">Personal AI research notes. These are not verified judgments or precedents; check every cited source before relying on them.</flux:text>
+                @forelse ($savedAiResearch as $saved)
+                    <div class="border-b border-zinc-700 py-3" wire:key="saved-ai-research-{{ $saved->id }}">
+                        <div x-data="{ expanded: false }" class="space-y-3">
+                            <div class="flex flex-wrap items-center justify-between gap-3">
+                                <flux:heading level="3" class="min-w-0 wrap-break-word">{{ $saved->question }}</flux:heading>
+                                <flux:button type="button" size="sm" variant="outline"
+                                    x-on:click="expanded = !expanded" x-bind:aria-expanded="expanded.toString()">
+                                    <span x-text="expanded ? 'Less' : 'More'">More</span>
+                                </flux:button>
+                            </div>
+                            <div x-show="expanded" x-cloak class="space-y-3">
+                                <flux:badge color="amber">AI-generated · unverified</flux:badge>
+                                <div class="legal-markdown text-sm">{!! \Illuminate\Support\Str::markdown($saved->analysis ?? '', ['html_input' => 'strip', 'allow_unsafe_links' => false]) !!}</div>
+                                <flux:button size="sm" variant="outline" wire:click="removeSavedResearch({{ $saved->id }})"
+                                    wire:confirm="Remove this saved research note from your Knowledge Base?">Remove</flux:button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            @empty
-                <flux:text size="sm">No saved AI research notes match your search.</flux:text>
-            @endforelse
-        </section>
-    @endif
-
-    <section class="space-y-2">
-        <flux:heading size="lg">Internal research</flux:heading>
-        <flux:text size="sm">Select a research question to review its saved results here.</flux:text>
-        <ul class="divide-y divide-zinc-700">
-            @forelse ($internalResearchHistory as $item)
-                <li class="py-3" wire:key="internal-research-{{ $item->id }}" x-data="{ expanded: false }">
-                    <button type="button" class="flex w-full items-center justify-between gap-3 text-left"
-                        x-on:click="expanded = !expanded" x-bind:aria-expanded="expanded.toString()">
-                        <span class="min-w-0">
-                            <span class="block font-medium wrap-break-word">{{ $item->question }}</span>
-                            <span class="text-xs text-zinc-400">{{ $item->created_at->format('d M Y') }}</span>
-                        </span>
-                        <span class="shrink-0 text-sm font-medium" x-text="expanded ? 'Less' : 'More'">More</span>
-                    </button>
-                    <div x-show="expanded" x-cloak class="mt-3 space-y-3 text-sm">
-                        <flux:text size="sm">{{ $item->authorities->count() }} indexed passages</flux:text>
-                        @if (filled($item->analysis))
-                            <flux:callout color="amber">AI-generated analysis is unverified. Check the original judgments.</flux:callout>
-                            <div class="legal-markdown">{!! \Illuminate\Support\Str::markdown($item->analysis, ['html_input' => 'strip', 'allow_unsafe_links' => false]) !!}</div>
-                        @endif
-                        @forelse ($item->authorities as $authority)
-                            @if ($authority->legalCase && $authority->passage)
-                                <div class="space-y-2 border-l-2 border-zinc-600 pl-3">
-                                    <div class="font-medium">{{ $authority->legalCase->title }}</div>
-                                    <flux:text size="sm">{{ $authority->legalCase->court }} · {{ $authority->legalCase->citation ?? 'Unreported' }}</flux:text>
-                                    <p class="whitespace-pre-wrap wrap-break-word">{{ $authority->passage->content }}</p>
-                                    <flux:link :href="route('legal-research.cases.show', $authority->legalCase)">Inspect indexed judgment</flux:link>
-                                    @if ($authority->legalCase->source_url)
-                                        <flux:link :href="$authority->legalCase->source_url" target="_blank" rel="noopener noreferrer">Original source</flux:link>
-                                    @endif
-                                </div>
+                @empty
+                    <flux:text size="sm">No saved AI research notes match your search.</flux:text>
+                @endforelse
+            </section>
+            @else
+                <flux:text size="sm">Select All types to view saved AI research.</flux:text>
+            @endif
+        </div>
+        <div id="library-panel-internal" role="tabpanel" aria-labelledby="library-tab-internal" x-show="activeTab === 'internal'" x-cloak>
+        <section class="space-y-2">
+            <flux:heading size="lg">Internal research</flux:heading>
+            <flux:text size="sm">Select a research question to review its saved results here.</flux:text>
+            <ul class="divide-y divide-zinc-700">
+                @forelse ($internalResearchHistory as $item)
+                    <li class="py-3" wire:key="internal-research-{{ $item->id }}" x-data="{ expanded: false }">
+                        <button type="button" class="flex w-full items-center justify-between gap-3 text-left"
+                            x-on:click="expanded = !expanded" x-bind:aria-expanded="expanded.toString()">
+                            <span class="min-w-0">
+                                <span class="block font-medium wrap-break-word">{{ $item->question }}</span>
+                                <span class="text-xs text-zinc-400">{{ $item->created_at->format('d M Y') }}</span>
+                            </span>
+                            <span class="shrink-0 text-sm font-medium" x-text="expanded ? 'Less' : 'More'">More</span>
+                        </button>
+                        <div x-show="expanded" x-cloak class="mt-3 space-y-3 text-sm">
+                            <flux:text size="sm">{{ $item->authorities->count() }} indexed passages</flux:text>
+                            @if (filled($item->analysis))
+                                <flux:callout color="amber">AI-generated analysis is unverified. Check the original judgments.</flux:callout>
+                                <div class="legal-markdown">{!! \Illuminate\Support\Str::markdown($item->analysis, ['html_input' => 'strip', 'allow_unsafe_links' => false]) !!}</div>
                             @endif
-                        @empty
-                            <flux:text size="sm">No indexed passages matched this research question.</flux:text>
-                        @endforelse
-                    </div>
-                </li>
-            @empty
-                <li class="py-3"><flux:text size="sm">No internal research searches yet.</flux:text></li>
-            @endforelse
-        </ul>
-    </section>
+                            @forelse ($item->authorities as $authority)
+                                @if ($authority->legalCase && $authority->passage)
+                                    <div class="space-y-2 border-l-2 border-zinc-600 pl-3">
+                                        <div class="font-medium">{{ $authority->legalCase->title }}</div>
+                                        <flux:text size="sm">{{ $authority->legalCase->court }} · {{ $authority->legalCase->citation ?? 'Unreported' }}</flux:text>
+                                        <p class="whitespace-pre-wrap wrap-break-word">{{ $authority->passage->content }}</p>
+                                        <flux:link :href="route('legal-research.cases.show', $authority->legalCase)">Inspect indexed judgment</flux:link>
+                                        @if ($authority->legalCase->source_url)
+                                            <flux:link :href="$authority->legalCase->source_url" target="_blank" rel="noopener noreferrer">Original source</flux:link>
+                                        @endif
+                                    </div>
+                                @endif
+                            @empty
+                                <flux:text size="sm">No indexed passages matched this research question.</flux:text>
+                            @endforelse
+                        </div>
+                    </li>
+                @empty
+                    <li class="py-3"><flux:text size="sm">No internal research searches yet.</flux:text></li>
+                @endforelse
+            </ul>
+        </section>
+        </div>
+    </div>
 
     <flux:heading size="lg">Case references</flux:heading>
     <ul class="divide-y divide-zinc-700">
