@@ -38,7 +38,7 @@
                         Library
                     </flux:sidebar.item>
                     <flux:sidebar.item icon="magnifying-glass" :href="route('legal-research', ['mode' => 'internal'])" :current="request()->routeIs('legal-research*')">
-                        Search Internal Resources
+                        Court Judgement Builder
                     </flux:sidebar.item>
                     <flux:sidebar.item 
                         icon="scale" 

@@ -1,6 +1,6 @@
 <div class="space-y-6">
     <header class="space-y-2">
-        <h1 class="desk-title">Malaysian case law research</h1>
+        <h1 class="desk-title">Court Judgement Builder</h1>
         <flux:text>Search indexed judgments, examine source passages and attach authorities to your cases.</flux:text>
     </header>
 

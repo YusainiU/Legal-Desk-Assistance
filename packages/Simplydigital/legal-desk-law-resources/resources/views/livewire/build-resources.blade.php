@@ -6,9 +6,9 @@
 
     <div class="grid gap-4 md:grid-cols-2">
         <flux:card class="desk-panel space-y-3">
-            <flux:heading size="lg">Search internal resources</flux:heading>
+            <flux:heading size="lg">Court Judgement Builder</flux:heading>
             <flux:text>Find legal resources already recorded in your case records.</flux:text>
-            <flux:button :href="route('legal-research', ['mode' => 'internal'])" variant="primary">Search internal resources</flux:button>
+            <flux:button :href="route('legal-research', ['mode' => 'internal'])" variant="primary">Court Judgement Builder</flux:button>
         </flux:card>
         <flux:card class="desk-panel space-y-3">
             <flux:heading size="lg">Search AI resources</flux:heading>
