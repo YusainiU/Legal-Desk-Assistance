@@ -5,7 +5,7 @@ namespace Simplydigital\LegalDeskLawResources\Livewire;
 use Simplydigital\LegalDeskLawResources\Models\LegalCase;
 use Simplydigital\LegalDeskLawResources\Models\LegalResearch;
 use Simplydigital\LegalDeskLawResources\Models\SavedLegalResearch;
-use App\Models\Matter;
+
 use Simplydigital\LegalDeskLawResources\Services\CaseSearchService;
 use Simplydigital\LegalDeskLawResources\Services\CitationVerificationService;
 use Simplydigital\LegalDeskLawResources\Services\LegalAnalysisService;
@@ -39,7 +39,7 @@ class LegalResearchDesk extends Component
         ]);
 
         $matter = filled($data['matterId'] ?? null)
-            ? Matter::where('user_id', auth()->id())->findOrFail($data['matterId']) : null;
+            ? config('legal-desk-law-resources.matter_model')::where('user_id', auth()->id())->findOrFail($data['matterId']) : null;
 
         $results = $search->search(trim($data['question']), $data['court']);
 
@@ -79,7 +79,7 @@ class LegalResearchDesk extends Component
         ]);
 
         $matter = filled($data['matterId'] ?? null)
-            ? Matter::where('user_id', auth()->id())->findOrFail($data['matterId']) : null;
+            ? config('legal-desk-law-resources.matter_model')::where('user_id', auth()->id())->findOrFail($data['matterId']) : null;
 
         try {
             $analysis = $service->search(trim($data['question']), $data['court']);
@@ -147,7 +147,7 @@ class LegalResearchDesk extends Component
             ->with(['authorities.legalCase', 'authorities.passage'])
             ->findOrFail($this->researchId);
 
-        $passages = $research->authorities->take(config('legalresearch.max_passages', 8))
+        $passages = $research->authorities->take(config('legal-desk-law-resources.max_passages', 8))
             ->filter(fn ($authority) => $authority->legalCase && $authority->passage)
             ->map(fn ($authority) => '[P:'.$authority->passage->id.'] '
                 .$authority->legalCase->title.' ('.$authority->legalCase->court.', '
@@ -182,7 +182,7 @@ class LegalResearchDesk extends Component
     public function attachAuthority(int $id): void
     {
         $research = LegalResearch::where('user_id', auth()->id())->findOrFail($this->researchId);
-        $matter = Matter::where('user_id', auth()->id())
+        $matter = config('legal-desk-law-resources.matter_model')::where('user_id', auth()->id())
             ->where('status', 'Open')->findOrFail($research->matter_id);
         $authority = $research->authorities()->with(['legalCase', 'passage'])->findOrFail($id);
 
@@ -213,7 +213,7 @@ class LegalResearchDesk extends Component
             'research' => $research,
             'savedResearchIds' => SavedLegalResearch::where('user_id', auth()->id())->pluck('legal_research_id')->all(),
             'history' => LegalResearch::where('user_id', auth()->id())->latest()->limit(10)->get(),
-            'matters' => Matter::where('user_id', auth()->id())
+            'matters' => config('legal-desk-law-resources.matter_model')::where('user_id', auth()->id())
                 ->where('status', 'Open')->orderBy('title')->get(['id', 'title']),
         ]);
     }
