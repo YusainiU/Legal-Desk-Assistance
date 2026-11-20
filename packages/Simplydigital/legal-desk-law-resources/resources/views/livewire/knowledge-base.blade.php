@@ -124,7 +124,7 @@
                             <details class="text-sm">
                                 <summary class="cursor-pointer font-medium">Why it applied in the source case</summary>
                                 @if ($reference->matter->final_decision_reference_id === $reference->id)
-                                    <div class="prose prose-invert mt-2 max-w-none wrap-break-word leading-relaxed">{!! $htmlPurifier->purify($reference->applicability ?? '') !!}</div>
+                                    <div class="legal-markdown mt-2 max-w-none wrap-break-word leading-relaxed">{!! $htmlPurifier->purify($reference->applicability ?? '') !!}</div>
                                 @else
                                     <p class="mt-2 wrap-break-word whitespace-pre-wrap leading-relaxed">{{ $reference->applicability }}</p>
                                 @endif
@@ -173,7 +173,7 @@
                 @if ($summaryMatter->final_decision)
                     <div class="space-y-1">
                         <flux:heading size="sm">Final decision</flux:heading>
-                        <div class="prose prose-invert max-w-none wrap-break-word text-sm">{!! $htmlPurifier->purify($summaryMatter->final_decision) !!}</div>
+                        <div class="legal-markdown max-w-none wrap-break-word text-sm">{!! $htmlPurifier->purify($summaryMatter->final_decision) !!}</div>
                     </div>
                 @endif
                 <div class="space-y-2">
