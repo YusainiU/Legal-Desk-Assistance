@@ -23,6 +23,15 @@ class LegalResearchDesk extends Component
     public string $citation = '';
     public string $paragraph = '';
     public array $verification = [];
+    public bool $showJudgment = false;
+    #[Locked]
+    public ?int $selectedJudgmentId = null;
+
+    public function openJudgment(int $id): void
+    {
+        $this->selectedJudgmentId = LegalCase::query()->findOrFail($id)->id;
+        $this->showJudgment = true;
+    }
     public ?string $notice = null;
 
     #[Locked]
@@ -156,6 +165,8 @@ class LegalResearchDesk extends Component
 
         return view('legal-desk-law-resources::livewire.legal-research-desk', [
             'research' => $research,
+            'judgments' => LegalCase::query()->orderByDesc('created_at')->orderByDesc('id')->paginate(15, ['*'], 'judgmentsPage'),
+            'selectedJudgment' => $this->showJudgment && $this->selectedJudgmentId ? LegalCase::with('passages')->findOrFail($this->selectedJudgmentId) : null,
             'matters' => config('legal-desk-law-resources.matter_model')::where('user_id', auth()->id())
                 ->where('status', 'Open')->orderBy('title')->get(['id', 'title']),
         ]);

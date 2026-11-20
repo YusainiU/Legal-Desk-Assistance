@@ -29,6 +29,10 @@
                 aria-selected="{{ $activeTab === 'internal' ? 'true' : 'false' }}"
                 wire:click="setActiveTab('internal')"
                 class="{{ $activeTab === 'internal' ? 'border-b-2 border-blue-400 font-semibold text-zinc-100' : 'text-zinc-400 hover:text-zinc-100' }} px-1 py-3 text-sm">Internal Research</button>
+            <button type="button" role="tab" id="library-tab-judgments" aria-controls="library-panel-judgments"
+                aria-selected="{{ $activeTab === 'judgments' ? 'true' : 'false' }}"
+                wire:click="setActiveTab('judgments')"
+                class="{{ $activeTab === 'judgments' ? 'border-b-2 border-blue-400 font-semibold text-zinc-100' : 'text-zinc-400 hover:text-zinc-100' }} px-1 py-3 text-sm">Case Judgements</button>
         </div>
         @if ($activeTab === 'ai')
         <div id="library-panel-ai" role="tabpanel" aria-labelledby="library-tab-ai">
@@ -109,6 +113,30 @@
         </section>
         </div>
         @endif
+        @if ($activeTab === 'judgments')
+            <div id="library-panel-judgments" role="tabpanel" aria-labelledby="library-tab-judgments">
+                <section class="space-y-2">
+                    <flux:heading size="lg">Case Judgements</flux:heading>
+                    <flux:text size="sm">Search titles, citations and indexed judgment content. Latest first.</flux:text>
+                    <ul class="divide-y divide-zinc-700">
+                        @forelse ($judgments as $judgment)
+                            <li class="py-2" wire:key="library-judgment-{{ $judgment->id }}">
+                                <button type="button" wire:click="openJudgment({{ $judgment->id }})"
+                                    title="{{ $judgment->title }}" class="flex w-full min-w-0 items-center justify-between gap-3 text-left hover:underline">
+                                    <span class="min-w-0 flex-1 truncate text-sm font-medium">{{ $judgment->title }}</span>
+                                    <span class="shrink-0 text-xs text-zinc-400">{{ $judgment->created_at->format('d M Y') }}</span>
+                                </button>
+                            </li>
+                        @empty
+                            <li class="py-3"><flux:text size="sm">{{ $search !== '' ? 'No judgments match your search.' : 'No judgments imported yet.' }}</flux:text></li>
+                        @endforelse
+                    </ul>
+                    @if ($judgments->hasPages())
+                        <flux:pagination :paginator="$judgments" />
+                    @endif
+                </section>
+            </div>
+        @endif
     </div>
 
     <flux:heading size="lg">Case references</flux:heading>
@@ -149,6 +177,8 @@
     @if ($references->hasPages())
         <flux:pagination :paginator="$references" />
     @endif
+
+    @include('legal-desk-law-resources::livewire.partials.judgment-modal')
 
     <flux:modal wire:model.self="showCopy" class="w-full max-w-xl">
         @if ($source)

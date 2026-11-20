@@ -143,4 +143,26 @@
             </form>
         </flux:card>
     @endcan
+
+    <section class="space-y-2">
+        <flux:heading size="lg">Created judgments</flux:heading>
+        <flux:text size="sm">Latest imports first. Select a title to inspect the judgment.</flux:text>
+        <ul class="divide-y divide-zinc-700">
+            @forelse ($judgments as $judgment)
+                <li wire:key="created-judgment-{{ $judgment->id }}" class="py-2">
+                    <button type="button" wire:click="openJudgment({{ $judgment->id }})" class="flex w-full min-w-0 items-center justify-between gap-3 text-left hover:underline" title="{{ $judgment->title }}">
+                        <span class="min-w-0 flex-1 truncate text-sm font-medium">{{ $judgment->title }}</span>
+                        <span class="shrink-0 text-xs text-zinc-400">{{ $judgment->created_at->format('d M Y') }}</span>
+                    </button>
+                </li>
+            @empty
+                <li class="py-3"><flux:text size="sm">No judgments imported yet.</flux:text></li>
+            @endforelse
+        </ul>
+        @if ($judgments->hasPages())
+            <flux:pagination :paginator="$judgments" />
+        @endif
+    </section>
+
+    @include('legal-desk-law-resources::livewire.partials.judgment-modal')
 </div>

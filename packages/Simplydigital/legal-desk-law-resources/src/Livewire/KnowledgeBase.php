@@ -6,6 +6,7 @@ namespace Simplydigital\LegalDeskLawResources\Livewire;
 
 use Simplydigital\LegalDeskLawResources\Models\SavedLegalResearch;
 use Simplydigital\LegalDeskLawResources\Models\LegalResearch;
+use Simplydigital\LegalDeskLawResources\Models\LegalCase;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -26,9 +27,20 @@ class KnowledgeBase extends Component
 
     public string $activeTab = 'ai';
 
+    public bool $showJudgment = false;
+
+    #[Locked]
+    public ?int $selectedJudgmentId = null;
+
+    public function openJudgment(int $id): void
+    {
+        $this->selectedJudgmentId = LegalCase::query()->findOrFail($id)->id;
+        $this->showJudgment = true;
+    }
+
     public function setActiveTab(string $tab): void
     {
-        abort_unless(in_array($tab, ['ai', 'internal'], true), 422);
+        abort_unless(in_array($tab, ['ai', 'internal', 'judgments'], true), 422);
         $this->activeTab = $tab;
         $this->resetPage();
     }
@@ -115,6 +127,15 @@ class KnowledgeBase extends Component
 
         return view('legal-desk-law-resources::livewire.knowledge-base', [
             'references' => $references,
+            'judgments' => LegalCase::query()
+                ->when($term !== '', fn (Builder $query) => $query->where(function (Builder $match) use ($term) {
+                    $pattern = '%'.$term.'%';
+                    $match->where('title', 'like', $pattern)->orWhere('citation', 'like', $pattern)
+                        ->orWhere('headnote', 'like', $pattern)
+                        ->orWhereHas('passages', fn (Builder $passage) => $passage->where('content', 'like', $pattern));
+                }))
+                ->orderByDesc('created_at')->orderByDesc('id')->paginate(15, ['*'], 'judgmentsPage'),
+            'selectedJudgment' => $this->showJudgment && $this->selectedJudgmentId ? LegalCase::with('passages')->findOrFail($this->selectedJudgmentId) : null,
             'internalResearchHistory' => LegalResearch::with(['authorities.legalCase', 'authorities.passage'])->where('user_id', auth()->id())
                 ->where(function (Builder $query) { $query->whereNull('analysis_status')->orWhere('analysis_status', '!=', 'web_research_unverified'); })
                 ->when($term !== '', fn (Builder $query) => $query->where(function (Builder $match) use ($term) {
