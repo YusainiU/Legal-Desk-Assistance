@@ -30,6 +30,17 @@ class Workspace extends Component
     #[Locked]
     public ?int $reviewingStage = null;
 
+    public bool $showCaseSummary = false;
+
+    #[Locked]
+    public ?int $summaryMatterId = null;
+
+    public function openCaseSummary(int $id): void
+    {
+        $this->summaryMatterId = $this->matters()->findOrFail($id)->id;
+        $this->showCaseSummary = true;
+    }
+
     public string $screen = 'register';
 
     public string $search = '';
@@ -65,7 +76,7 @@ class Workspace extends Component
     public function show(string $screen): void
     {
         abort_unless(in_array($screen, ['register', 'guide', 'new'], true), 404);
-        $this->reset('selected', 'reviewingStage', 'form', 'caseTeamId', 'showTeamEditor', 'caseDescription', 'showDescriptionEditor', 'descriptionSaved', 'decision', 'stageNote', 'stageNoteSaved', 'body', 'document', 'documentStatus');
+        $this->reset('selected', 'reviewingStage', 'form', 'caseTeamId', 'showTeamEditor', 'caseDescription', 'showDescriptionEditor', 'descriptionSaved', 'decision', 'stageNote', 'stageNoteSaved', 'body', 'document', 'documentStatus', 'showCaseSummary', 'summaryMatterId');
         $this->resetValidation();
         $this->screen = $screen;
     }
@@ -401,6 +412,9 @@ class Workspace extends Component
 
         return view('livewire.workspace', [
             'register' => $register,
+            'summaryMatter' => $this->showCaseSummary && $this->summaryMatterId !== null
+                ? $this->matters()->with(['entries' => fn ($query) => $query->where('kind', '!=', 'Task')->latest('created_at')->latest('id')])->findOrFail($this->summaryMatterId)
+                : null,
             'matter' => $matter,
             'reviewedStage' => $reviewedStage,
             'reviewedTasks' => $reviewedStage === null ? collect() : $matter->tasks()->where('task_stage', $reviewedStage)->latest('id')->get(),

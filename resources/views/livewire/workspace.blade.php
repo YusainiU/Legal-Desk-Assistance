@@ -574,6 +574,7 @@
                                 <flux:badge size="sm" :color="$row->status === 'Open' ? 'teal' : ($row->status === 'Declined' ? 'amber' : 'zinc')">
                                     {{ $row->status === 'Open' ? $stages[$row->stage][0] : $row->status }}
                                 </flux:badge>
+                                <button type="button" class="ms-2 text-sm text-accent-content underline underline-offset-2" wire:click="openCaseSummary({{ $row->id }})">Summary</button>
                             </flux:table.cell>
                             <flux:table.cell>{{ $row->owner }}</flux:table.cell>
                             <flux:table.cell>{{ $row->status === 'Open' ? ($row->next_due ?? 'No due date') : '—' }}</flux:table.cell>
@@ -585,4 +586,10 @@
             </flux:table>
         </flux:card>
     @endif
+
+    <flux:modal wire:model.self="showCaseSummary" class="w-full max-w-4xl">
+        @if ($summaryMatter)
+            @include('livewire.partials.case-summary-content', ['summaryMatter' => $summaryMatter])
+        @endif
+    </flux:modal>
 </div>
