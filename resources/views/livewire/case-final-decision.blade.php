@@ -7,7 +7,7 @@
     @if ($matter->status === 'Open')
         <form wire:submit="saveDecision" class="space-y-3">
             <label class="block text-sm font-medium">Final decision</label>
-            <livewire:laravel-rich-editor wire:model="finalDecision" :key="'final-decision-editor-'.$matter->id" image-directory="legal-desk/final-decisions" />
+            <livewire:laravel-rich-editor wire:model="finalDecision" :key="'final-decision-editor-'.$matter->id" image-directory="legal-desk/final-decisions" :show-image-tools="false" />
             @error('finalDecision') <p class="text-sm text-red-400" role="alert">{{ $message }}</p> @enderror
             <flux:button type="submit" variant="primary" wire:loading.attr="disabled" wire:target="saveDecision">
                 {{ filled($matter->final_decision) ? 'Update decision' : 'Save decision' }}
