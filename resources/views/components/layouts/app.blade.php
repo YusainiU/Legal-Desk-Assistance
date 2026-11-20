@@ -34,8 +34,11 @@
                     <flux:sidebar.item icon="book-open" :href="route('knowledge-base')" :current="request()->routeIs('knowledge-base')">
                         Build Resources
                     </flux:sidebar.item>
-                    <flux:sidebar.item icon="magnifying-glass" :href="route('legal-research')" :current="request()->routeIs('legal-research*')">
-                        Search Resources
+                    <flux:sidebar.item icon="magnifying-glass" :href="route('legal-research', ['mode' => 'internal'])" :current="request()->routeIs('legal-research*') && request()->query('mode', 'internal') !== 'ai'">
+                        Search Internal Resources
+                    </flux:sidebar.item>
+                    <flux:sidebar.item icon="scale" :href="route('legal-research', ['mode' => 'ai'])" :current="request()->routeIs('legal-research*') && request()->query('mode') === 'ai'">
+                        Search AI Resources
                     </flux:sidebar.item>
                 </flux:sidebar.group>
                 <flux:sidebar.item icon="user-group" :href="route('teams.index')" :current="request()->routeIs('teams.*')">
