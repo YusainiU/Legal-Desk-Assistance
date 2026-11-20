@@ -31,7 +31,7 @@
                             wire:confirm="Remove this saved research note from your Knowledge Base?">Remove</flux:button>
                     </div>
                     <flux:badge color="amber">AI-generated · unverified</flux:badge>
-                    <div class="whitespace-pre-wrap wrap-break-word text-sm">{{ $saved->analysis }}</div>
+                    <div class="legal-markdown text-sm">{!! \Illuminate\Support\Str::markdown($saved->analysis ?? '', ['html_input' => 'strip', 'allow_unsafe_links' => false]) !!}</div>
                 </flux:card>
             @empty
                 <flux:text size="sm">No saved AI research notes match your search.</flux:text>
