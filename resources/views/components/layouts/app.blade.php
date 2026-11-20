@@ -52,7 +52,7 @@
                             AI Search Settings
                         </flux:sidebar.item>
                     @endcan
-                    <flux:sidebar.item icon="book-text" href="https://github.com/YusainiU/Legal-Desk-Assistance/blob/feature/extract-law-resources-package/docs/knowledge-base-user-guide.md" target="_blank" rel="noopener noreferrer">
+                    <flux:sidebar.item icon="book-open" href="https://github.com/YusainiU/Legal-Desk-Assistance/blob/feature/extract-law-resources-package/docs/knowledge-base-user-guide.md" target="_blank" rel="noopener noreferrer">
                         User Guide
                     </flux:sidebar.item>
                 </flux:sidebar.group>
