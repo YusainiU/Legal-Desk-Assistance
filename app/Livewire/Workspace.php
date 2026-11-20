@@ -447,6 +447,10 @@ class Workspace extends Component
 
     private function closeFile(Matter $matter): void
     {
+        if (blank($matter->final_decision)) {
+            throw ValidationException::withMessages(['workflow' => 'Save the Final Decision in its tab before closing this case.']);
+        }
+
         $charges = $matter->timeCharges()->lockForUpdate()->get(['minutes', 'amount_minor']);
         $minutes = $charges->sum('minutes');
         $amount = $charges->sum('amount_minor');

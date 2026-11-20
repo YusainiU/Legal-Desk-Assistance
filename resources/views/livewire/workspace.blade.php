@@ -233,7 +233,7 @@
             </section>
 
             <nav class="flex flex-wrap gap-1 border-b border-zinc-200 pb-2 dark:border-zinc-800" aria-label="Case sections">
-                @foreach (['workflow' => 'Workflow', 'contacts' => 'Contacts', 'documents' => 'Documents', 'references' => 'Legal References', 'tasks' => 'Tasks', 'charges' => 'Time & charges', 'history' => 'Case history'] as $panel => $label)
+                @foreach (['workflow' => 'Workflow', 'contacts' => 'Contacts', 'documents' => 'Documents', 'references' => 'Legal References', 'final-decision' => 'Final Decision', 'tasks' => 'Tasks', 'charges' => 'Time & charges', 'history' => 'Case history'] as $panel => $label)
                     <button type="button" class="desk-case-tab" aria-controls="case-panel-{{ $panel }}"
                         x-bind:aria-pressed="(casePanel === '{{ $panel }}').toString()" x-on:click="casePanel = '{{ $panel }}'">
                         {{ $label }}
@@ -467,6 +467,10 @@
             <section id="case-panel-references" aria-label="Legal References"
                 x-show="casePanel === 'references'" x-cloak tabindex="-1">
                 <livewire:case-references :matter-id="$matter->id" :key="'case-references-'.$matter->id.'-'.$matter->status" />
+            </section>
+            <section id="case-panel-final-decision" aria-label="Final Decision"
+                x-show="casePanel === 'final-decision'" x-cloak tabindex="-1">
+                <livewire:case-final-decision :matter-id="$matter->id" :key="'case-final-decision-'.$matter->id.'-'.$matter->status" />
             </section>
             <section id="case-panel-history" aria-label="Case history"
                 x-show="casePanel === 'history'" x-cloak tabindex="-1">
