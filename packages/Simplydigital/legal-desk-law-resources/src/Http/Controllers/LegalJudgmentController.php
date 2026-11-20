@@ -19,7 +19,7 @@ class LegalJudgmentController
             'citation' => 'nullable|string|max:200',
             'decision_date' => 'nullable|date',
             'source_url' => 'nullable|url:http,https|max:2048',
-            'source_text' => 'required|string|min:80|max:300000',
+            'source_text' => 'required|string|min:80|max:'.config('legal-desk-law-resources.max_judgment_characters', 300000),
             'source_rights_confirmed' => 'accepted',
         ]);
 
