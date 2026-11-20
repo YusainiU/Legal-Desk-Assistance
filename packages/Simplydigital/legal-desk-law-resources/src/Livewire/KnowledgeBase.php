@@ -24,6 +24,15 @@ class KnowledgeBase extends Component
 
     public string $type = '';
 
+    public string $activeTab = 'ai';
+
+    public function setActiveTab(string $tab): void
+    {
+        abort_unless(in_array($tab, ['ai', 'internal'], true), 422);
+        $this->activeTab = $tab;
+        $this->resetPage();
+    }
+
     #[Locked]
     public ?int $copyReferenceId = null;
 
@@ -108,7 +117,12 @@ class KnowledgeBase extends Component
             'references' => $references,
             'internalResearchHistory' => LegalResearch::with(['authorities.legalCase', 'authorities.passage'])->where('user_id', auth()->id())
                 ->where(function (Builder $query) { $query->whereNull('analysis_status')->orWhere('analysis_status', '!=', 'web_research_unverified'); })
-                ->latest('id')->limit(10)->get(),
+                ->when($term !== '', fn (Builder $query) => $query->where(function (Builder $match) use ($term) {
+                    $pattern = '%'.$term.'%';
+                    $match->where('question', 'like', $pattern)->orWhere('analysis', 'like', $pattern)
+                        ->orWhereHas('authorities.legalCase', fn (Builder $case) => $case->where('title', 'like', $pattern)->orWhere('citation', 'like', $pattern));
+                }))
+                ->latest('id')->limit(30)->get(),
             'savedAiResearch' => SavedLegalResearch::where('user_id', auth()->id())
                 ->when(trim($this->search) !== '', fn (Builder $query) => $query
                     ->where(fn (Builder $match) => $match

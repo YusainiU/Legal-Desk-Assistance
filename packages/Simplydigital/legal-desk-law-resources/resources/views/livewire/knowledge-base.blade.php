@@ -9,8 +9,8 @@
     @endif
 
     <flux:card class="desk-panel grid gap-3 sm:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
-        <flux:input type="search" icon="magnifying-glass" label="Search references"
-            wire:model.live.debounce.300ms="search" maxlength="160" placeholder="Title, citation, jurisdiction or reasoning" />
+        <flux:input type="search" icon="magnifying-glass" label="Search library"
+            wire:model.live.debounce.300ms="search" maxlength="160" placeholder="Search research questions, analysis, citations or references" />
         <flux:select label="Reference type" wire:model.live="type">
             <option value="">All types</option>
             @foreach ($types as $value => $label)
@@ -19,20 +19,19 @@
         </flux:select>
     </flux:card>
 
-    <div x-data="{ activeTab: 'ai' }" class="space-y-4">
+    <div class="space-y-4">
         <div role="tablist" aria-label="Library research categories" class="flex gap-5 border-b border-zinc-700">
             <button type="button" role="tab" id="library-tab-ai" aria-controls="library-panel-ai"
-                x-bind:aria-selected="(activeTab === 'ai').toString()"
-                x-on:click="activeTab = 'ai'"
-                x-bind:class="activeTab === 'ai' ? 'border-b-2 border-blue-400 font-semibold text-zinc-100' : 'text-zinc-400 hover:text-zinc-100'"
-                class="px-1 py-3 text-sm">AI Research</button>
+                aria-selected="{{ $activeTab === 'ai' ? 'true' : 'false' }}"
+                wire:click="setActiveTab('ai')"
+                class="{{ $activeTab === 'ai' ? 'border-b-2 border-blue-400 font-semibold text-zinc-100' : 'text-zinc-400 hover:text-zinc-100' }} px-1 py-3 text-sm">AI Research</button>
             <button type="button" role="tab" id="library-tab-internal" aria-controls="library-panel-internal"
-                x-bind:aria-selected="(activeTab === 'internal').toString()"
-                x-on:click="activeTab = 'internal'"
-                x-bind:class="activeTab === 'internal' ? 'border-b-2 border-blue-400 font-semibold text-zinc-100' : 'text-zinc-400 hover:text-zinc-100'"
-                class="px-1 py-3 text-sm">Internal Research</button>
+                aria-selected="{{ $activeTab === 'internal' ? 'true' : 'false' }}"
+                wire:click="setActiveTab('internal')"
+                class="{{ $activeTab === 'internal' ? 'border-b-2 border-blue-400 font-semibold text-zinc-100' : 'text-zinc-400 hover:text-zinc-100' }} px-1 py-3 text-sm">Internal Research</button>
         </div>
-        <div id="library-panel-ai" role="tabpanel" aria-labelledby="library-tab-ai" x-show="activeTab === 'ai'" x-cloak>
+        @if ($activeTab === 'ai')
+        <div id="library-panel-ai" role="tabpanel" aria-labelledby="library-tab-ai">
             @if ($type === '')
             <section class="space-y-3">
                 <flux:heading size="lg">Saved AI legal research</flux:heading>
@@ -63,7 +62,9 @@
                 <flux:text size="sm">Select All types to view saved AI research.</flux:text>
             @endif
         </div>
-        <div id="library-panel-internal" role="tabpanel" aria-labelledby="library-tab-internal" x-show="activeTab === 'internal'" x-cloak>
+        @endif
+        @if ($activeTab === 'internal')
+        <div id="library-panel-internal" role="tabpanel" aria-labelledby="library-tab-internal">
         <section class="space-y-2">
             <flux:heading size="lg">Internal research</flux:heading>
             <flux:text size="sm">Select a research question to review its saved results here.</flux:text>
@@ -102,11 +103,12 @@
                         </div>
                     </li>
                 @empty
-                    <li class="py-3"><flux:text size="sm">No internal research searches yet.</flux:text></li>
+                    <li class="py-3"><flux:text size="sm">{{ $search !== '' ? 'No internal research matches your search.' : 'No internal research searches yet.' }}</flux:text></li>
                 @endforelse
             </ul>
         </section>
         </div>
+        @endif
     </div>
 
     <flux:heading size="lg">Case references</flux:heading>
