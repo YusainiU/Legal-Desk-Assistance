@@ -44,7 +44,7 @@ class CaseReferences extends Component
         $matter = $this->caseRecord();
         abort_unless($matter->status === 'Open', 422);
 
-        $reference = $matter->references()->findOrFail($id);
+        $reference = $matter->references()->whereKeyNot($matter->final_decision_reference_id ?? 0)->findOrFail($id);
         $this->editingReferenceId = $reference->id;
         $this->form = $reference->only(['type', 'title', 'citation', 'jurisdiction', 'source_url', 'applicability']);
         $this->openEditor();
@@ -66,7 +66,7 @@ class CaseReferences extends Component
 
         $this->change(function (Matter $matter) use ($data, $editing) {
             if ($editing) {
-                $matter->references()->findOrFail($this->editingReferenceId)->update($data);
+                $matter->references()->whereKeyNot($matter->final_decision_reference_id ?? 0)->findOrFail($this->editingReferenceId)->update($data);
 
                 return;
             }
@@ -83,7 +83,7 @@ class CaseReferences extends Component
 
     public function deleteReference(int $id): void
     {
-        $this->change(fn (Matter $matter) => $matter->references()->findOrFail($id)->delete());
+        $this->change(fn (Matter $matter) => $matter->references()->whereKeyNot($matter->final_decision_reference_id ?? 0)->findOrFail($id)->delete());
         $this->resetPage('referencePage');
         $this->notice = 'Reference deleted.';
     }
@@ -93,7 +93,7 @@ class CaseReferences extends Component
         $matter = $this->caseRecord();
 
         return view('livewire.case-references', [
-            'references' => $matter->references()->latest('id')->paginate(15, pageName: 'referencePage'),
+            'references' => $matter->references()->whereKeyNot($matter->final_decision_reference_id ?? 0)->latest('id')->paginate(15, pageName: 'referencePage'),
             'types' => CaseReference::TYPES,
             'active' => $matter->status === 'Open',
         ]);
