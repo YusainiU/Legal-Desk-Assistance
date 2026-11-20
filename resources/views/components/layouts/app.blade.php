@@ -31,7 +31,7 @@
                     Contacts
                 </flux:sidebar.item>
                 <flux:sidebar.group heading="Knowledge Base" expandable :expanded="request()->routeIs('knowledge-base', 'legal-research*')">
-                    <flux:sidebar.item icon="book-plus" :href="route('knowledge-base')" :current="request()->routeIs('knowledge-base')">
+                    <flux:sidebar.item icon="book-open" :href="route('knowledge-base')" :current="request()->routeIs('knowledge-base')">
                         Build Resources
                     </flux:sidebar.item>
                     <flux:sidebar.item icon="magnifying-glass" :href="route('legal-research')" :current="request()->routeIs('legal-research*')">
