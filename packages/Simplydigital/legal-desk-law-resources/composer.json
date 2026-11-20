@@ -1,0 +1,23 @@
+{
+  "name": "simplydigital/legal-desk-law-resources",
+  "description": "Reusable legal knowledge base and case law research for Laravel",
+  "type": "library",
+  "license": "proprietary",
+  "require": {
+    "php": "^8.3",
+    "illuminate/support": "^13.0",
+    "livewire/livewire": "^4.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "Simplydigital\\LegalDeskLawResources\\": "src/"
+    }
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "Simplydigital\\LegalDeskLawResources\\LegalDeskLawResourcesServiceProvider"
+      ]
+    }
+  }
+}
