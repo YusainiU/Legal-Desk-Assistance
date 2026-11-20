@@ -7,20 +7,11 @@ use App\Http\Controllers\ContactController;
 use App\Http\Controllers\FirmSettingsController;
 use App\Http\Controllers\TeamController;
 use App\Http\Controllers\UserController;
-use App\Livewire\KnowledgeBase;
-use App\Livewire\LegalResearchDesk;
-use App\Http\Controllers\LegalJudgmentController;
 use App\Livewire\Workspace;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', Workspace::class)->middleware('auth')->name('workspace');
 Route::view('/getting-started', 'getting-started')->middleware('auth')->name('getting-started');
-Route::get('/knowledge-base', KnowledgeBase::class)->middleware('auth')->name('knowledge-base');
-Route::get('/legal-research', LegalResearchDesk::class)->middleware('auth')->name('legal-research');
-Route::post('/legal-research/judgments', [LegalJudgmentController::class, 'store'])
-    ->middleware(['auth', 'can:manage-users', 'throttle:10,1'])->name('legal-research.import');
-Route::get('/legal-research/cases/{legalCase}', [LegalJudgmentController::class, 'show'])
-    ->middleware('auth')->name('legal-research.cases.show');
 
 Route::get('/cases/{matter}/summary', [CaseSummaryController::class, 'show'])
     ->whereNumber('matter')->middleware('auth')->name('cases.summary');

@@ -1,7 +1,7 @@
 <div class="space-y-6">
     <header class="space-y-2">
-        <h1 class="desk-title">Malaysian case law research</h1>
-        <flux:text>Search indexed judgments, examine source passages and attach authorities to your cases.</flux:text>
+        <h1 class="desk-title">{{ request()->query('mode') === 'ai' ? 'Search AI Resources' : 'Search Internal Resources' }}</h1>
+        <flux:text>{{ request()->query('mode') === 'ai' ? 'Research publicly available Malaysian case law using AI-assisted web search.' : 'Search indexed judgments, examine source passages and attach authorities to your cases.' }}</flux:text>
     </header>
 
     @if (session('judgment_imported'))
@@ -29,13 +29,16 @@
                     @endforeach
                 </flux:select>
             </div>
-            <flux:button type="submit" variant="primary" icon="magnifying-glass" wire:loading.attr="disabled" wire:target="runSearch">
-                Search imported judgments
-            </flux:button>
-            <flux:button type="button" variant="primary" wire:click="runAiSearch" wire:loading.attr="disabled" wire:target="runAiSearch">AI Search (public web)</flux:button>
-            <flux:text size="sm" wire:loading wire:target="runAiSearch">Searching public web sources; this may take up to two minutes.</flux:text>
+            @if (request()->query('mode') === 'ai')
+                <flux:button type="button" variant="primary" wire:click="runAiSearch" wire:loading.attr="disabled" wire:target="runAiSearch">AI Search (public web)</flux:button>
+                <flux:text size="sm" wire:loading wire:target="runAiSearch">Searching public web sources; this may take up to two minutes.</flux:text>
+            @else
+                <flux:button type="submit" variant="primary" icon="magnifying-glass" wire:loading.attr="disabled" wire:target="runSearch">
+                    Search imported judgments
+                </flux:button>
+            @endif
         </form>
-        <flux:text size="sm">AI Search uses your OpenAI API key to research public web sources. Imported judgment search uses only your database; neither includes paid CLJ/MLJ access.</flux:text>
+        <flux:text size="sm">{{ request()->query('mode') === 'ai' ? 'AI Search uses your OpenAI API key to research public web sources. Results require independent verification.' : 'Internal search uses only your indexed judgment database.' }} Neither includes paid CLJ/MLJ access.</flux:text>
     </flux:card>
 
     <flux:card class="desk-panel space-y-3">

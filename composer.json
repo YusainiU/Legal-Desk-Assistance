@@ -9,7 +9,10 @@
     "livewire/livewire": "^4.0",
     "laravel/fortify": "^1.43",
     "livewire/flux": "^2.21",
-    "laravel/tinker": "^3.2"
+    "laravel/tinker": "^3.2",
+    "simplydigital/legal-desk-law-resources": "@dev",
+    "simply-digital/laravel-rich-editor": "dev-main",
+    "ezyang/htmlpurifier": "^4.18"
   },
   "autoload": {
     "psr-4": {
@@ -25,5 +28,21 @@
       "Composer\\Config::disableProcessTimeout",
       "npx concurrently -c \"#93c5fd,#c4b5fd\" \"php artisan serve\" \"npm run dev\" --names=server,vite --kill-others"
     ]
+  },
+  "repositories": [
+    {
+      "type": "path",
+      "url": "packages/Simplydigital/legal-desk-law-resources",
+      "options": {
+        "symlink": true
+      }
+    },
+    {
+      "type": "vcs",
+      "url": "https://github.com/YusainiU/Rich-HTML-Editor"
+    }
+  ],
+  "require-dev": {
+    "phpunit/phpunit": "^13.4"
   }
 }

@@ -30,12 +30,29 @@
                 <flux:sidebar.item icon="users" :href="route('contacts.index')" :current="request()->routeIs('contacts.*')">
                     Contacts
                 </flux:sidebar.item>
-                <flux:sidebar.item icon="book-open" :href="route('knowledge-base')" :current="request()->routeIs('knowledge-base')">
-                    Knowledge base
-                </flux:sidebar.item>
-                <flux:sidebar.item icon="scale" :href="route('legal-research')" :current="request()->routeIs('legal-research*')">
-                    Case Law Research
-                </flux:sidebar.item>
+                <flux:sidebar.group heading="Knowledge Base" expandable :expanded="request()->routeIs('knowledge-base', 'library', 'legal-research*', 'ai-resource-search', 'ai-search-admin')">
+                    <flux:sidebar.item icon="book-open" :href="route('knowledge-base')" :current="request()->routeIs('knowledge-base')">
+                        Build Resources
+                    </flux:sidebar.item>
+                    <flux:sidebar.item icon="book-open" :href="route('library')" :current="request()->routeIs('library')">
+                        Library
+                    </flux:sidebar.item>
+                    <flux:sidebar.item icon="magnifying-glass" :href="route('legal-research', ['mode' => 'internal'])" :current="request()->routeIs('legal-research*')">
+                        Court Judgement Builder
+                    </flux:sidebar.item>
+                    <flux:sidebar.item 
+                        icon="scale" 
+                        :href="route('ai-resource-search')" 
+                        :current="request()->routeIs('ai-resource-search')"
+                    >
+                        Search AI Resources
+                    </flux:sidebar.item>
+                    @can('manage-users')
+                        <flux:sidebar.item icon="cog-6-tooth" :href="route('ai-search-admin')" :current="request()->routeIs('ai-search-admin')">
+                            AI Search Settings
+                        </flux:sidebar.item>
+                    @endcan
+                </flux:sidebar.group>
                 <flux:sidebar.item icon="user-group" :href="route('teams.index')" :current="request()->routeIs('teams.*')">
                     Teams
                 </flux:sidebar.item>

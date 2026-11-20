@@ -233,7 +233,7 @@
             </section>
 
             <nav class="flex flex-wrap gap-1 border-b border-zinc-200 pb-2 dark:border-zinc-800" aria-label="Case sections">
-                @foreach (['workflow' => 'Workflow', 'contacts' => 'Contacts', 'documents' => 'Documents', 'references' => 'Legal References', 'tasks' => 'Tasks', 'charges' => 'Time & charges', 'history' => 'Case history'] as $panel => $label)
+                @foreach (['workflow' => 'Workflow', 'contacts' => 'Contacts', 'documents' => 'Documents', 'references' => 'Legal References', 'final-decision' => 'Final Decision', 'tasks' => 'Tasks', 'charges' => 'Time & charges', 'history' => 'Case history'] as $panel => $label)
                     <button type="button" class="desk-case-tab" aria-controls="case-panel-{{ $panel }}"
                         x-bind:aria-pressed="(casePanel === '{{ $panel }}').toString()" x-on:click="casePanel = '{{ $panel }}'">
                         {{ $label }}
@@ -468,6 +468,10 @@
                 x-show="casePanel === 'references'" x-cloak tabindex="-1">
                 <livewire:case-references :matter-id="$matter->id" :key="'case-references-'.$matter->id.'-'.$matter->status" />
             </section>
+            <section id="case-panel-final-decision" aria-label="Final Decision"
+                x-show="casePanel === 'final-decision'" x-cloak tabindex="-1">
+                <livewire:case-final-decision :matter-id="$matter->id" :key="'case-final-decision-'.$matter->id.'-'.$matter->status" />
+            </section>
             <section id="case-panel-history" aria-label="Case history"
                 x-show="casePanel === 'history'" x-cloak tabindex="-1">
                 <flux:card class="desk-panel space-y-5" x-data="{ composing: false }">
@@ -570,6 +574,7 @@
                                 <flux:badge size="sm" :color="$row->status === 'Open' ? 'teal' : ($row->status === 'Declined' ? 'amber' : 'zinc')">
                                     {{ $row->status === 'Open' ? $stages[$row->stage][0] : $row->status }}
                                 </flux:badge>
+                                <button type="button" class="ms-2 text-sm text-accent-content underline underline-offset-2" wire:click="openCaseSummary({{ $row->id }})">Summary</button>
                             </flux:table.cell>
                             <flux:table.cell>{{ $row->owner }}</flux:table.cell>
                             <flux:table.cell>{{ $row->status === 'Open' ? ($row->next_due ?? 'No due date') : '—' }}</flux:table.cell>
@@ -581,4 +586,10 @@
             </flux:table>
         </flux:card>
     @endif
+
+    <flux:modal wire:model.self="showCaseSummary" class="w-full max-w-4xl">
+        @if ($summaryMatter)
+            @include('livewire.partials.case-summary-content', ['summaryMatter' => $summaryMatter])
+        @endif
+    </flux:modal>
 </div>

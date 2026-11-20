@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Matter extends Model
 {
-    protected $fillable = ['user_id', 'team_id', 'title', 'description', 'client', 'party', 'owner', 'practice', 'stage', 'status', 'checks', 'conflict'];
+    protected $fillable = ['user_id', 'team_id', 'title', 'description', 'client', 'party', 'owner', 'practice', 'stage', 'status', 'checks', 'conflict', 'final_decision', 'final_decision_reference_id'];
 
     protected $casts = [
         'checks' => 'array',

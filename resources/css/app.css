@@ -119,3 +119,29 @@
         --tw-ring-color: #63dfba;
     }
 }
+
+/* Markdown output from AI research is parsed safely on the server. */
+@layer components {
+    .legal-markdown { @apply min-w-0 wrap-break-word leading-7 text-zinc-200; }
+    .legal-markdown > :first-child { margin-top: 0; }
+    .legal-markdown > :last-child { margin-bottom: 0; }
+    .legal-markdown h1 { @apply mt-7 mb-3 text-2xl font-bold text-zinc-50; }
+    .legal-markdown h2 { @apply mt-6 mb-3 text-xl font-semibold text-zinc-50; }
+    .legal-markdown h3 { @apply mt-5 mb-2 text-lg font-semibold text-zinc-50; }
+    .legal-markdown h4 { @apply mt-4 mb-2 font-semibold text-zinc-50; }
+    .legal-markdown p { @apply my-3; }
+    .legal-markdown ul { @apply my-3 list-disc ps-6; }
+    .legal-markdown ol { @apply my-3 list-decimal ps-6; }
+    .legal-markdown li { @apply my-1; }
+    .legal-markdown li > p { @apply my-1; }
+    .legal-markdown a { @apply text-blue-300 underline underline-offset-2 hover:text-blue-200; overflow-wrap: anywhere; }
+    .legal-markdown strong { @apply font-semibold text-zinc-50; }
+    .legal-markdown blockquote { @apply my-4 border-s-4 border-zinc-600 ps-4 italic; }
+    .legal-markdown code { @apply rounded bg-zinc-800 px-1 py-0.5 text-xs; }
+    .legal-markdown pre { @apply my-4 overflow-x-auto rounded-lg bg-zinc-900 p-4; }
+    .legal-markdown pre code { @apply bg-transparent p-0; }
+    .legal-markdown hr { @apply my-6 border-zinc-700; }
+    .legal-markdown table { @apply my-4 block w-full overflow-x-auto text-left; }
+    .legal-markdown th, .legal-markdown td { @apply border border-zinc-700 px-3 py-2; }
+    .legal-markdown th { @apply font-semibold text-zinc-50; }
+}
