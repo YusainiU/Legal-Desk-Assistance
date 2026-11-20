@@ -82,7 +82,7 @@ class KnowledgeBase extends Component
     public function removeSavedResearch(int $id): void
     {
         SavedLegalResearch::where('user_id', auth()->id())->findOrFail($id)->delete();
-        $this->notice = 'Saved AI research removed from your Knowledge Base.';
+        $this->notice = 'Saved AI research removed from your Library.';
     }
 
     public function render()
@@ -106,7 +106,7 @@ class KnowledgeBase extends Component
 
         return view('legal-desk-law-resources::livewire.knowledge-base', [
             'references' => $references,
-            'internalResearchHistory' => LegalResearch::where('user_id', auth()->id())
+            'internalResearchHistory' => LegalResearch::with(['authorities.legalCase', 'authorities.passage'])->where('user_id', auth()->id())
                 ->where(function (Builder $query) { $query->whereNull('analysis_status')->orWhere('analysis_status', '!=', 'web_research_unverified'); })
                 ->latest('id')->limit(10)->get(),
             'savedAiResearch' => SavedLegalResearch::where('user_id', auth()->id())

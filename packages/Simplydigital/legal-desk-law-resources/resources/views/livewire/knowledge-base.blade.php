@@ -24,7 +24,7 @@
             <flux:heading size="lg">Saved AI legal research</flux:heading>
             <flux:text size="sm">Personal AI research notes. These are not verified judgments or precedents; check every cited source before relying on them.</flux:text>
             @forelse ($savedAiResearch as $saved)
-                <flux:card class="desk-panel space-y-3" wire:key="saved-ai-research-{{ $saved->id }}">
+                <div class="border-b border-zinc-700 py-3" wire:key="saved-ai-research-{{ $saved->id }}">
                     <div x-data="{ expanded: false }" class="space-y-3">
                         <div class="flex flex-wrap items-center justify-between gap-3">
                             <flux:heading level="3" class="min-w-0 wrap-break-word">{{ $saved->question }}</flux:heading>
@@ -40,38 +40,63 @@
                                 wire:confirm="Remove this saved research note from your Knowledge Base?">Remove</flux:button>
                         </div>
                     </div>
-                </flux:card>
+                </div>
             @empty
                 <flux:text size="sm">No saved AI research notes match your search.</flux:text>
             @endforelse
         </section>
     @endif
 
-    <section class="space-y-3">
-        <flux:heading size="lg">Recent internal research</flux:heading>
-        <flux:text size="sm">Previous searches of imported judgments. Select Open to revisit the results.</flux:text>
-        @forelse ($internalResearchHistory as $item)
-            <flux:card class="desk-panel" wire:key="internal-research-{{ $item->id }}">
-                <div class="flex flex-wrap items-center justify-between gap-3">
-                    <div class="min-w-0">
-                        <flux:heading level="3">{{ $item->question }}</flux:heading>
-                        <flux:text size="sm">{{ $item->created_at->format('d M Y') }}</flux:text>
+    <section class="space-y-2">
+        <flux:heading size="lg">Internal research</flux:heading>
+        <flux:text size="sm">Select a research question to review its saved results here.</flux:text>
+        <ul class="divide-y divide-zinc-700">
+            @forelse ($internalResearchHistory as $item)
+                <li class="py-3" wire:key="internal-research-{{ $item->id }}" x-data="{ expanded: false }">
+                    <button type="button" class="flex w-full items-center justify-between gap-3 text-left"
+                        x-on:click="expanded = !expanded" x-bind:aria-expanded="expanded.toString()">
+                        <span class="min-w-0">
+                            <span class="block font-medium wrap-break-word">{{ $item->question }}</span>
+                            <span class="text-xs text-zinc-400">{{ $item->created_at->format('d M Y') }}</span>
+                        </span>
+                        <span class="shrink-0 text-sm font-medium" x-text="expanded ? 'Less' : 'More'">More</span>
+                    </button>
+                    <div x-show="expanded" x-cloak class="mt-3 space-y-3 text-sm">
+                        <flux:text size="sm">{{ $item->authorities->count() }} indexed passages</flux:text>
+                        @if (filled($item->analysis))
+                            <flux:callout color="amber">AI-generated analysis is unverified. Check the original judgments.</flux:callout>
+                            <div class="legal-markdown">{!! \Illuminate\Support\Str::markdown($item->analysis, ['html_input' => 'strip', 'allow_unsafe_links' => false]) !!}</div>
+                        @endif
+                        @forelse ($item->authorities as $authority)
+                            @if ($authority->legalCase && $authority->passage)
+                                <div class="space-y-2 border-l-2 border-zinc-600 pl-3">
+                                    <div class="font-medium">{{ $authority->legalCase->title }}</div>
+                                    <flux:text size="sm">{{ $authority->legalCase->court }} · {{ $authority->legalCase->citation ?? 'Unreported' }}</flux:text>
+                                    <p class="whitespace-pre-wrap wrap-break-word">{{ $authority->passage->content }}</p>
+                                    <flux:link :href="route('legal-research.cases.show', $authority->legalCase)">Inspect indexed judgment</flux:link>
+                                    @if ($authority->legalCase->source_url)
+                                        <flux:link :href="$authority->legalCase->source_url" target="_blank" rel="noopener noreferrer">Original source</flux:link>
+                                    @endif
+                                </div>
+                            @endif
+                        @empty
+                            <flux:text size="sm">No indexed passages matched this research question.</flux:text>
+                        @endforelse
                     </div>
-                    <flux:button size="sm" variant="outline" :href="route('legal-research', ['research' => $item->id])">Open</flux:button>
-                </div>
-            </flux:card>
-        @empty
-            <flux:text size="sm">No internal research searches yet.</flux:text>
-        @endforelse
+                </li>
+            @empty
+                <li class="py-3"><flux:text size="sm">No internal research searches yet.</flux:text></li>
+            @endforelse
+        </ul>
     </section>
 
     <flux:heading size="lg">Case references</flux:heading>
-    <ul class="space-y-3">
+    <ul class="divide-y divide-zinc-700">
         @forelse ($references as $reference)
-            <li wire:key="knowledge-reference-{{ $reference->id }}">
-                <flux:card class="desk-panel space-y-3">
+            <li class="py-3" wire:key="knowledge-reference-{{ $reference->id }}">
+                <div class="space-y-3">
                     <div class="flex flex-wrap items-start justify-between gap-3">
-                        <div class="min-w-0 space-y-2">
+                        <div class="min-w-0 space-y-1">
                             <flux:badge size="sm" color="blue">{{ $types[$reference->type] ?? 'Other authority' }}</flux:badge>
                             <flux:heading level="2" class="wrap-break-word">{{ $reference->title }}</flux:heading>
                             @if ($reference->citation || $reference->jurisdiction)
@@ -91,7 +116,7 @@
                     @if ($reference->source_url)
                         <flux:link :href="$reference->source_url" target="_blank" rel="noopener noreferrer">Open source</flux:link>
                     @endif
-                </flux:card>
+                </div>
             </li>
         @empty
             <li class="rounded-lg border border-dashed border-zinc-700 px-4 py-5">
