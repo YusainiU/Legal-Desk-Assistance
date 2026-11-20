@@ -76,3 +76,11 @@ Optional `.env` values: `OPENAI_BASE_URL=https://api.openai.com/v1`, `LEGAL_RESE
 ## Save AI research to Knowledge Base
 
 The **Save AI result to Knowledge Base** button appears on successful public-web AI research results. It copies the question and AI analysis into the user-owned `saved_legal_research` table, with a unique `(user_id, legal_research_id)` constraint preventing duplicates. Notes appear in Knowledge Base independently of a client matter, labelled unverified. They are not inserted into verified `CaseReference` entries. Removing a note does not delete its original research history. Run `php artisan migrate` after pulling this feature. Stored AI analysis may contain sensitive client information: use the feature only with authorised research prompts.
+
+## Configurable AI Search provider and jurisdiction
+
+Set `AI_SEARCH_LOCATION=Malaysia` in `.env` (default: Malaysia). The configured location is included in the public legal research prompt. To change jurisdiction, change the variable and run `php artisan optimize:clear`.
+
+The AI provider selection follows the Case Management AIManagement pattern. `App\\Providers\\AIServiceProvider` binds `App\\Contracts\\AI\\AIService` to a provider adapter using `config/ai-management.php`. Set `AI_MANAGEMENT_PROVIDER=openai` and `AI_MANAGEMENT_MODEL=gpt-4o-mini` with `OPENAI_BASE_URL` and `OPENAI_API_KEY`. `AI_CASE_ASSISTANT_ENABLED` is retained as a compatibility configuration flag; it does not currently disable legal web search.
+
+`deepseek` is a recognised provider selection, but its public web search adapter deliberately reports an unsupported-capability error rather than inventing web-grounded legal citations. To enable real DeepSeek web search, integrate a lawful source retrieval tool and cite its results. The internal indexed-judgment AI summariser is not yet migrated to this provider abstraction. The optional `LEGAL_RESEARCH_WEB_SEARCH_MODEL` override remains supported; otherwise the search uses `AI_MANAGEMENT_MODEL`.
