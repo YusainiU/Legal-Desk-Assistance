@@ -1,7 +1,7 @@
 <div class="space-y-5">
     <header class="space-y-2">
-        <h1 class="desk-title">Knowledge base</h1>
-        <flux:text>Search references recorded across your cases.</flux:text>
+        <h1 class="desk-title">Library</h1>
+        <flux:text>Your repository of saved internal case references and AI legal research.</flux:text>
     </header>
 
     @if ($notice)

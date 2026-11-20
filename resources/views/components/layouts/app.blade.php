@@ -30,9 +30,12 @@
                 <flux:sidebar.item icon="users" :href="route('contacts.index')" :current="request()->routeIs('contacts.*')">
                     Contacts
                 </flux:sidebar.item>
-                <flux:sidebar.group heading="Knowledge Base" expandable :expanded="request()->routeIs('knowledge-base', 'legal-research*', 'ai-resource-search')">
+                <flux:sidebar.group heading="Knowledge Base" expandable :expanded="request()->routeIs('knowledge-base', 'library', 'legal-research*', 'ai-resource-search', 'ai-search-admin')">
                     <flux:sidebar.item icon="book-open" :href="route('knowledge-base')" :current="request()->routeIs('knowledge-base')">
                         Build Resources
+                    </flux:sidebar.item>
+                    <flux:sidebar.item icon="library" :href="route('library')" :current="request()->routeIs('library')">
+                        Library
                     </flux:sidebar.item>
                     <flux:sidebar.item icon="magnifying-glass" :href="route('legal-research', ['mode' => 'internal'])" :current="request()->routeIs('legal-research*')">
                         Search Internal Resources
