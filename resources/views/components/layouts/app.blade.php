@@ -37,7 +37,11 @@
                     <flux:sidebar.item icon="magnifying-glass" :href="route('legal-research', ['mode' => 'internal'])" :current="request()->routeIs('legal-research*')">
                         Search Internal Resources
                     </flux:sidebar.item>
-                    <flux:sidebar.item icon="scale" :href="route('ai-resource-search')" :current="request()->routeIs('ai-resource-search')">
+                    <flux:sidebar.item 
+                        icon="scale" 
+                        :href="route('ai-resource-search')" 
+                        :current="request()->routeIs('ai-resource-search')"
+                    >
                         Search AI Resources
                     </flux:sidebar.item>
                     @can('manage-users')
