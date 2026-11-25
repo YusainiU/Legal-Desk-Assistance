@@ -17,12 +17,16 @@ use Livewire\Attributes\Layout;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
 use Livewire\WithFileUploads;
+use Livewire\WithPagination;
+use Livewire\WithoutUrlPagination;
 use Throwable;
 
 #[Layout('components.layouts.app')]
 class Workspace extends Component
 {
-    use WithFileUploads;
+    use WithFileUploads, WithPagination, WithoutUrlPagination;
+
+    private const CASES_PER_PAGE = 15;
 
     #[Locked]
     public ?int $selected = null;
@@ -52,11 +56,13 @@ class Workspace extends Component
     public function updatedSearch(): void
     {
         $this->reset('selectedCases');
+        $this->resetPage('casePage');
     }
 
     public function updatedStatus(): void
     {
         $this->reset('selectedCases');
+        $this->resetPage('casePage');
     }
 
     public function archiveSelected(): void
@@ -95,6 +101,7 @@ class Workspace extends Component
         }, 3);
 
         $this->reset('selectedCases');
+        $this->resetPage('casePage');
         $this->archiveNotice = $count.' case(s) '.($archive ? 'archived.' : 'restored.');
     }
 
@@ -131,6 +138,7 @@ class Workspace extends Component
         abort_unless(in_array($screen, ['register', 'archive', 'guide', 'new'], true), 404);
         $this->reset('selectedCases', 'archiveNotice', 'selected', 'reviewingStage', 'form', 'caseTeamId', 'showTeamEditor', 'caseDescription', 'showDescriptionEditor', 'descriptionSaved', 'decision', 'stageNote', 'stageNoteSaved', 'body', 'document', 'documentStatus', 'showCaseSummary', 'summaryMatterId');
         $this->resetValidation();
+        $this->resetPage('casePage');
         $this->screen = $screen;
     }
 
@@ -461,7 +469,7 @@ class Workspace extends Component
                     $query->where(fn (Builder $match) => $match->whereLike('title', $term)->orWhereLike('client', $term)->orWhereLike('party', $term)->orWhereLike('owner', $term));
                 })
                 ->withMin(['tasks as next_due' => fn (Builder $query) => $query->where('done', false)], 'due_on')
-                ->latest('id')->get();
+                ->latest('id')->paginate(self::CASES_PER_PAGE, pageName: 'casePage');
         }
 
         return view('livewire.workspace', [

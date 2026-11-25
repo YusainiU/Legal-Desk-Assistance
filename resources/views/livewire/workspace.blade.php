@@ -567,6 +567,9 @@
                     @foreach (['Open', 'Closed', 'Declined'] as $value)<option>{{ $value }}</option>@endforeach
                 </flux:select>
             </div>
+            @if (count($selectedCases))
+                <flux:text size="sm">{{ count($selectedCases) }} selected across pages</flux:text>
+            @endif
             <flux:table>
                 <flux:table.columns>
                     <flux:table.column>Select</flux:table.column>
@@ -599,6 +602,7 @@
                     @endforelse
                 </flux:table.rows>
             </flux:table>
+            <x-page-elements.pagination :paginator="$register" />
         </flux:card>
     @endif
 
