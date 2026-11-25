@@ -11,6 +11,7 @@
 
         <flux:card class="desk-panel space-y-4">
             <form method="get" action="{{ route('contacts.index') }}" class="flex flex-wrap items-end gap-2">
+                <input type="hidden" name="sort" value="{{ $sort }}">
                 <div class="w-full max-w-sm">
                     <flux:input name="search" type="search" label="Search contacts" :value="$search" maxlength="160" />
                 </div>
@@ -19,7 +20,11 @@
 
             <flux:table>
                 <flux:table.columns>
-                    <flux:table.column>Name</flux:table.column>
+                    <flux:table.column>
+                        <a class="inline-flex items-center gap-1 hover:underline" href="{{ route('contacts.index', array_merge(request()->except('page'), ['sort' => $sort === 'asc' ? 'desc' : 'asc'])) }}" aria-label="Sort by name {{ $sort === 'asc' ? 'descending' : 'ascending' }}">
+                            Name <span aria-hidden="true">{{ $sort === 'asc' ? '↑' : '↓' }}</span>
+                        </a>
+                    </flux:table.column>
                 </flux:table.columns>
                 <flux:table.rows>
                     @forelse ($contacts as $contact)

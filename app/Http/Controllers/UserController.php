@@ -13,9 +13,11 @@ use Illuminate\View\View;
 
 class UserController
 {
-    public function index(): View
+    public function index(Request $request): View
     {
-        return view('users.index', ['users' => User::query()->orderBy('name')->orderBy('id')->paginate(15)]);
+        $sort = $request->query('sort') === 'desc' ? 'desc' : 'asc';
+
+        return view('users.index', ['users' => User::query()->orderBy('name', $sort)->orderBy('id')->paginate(15)->withQueryString(), 'sort' => $sort]);
     }
 
     public function create(): View

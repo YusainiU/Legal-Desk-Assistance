@@ -15,7 +15,11 @@
         <flux:card class="desk-panel space-y-4">
             <flux:table>
                 <flux:table.columns>
-                    <flux:table.column>User</flux:table.column>
+                    <flux:table.column>
+                        <a class="inline-flex items-center gap-1 hover:underline" href="{{ route('users.index', array_merge(request()->except('page'), ['sort' => $sort === 'asc' ? 'desc' : 'asc'])) }}" aria-label="Sort by name {{ $sort === 'asc' ? 'descending' : 'ascending' }}">
+                            User <span aria-hidden="true">{{ $sort === 'asc' ? '↑' : '↓' }}</span>
+                        </a>
+                    </flux:table.column>
                     <flux:table.column>Role</flux:table.column>
                     <flux:table.column>Workspace access</flux:table.column>
                     <flux:table.column>Actions</flux:table.column>
