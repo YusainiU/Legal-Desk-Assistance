@@ -2,6 +2,8 @@
 
 namespace App\Livewire;
 
+use App\Models\Contact;
+
 use App\Models\Matter;
 use App\Models\MatterEntry;
 use Illuminate\Database\Eloquent\Builder;
@@ -50,7 +52,7 @@ class CaseContacts extends Component
             $matter = $this->caseQuery()->lockForUpdate()->findOrFail($this->matterId);
             abort_unless($matter->allowsContactLink(), 422);
 
-            $contact = auth()->user()->contacts()->findOrFail($this->linkContactId);
+            $contact = Contact::query()->findOrFail($this->linkContactId);
             $matter->contacts()->syncWithoutDetaching([$contact->id]);
         }, 3);
 
@@ -138,7 +140,7 @@ class CaseContacts extends Component
         return view('livewire.case-contacts', [
             'contacts' => $contacts,
             'availableContacts' => $canLink
-                ? auth()->user()->contacts()->whereNotIn('id', $contacts->modelKeys())->orderBy('name')->get()
+                ? Contact::query()->whereNotIn('id', $contacts->modelKeys())->orderBy('name')->get()
                 : collect(),
             'emailContacts' => $contacts->filter(fn ($contact) => filled($contact->email)),
             'canLink' => $canLink,

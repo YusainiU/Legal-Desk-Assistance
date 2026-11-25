@@ -16,7 +16,7 @@ class ContactController
     {
         $search = Str::limit(trim($request->string('search')->toString()), 160, '');
 
-        $contacts = $request->user()->contacts()
+        $contacts = Contact::query()
             ->when($search !== '', function (Builder $query) use ($search) {
                 $term = '%'.$search.'%';
                 $query->where(fn (Builder $match) => $match
@@ -32,14 +32,12 @@ class ContactController
 
     public function edit(Request $request, Contact $contact): View
     {
-        abort_unless((int) $contact->user_id === (int) $request->user()->id, 404);
 
         return view('contacts.form', compact('contact'));
     }
 
     public function update(Request $request, Contact $contact): RedirectResponse
     {
-        abort_unless((int) $contact->user_id === (int) $request->user()->id, 404);
         $contact->update(ContactDetails::validate(
             $request->only(['name', 'email', 'phone', 'organisation']),
             $request->user(),

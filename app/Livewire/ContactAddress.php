@@ -81,6 +81,6 @@ class ContactAddress extends Component
             return Matter::query()->findOrFail($this->matterId)->contacts()->findOrFail($id);
         }
 
-        return $owner->contacts()->findOrFail($id);
+        return Contact::query()->findOrFail($id);
     }
 }

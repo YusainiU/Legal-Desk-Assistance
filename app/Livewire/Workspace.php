@@ -2,6 +2,8 @@
 
 namespace App\Livewire;
 
+use App\Models\Contact;
+
 use App\Models\CaseDocument;
 use App\Models\Matter;
 use App\Models\Team;
@@ -235,7 +237,7 @@ class Workspace extends Component
             return;
         }
 
-        $contact = auth()->user()->contacts()->findOrFail($contactId);
+        $contact = Contact::query()->findOrFail($contactId);
         $this->form['contact_id'] = (string) $contact->id;
         $this->resetValidation('form.contact_id');
     }
@@ -246,14 +248,14 @@ class Workspace extends Component
             'form.title' => 'required|string|max:160',
             'form.team_id' => 'nullable|integer|min:1',
             'form.description' => 'required|string|max:4000',
-            'form.contact_id' => ['required', 'integer', Rule::exists('contacts', 'id')->where('user_id', auth()->id())],
+            'form.contact_id' => ['required', 'integer', Rule::exists('contacts', 'id')],
             'form.party' => 'nullable|string|max:160',
             'form.owner' => 'required|string|max:160',
             'form.practice' => ['required', Rule::in(array_keys(config('matterdesk.practices')))],
         ])['form'];
 
         $matter = DB::transaction(function () use ($data) {
-            $contact = auth()->user()->contacts()->findOrFail($data['contact_id']);
+            $contact = Contact::query()->findOrFail($data['contact_id']);
             unset($data['contact_id']);
             $data['team_id'] = Team::assignmentId(auth()->user(), $data['team_id'] ?? null, 'form.team_id');
             $data['description'] = trim($data['description']);
@@ -487,7 +489,7 @@ class Workspace extends Component
             'teamOptions' => ($this->screen === 'new' || $this->showTeamEditor)
                 ? Team::assignmentOptions(auth()->user(), $matter?->team_id)
                 : collect(),
-            'contactOptions' => $this->screen === 'new' ? auth()->user()->contacts()->orderBy('name')->get() : collect(),
+            'contactOptions' => $this->screen === 'new' ? Contact::query()->orderBy('name')->get() : collect(),
         ]);
     }
 

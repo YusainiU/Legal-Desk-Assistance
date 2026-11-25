@@ -22,7 +22,7 @@ class ContactDetails
             $input['email'] = mb_strtolower($input['email']);
         }
 
-        $uniqueEmail = Rule::unique('contacts', 'email')->where('user_id', $owner->id);
+        $uniqueEmail = Rule::unique('contacts', 'email');
         if ($contact) {
             $uniqueEmail->ignore($contact);
         }
