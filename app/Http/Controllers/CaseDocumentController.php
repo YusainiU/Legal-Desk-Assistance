@@ -42,7 +42,7 @@ class CaseDocumentController
 
     private function authorizedPath(Request $request, CaseDocument $document): string
     {
-        abort_unless($document->matter()->where('user_id', $request->user()->id)->exists(), 404);
+        abort_unless($document->matter()->exists(), 404);
 
         $disk = Storage::disk('local');
         abort_unless($disk->exists($document->path), 404);

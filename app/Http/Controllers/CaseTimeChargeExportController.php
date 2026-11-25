@@ -11,7 +11,7 @@ class CaseTimeChargeExportController
 {
     public function show(Request $request, int $matter): StreamedResponse
     {
-        $case = Matter::query()->where('user_id', $request->user()->id)->findOrFail($matter);
+        $case = Matter::query()->findOrFail($matter);
         $stages = config('matterdesk.stages');
 
         return response()->streamDownload(function () use ($case, $stages) {

@@ -1,6 +1,8 @@
 <div class="space-y-6">
     <nav class="flex flex-wrap items-center gap-2 border-b border-zinc-200 pb-3 dark:border-zinc-800" aria-label="Workspace">
-        <flux:button type="button" :variant="$screen === 'guide' ? 'ghost' : 'filled'" icon="briefcase" wire:click="show('register')">Case register</flux:button>
+        <flux:button type="button" :variant="in_array($screen, ['register', 'detail', 'new'], true) ? 'filled' : 'ghost'" icon="briefcase" wire:click="show('register')">Case register</flux:button>
+        <flux:button type="button" :variant="$screen === 'archive' ? 'filled' : 'ghost'" wire:click="show('archive')">Archive</flux:button>
+        <flux:button type="button" :variant="$screen === 'owners' ? 'filled' : 'ghost'" wire:click="show('owners')">Owners</flux:button>
         <flux:button type="button" :variant="$screen === 'guide' ? 'filled' : 'ghost'" icon="book-open" wire:click="show('guide')">Workflow guide</flux:button>
     </nav>
 
@@ -15,6 +17,50 @@
                 </flux:card>
             @endforeach
         </div>
+        <flux:card class="desk-panel space-y-3">
+            <flux:heading size="lg" level="2">Archive and restore cases</flux:heading>
+            <flux:text size="sm">Archiving removes a case from the Case Register without deleting its records or changing its status or workflow stage. Open, Closed and Declined cases can all be archived.</flux:text>
+            <ol class="list-decimal space-y-2 ps-6 text-sm leading-relaxed">
+                <li>In <strong>Case register</strong>, tick the checkbox beside one or more cases. Select <strong>Archive</strong> and confirm.</li>
+                <li>Select the <strong>Archive</strong> tab to find archived cases. Select a case title to review its details.</li>
+                <li>Tick the cases to return to the register and select <strong>Restore</strong>. They return with their original status and stage.</li>
+            </ol>
+            <flux:text size="sm">Both actions are recorded in Case history with the user’s name. Archiving is not file closure and does not complete outstanding tasks.</flux:text>
+        </flux:card>
+    @elseif ($screen === 'owners')
+        <div class="space-y-1">
+            <h1 class="desk-title">Owners</h1>
+            <flux:text>Current open cases grouped by case owner.</flux:text>
+        </div>
+        @forelse ($ownerGroups as $owner => $cases)
+            <flux:card class="desk-panel space-y-3" wire:key="owner-group-{{ sha1((string) $owner) }}">
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                    <flux:heading size="lg" level="2">{{ $owner ?: 'Unassigned' }}</flux:heading>
+                    <flux:badge>{{ $cases->count() }} {{ \Illuminate\Support\Str::plural('open case', $cases->count()) }}</flux:badge>
+                </div>
+                <flux:table>
+                    <flux:table.columns>
+                        <flux:table.column>Case</flux:table.column>
+                        <flux:table.column>Client</flux:table.column>
+                        <flux:table.column>Stage</flux:table.column>
+                    </flux:table.columns>
+                    <flux:table.rows>
+                        @foreach ($cases as $case)
+                            <flux:table.row :key="$case->id">
+                                <flux:table.cell>
+                                    <button type="button" class="text-left text-accent-content underline underline-offset-2" wire:click="open({{ $case->id }})">{{ $case->title }}</button>
+                                    <flux:text size="sm">MD-{{ $case->id }}</flux:text>
+                                </flux:table.cell>
+                                <flux:table.cell>{{ $case->client }}</flux:table.cell>
+                                <flux:table.cell>{{ $stages[$case->stage][0] ?? 'Open' }}</flux:table.cell>
+                            </flux:table.row>
+                        @endforeach
+                    </flux:table.rows>
+                </flux:table>
+            </flux:card>
+        @empty
+            <flux:card class="desk-panel"><flux:text>No open cases to display.</flux:text></flux:card>
+        @endforelse
     @elseif ($screen === 'new')
         <div class="flex max-w-xl flex-wrap items-center justify-between gap-3">
             <h1 class="desk-title">New case</h1>
@@ -65,7 +111,17 @@
         @endphp
         <div class="space-y-5" wire:key="case-detail-{{ $matter->id }}"
             x-data="{
-                casePanel: 'workflow',
+                casePanel: @js($linkedTaskId !== null ? 'tasks' : 'workflow'),
+                init() {
+                    const taskId = @js($linkedTaskId);
+                    if (taskId !== null) {
+                        this.$nextTick(() => {
+                            const task = document.getElementById('case-task-' + taskId);
+                            task?.focus();
+                            task?.scrollIntoView({ block: 'center' });
+                        });
+                    }
+                },
                 openPanel(panel) {
                     this.casePanel = panel;
                     this.$nextTick(() => document.getElementById('case-panel-' + panel)?.focus());
@@ -85,10 +141,20 @@
                 <div class="flex flex-wrap items-start justify-between gap-3">
                     <h1 class="desk-title">{{ $matter->title }}</h1>
                     @include('livewire.partials.case-summary')
+                    @if ($matter->archived_at)<flux:badge color="amber">Archived</flux:badge>@endif
                 </div>
                 <dl class="flex flex-wrap gap-x-8 gap-y-3 text-sm">
                     <div><dt class="text-zinc-500 dark:text-zinc-400">Client</dt><dd class="font-medium">{{ $matter->client }}</dd></div>
-                    <div><dt class="text-zinc-500 dark:text-zinc-400">Case owner</dt><dd class="font-medium">{{ $matter->owner }}</dd></div>
+                    <div>
+                        <dt class="text-zinc-500 dark:text-zinc-400">Case owner</dt>
+                        <dd class="font-medium">
+                            @if ($active)
+                                <button type="button" class="text-accent-content underline underline-offset-2" wire:click="editCaseOwner" aria-haspopup="dialog">{{ $matter->owner ?: 'Assign Owner' }}</button>
+                            @else
+                                {{ $matter->owner }}
+                            @endif
+                        </dd>
+                    </div>
                     @if ($matter->party)
                         <div><dt class="text-zinc-500 dark:text-zinc-400">Other party</dt><dd class="font-medium">{{ $matter->party }}</dd></div>
                     @endif
@@ -107,6 +173,23 @@
                     </div>
                 </dl>
                 @if ($active)
+                    <flux:modal wire:model.self="showOwnerEditor" class="w-full max-w-md">
+                        <form wire:submit="saveCaseOwner" class="space-y-4">
+                            <flux:heading size="lg">Change case owner</flux:heading>
+                            <flux:select label="Case owner" wire:model="caseOwnerId" required>
+                                <option value="">Select a user</option>
+                                @foreach ($ownerOptions as $owner)
+                                    <option value="{{ $owner->id }}">{{ $owner->name }} ({{ $owner->email }})</option>
+                                @endforeach
+                            </flux:select>
+                            <div class="flex justify-end gap-2">
+                                <flux:modal.close>
+                                    <flux:button type="button" variant="ghost">Cancel</flux:button>
+                                </flux:modal.close>
+                                <flux:button type="submit" variant="primary" wire:loading.attr="disabled" wire:target="saveCaseOwner">Save owner</flux:button>
+                            </div>
+                        </form>
+                    </flux:modal>
                     <flux:modal wire:model.self="showTeamEditor" class="w-full max-w-md">
                         <form wire:submit="saveCaseTeam" class="space-y-4">
                             <flux:heading size="lg">Assign a case team</flux:heading>
@@ -545,10 +628,19 @@
         </div>
     @else
         <div class="flex flex-wrap items-center justify-between gap-3">
-            <h1 class="desk-title">Case register</h1>
-            <flux:button type="button" variant="primary" icon="plus" wire:click="show('new')">New case</flux:button>
+            <h1 class="desk-title">{{ $screen === 'archive' ? 'Archive' : 'Case register' }}</h1>
+            <div class="flex flex-wrap gap-2">
+                @if ($screen === 'archive')
+                    <flux:button type="button" variant="primary" wire:click="restoreSelected" :disabled="empty($selectedCases)" wire:loading.attr="disabled">Restore</flux:button>
+                @else
+                    <flux:button type="button" wire:click="archiveSelected" wire:confirm="Archive the selected cases?" :disabled="empty($selectedCases)" wire:loading.attr="disabled">Archive</flux:button>
+                    <flux:button type="button" variant="primary" icon="plus" wire:click="show('new')">New case</flux:button>
+                @endif
+            </div>
         </div>
         <flux:card class="desk-panel space-y-4">
+            @if ($archiveNotice)<flux:callout color="green" role="status">{{ $archiveNotice }}</flux:callout>@endif
+            @error('selectedCases')<flux:callout color="red">{{ $message }}</flux:callout>@enderror
             <div class="grid gap-3 sm:grid-cols-2">
                 <flux:input type="search" icon="magnifying-glass" wire:model.live.debounce.250ms="search" aria-label="Search cases" placeholder="Search cases" />
                 <flux:select wire:model.live="status" aria-label="Filter by status">
@@ -556,8 +648,12 @@
                     @foreach (['Open', 'Closed', 'Declined'] as $value)<option>{{ $value }}</option>@endforeach
                 </flux:select>
             </div>
+            @if (count($selectedCases))
+                <flux:text size="sm">{{ count($selectedCases) }} selected across pages</flux:text>
+            @endif
             <flux:table>
                 <flux:table.columns>
+                    <flux:table.column>Select</flux:table.column>
                     <flux:table.column>Case</flux:table.column>
                     <flux:table.column>Stage / status</flux:table.column>
                     <flux:table.column>Owner</flux:table.column>
@@ -566,6 +662,9 @@
                 <flux:table.rows>
                     @forelse ($register as $row)
                         <flux:table.row :key="$row->id">
+                            <flux:table.cell>
+                                <input type="checkbox" wire:model.live="selectedCases" value="{{ $row->id }}" aria-label="Select case MD-{{ $row->id }}" class="size-4 rounded border-zinc-400" />
+                            </flux:table.cell>
                             <flux:table.cell>
                                 <flux:button type="button" variant="ghost" size="sm" class="-ms-2" wire:click="open({{ $row->id }})">{{ $row->title }}</flux:button>
                                 <flux:text size="sm">MD-{{ $row->id }} · {{ $row->practice }}</flux:text>
@@ -580,10 +679,11 @@
                             <flux:table.cell>{{ $row->status === 'Open' ? ($row->next_due ?? 'No due date') : '—' }}</flux:table.cell>
                         </flux:table.row>
                     @empty
-                        <flux:table.row><flux:table.cell colspan="4">No matching cases.</flux:table.cell></flux:table.row>
+                        <flux:table.row><flux:table.cell colspan="5">No matching cases.</flux:table.cell></flux:table.row>
                     @endforelse
                 </flux:table.rows>
             </flux:table>
+            <x-page-elements.pagination :paginator="$register" />
         </flux:card>
     @endif
 

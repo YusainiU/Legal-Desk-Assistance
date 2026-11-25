@@ -16,7 +16,9 @@ class ContactController
     {
         $search = Str::limit(trim($request->string('search')->toString()), 160, '');
 
-        $contacts = $request->user()->contacts()
+        $sort = $request->query('sort') === 'desc' ? 'desc' : 'asc';
+
+        $contacts = Contact::query()
             ->when($search !== '', function (Builder $query) use ($search) {
                 $term = '%'.$search.'%';
                 $query->where(fn (Builder $match) => $match
@@ -25,21 +27,19 @@ class ContactController
                     ->orWhereLike('phone', $term)
                     ->orWhereLike('organisation', $term));
             })
-            ->orderBy('name')->orderBy('id')->paginate(25)->withQueryString();
+            ->orderBy('name', $sort)->orderBy('id')->paginate(15)->withQueryString();
 
-        return view('contacts.index', compact('contacts', 'search'));
+        return view('contacts.index', compact('contacts', 'search', 'sort'));
     }
 
     public function edit(Request $request, Contact $contact): View
     {
-        abort_unless((int) $contact->user_id === (int) $request->user()->id, 404);
 
         return view('contacts.form', compact('contact'));
     }
 
     public function update(Request $request, Contact $contact): RedirectResponse
     {
-        abort_unless((int) $contact->user_id === (int) $request->user()->id, 404);
         $contact->update(ContactDetails::validate(
             $request->only(['name', 'email', 'phone', 'organisation']),
             $request->user(),

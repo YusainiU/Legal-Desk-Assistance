@@ -63,6 +63,17 @@ Assign an optional team when creating a case or select **Assign Team** or the as
 
 The **Teams** page lists members, assigned open cases, and incomplete tasks on open cases. Staff see the teams they belong to. Administrators can see all teams. Access to full case records and documents remains scoped to the owning account.
 
+## Archive and restore cases
+
+Archiving removes cases from the Case Register without deleting their records or changing their status or workflow stage. Open, Closed and Declined cases can all be archived.
+
+1. In **Case register**, tick the checkbox beside one or more cases.
+2. Select **Archive** and confirm. The selected cases move to the Archive list.
+3. Open the **Archive** tab to search or filter archived cases, or select a case title to review its details.
+4. Tick one or more archived cases and select **Restore** to return them to the Case Register.
+
+Both actions are recorded in **Case history** with the name of the user who performed them. Restoring a closed or declined case does not reopen it. Archiving is not file closure and does not complete outstanding tasks.
+
 ## Workflow
 
 1. Interview the client and review urgent dates.

@@ -161,7 +161,7 @@ class CaseTimeCharges extends Component
     {
         abort_unless(auth()->check(), 403);
 
-        return Matter::query()->where('user_id', auth()->id())
+        return Matter::query()
             ->when($lock, fn ($query) => $query->lockForUpdate())
             ->findOrFail($this->matterId);
     }

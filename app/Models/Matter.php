@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -10,10 +12,13 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Matter extends Model
 {
+    use HasFactory;
+
     protected $fillable = ['user_id', 'team_id', 'title', 'description', 'client', 'party', 'owner', 'practice', 'stage', 'status', 'checks', 'conflict', 'final_decision', 'final_decision_reference_id'];
 
     protected $casts = [
         'checks' => 'array',
+        'archived_at' => 'datetime',
         'team_id' => 'integer',
         'stage' => 'integer',
         'final_charge_minutes' => 'integer',

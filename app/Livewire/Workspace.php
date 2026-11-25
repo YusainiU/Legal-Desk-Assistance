@@ -2,9 +2,12 @@
 
 namespace App\Livewire;
 
+use App\Models\Contact;
+
 use App\Models\CaseDocument;
 use App\Models\Matter;
 use App\Models\Team;
+use App\Models\User;
 use App\Support\CaseBilling;
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
@@ -17,12 +20,16 @@ use Livewire\Attributes\Layout;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
 use Livewire\WithFileUploads;
+use Livewire\WithPagination;
+use Livewire\WithoutUrlPagination;
 use Throwable;
 
 #[Layout('components.layouts.app')]
 class Workspace extends Component
 {
-    use WithFileUploads;
+    use WithFileUploads, WithPagination, WithoutUrlPagination;
+
+    private const CASES_PER_PAGE = 15;
 
     #[Locked]
     public ?int $selected = null;
@@ -43,7 +50,63 @@ class Workspace extends Component
 
     public string $screen = 'register';
 
+    public array $selectedCases = [];
+
+    public ?string $archiveNotice = null;
+
     public string $search = '';
+
+    public function updatedSearch(): void
+    {
+        $this->reset('selectedCases');
+        $this->resetPage('casePage');
+    }
+
+    public function updatedStatus(): void
+    {
+        $this->reset('selectedCases');
+        $this->resetPage('casePage');
+    }
+
+    public function archiveSelected(): void
+    {
+        $this->changeArchiveState(true);
+    }
+
+    public function restoreSelected(): void
+    {
+        $this->changeArchiveState(false);
+    }
+
+    private function changeArchiveState(bool $archive): void
+    {
+        abort_unless($this->screen === ($archive ? 'register' : 'archive'), 422);
+
+        $ids = $this->validate([
+            'selectedCases' => 'required|array|min:1',
+            'selectedCases.*' => 'required|integer|min:1|distinct',
+        ])['selectedCases'];
+
+        $count = DB::transaction(function () use ($ids, $archive) {
+            $cases = $this->matters()->whereIn('id', $ids)
+                ->when($archive, fn (Builder $query) => $query->whereNull('archived_at'),
+                    fn (Builder $query) => $query->whereNotNull('archived_at'))
+                ->orderBy('id')->lockForUpdate()->get();
+
+            abort_unless($cases->count() === count($ids), 422);
+
+            foreach ($cases as $matter) {
+                $matter->forceFill(['archived_at' => $archive ? now() : null])->save();
+                $this->log($matter, ($archive ? 'Case archived' : 'Case restored to the register').' by '.auth()->user()->name.'.');
+            }
+
+            return $cases->count();
+        }, 3);
+
+        $this->reset('selectedCases');
+        $this->resetPage('casePage');
+        $this->archiveNotice = $count.' case(s) '.($archive ? 'archived.' : 'restored.');
+    }
 
     public string $status = '';
 
@@ -58,6 +121,10 @@ class Workspace extends Component
     public string $caseTeamId = '';
 
     public bool $showTeamEditor = false;
+
+    public string $caseOwnerId = '';
+
+    public bool $showOwnerEditor = false;
 
     public string $decision = '';
 
@@ -75,10 +142,33 @@ class Workspace extends Component
 
     public function show(string $screen): void
     {
-        abort_unless(in_array($screen, ['register', 'guide', 'new'], true), 404);
-        $this->reset('selected', 'reviewingStage', 'form', 'caseTeamId', 'showTeamEditor', 'caseDescription', 'showDescriptionEditor', 'descriptionSaved', 'decision', 'stageNote', 'stageNoteSaved', 'body', 'document', 'documentStatus', 'showCaseSummary', 'summaryMatterId');
+        abort_unless(in_array($screen, ['register', 'archive', 'owners', 'guide', 'new'], true), 404);
+        $this->reset('selectedCases', 'archiveNotice', 'selected', 'linkedTaskId', 'reviewingStage', 'form', 'caseTeamId', 'showTeamEditor', 'caseOwnerId', 'showOwnerEditor', 'caseDescription', 'showDescriptionEditor', 'descriptionSaved', 'decision', 'stageNote', 'stageNoteSaved', 'body', 'document', 'documentStatus', 'showCaseSummary', 'summaryMatterId');
         $this->resetValidation();
+        $this->resetPage('casePage');
         $this->screen = $screen;
+    }
+
+    #[Locked]
+    public ?int $linkedTaskId = null;
+
+    public function mount(): void
+    {
+        if (! request()->has('case')) {
+            return;
+        }
+
+        $data = request()->validate([
+            'case' => 'required|integer|min:1',
+            'task' => 'nullable|integer|min:1',
+        ]);
+
+        $this->open((int) $data['case']);
+
+        if (isset($data['task'])) {
+            $task = $this->matters()->findOrFail($this->selected)->tasks()->findOrFail($data['task']);
+            $this->linkedTaskId = $task->id;
+        }
     }
 
     public function open(int $id): void
@@ -87,6 +177,33 @@ class Workspace extends Component
         $this->show('register');
         $this->selected = $matter->id;
         $this->screen = 'detail';
+    }
+
+    public function editCaseOwner(): void
+    {
+        $matter = $this->matters()->findOrFail($this->selected);
+        abort_unless($matter->status === 'Open', 422);
+
+        $matches = User::query()->where('has_access', true)->where('name', $matter->owner)->limit(2)->pluck('id');
+        $this->caseOwnerId = $matches->count() === 1 ? (string) $matches->first() : '';
+        $this->resetValidation('caseOwnerId');
+        $this->showOwnerEditor = true;
+    }
+
+    public function saveCaseOwner(): void
+    {
+        $data = $this->validate(['caseOwnerId' => ['required', 'integer', Rule::exists('users', 'id')->where('has_access', true)->whereNull('deleted_at')]]);
+
+        $this->change(function (Matter $matter) use ($data) {
+            $owner = User::query()->where('has_access', true)->findOrFail($data['caseOwnerId']);
+            $previous = $matter->owner;
+            $matter->update(['owner' => $owner->name]);
+            if ($previous !== $owner->name) {
+                $this->log($matter, 'Case owner changed from '.$previous.' to '.$owner->name.' by '.auth()->user()->name.'.');
+            }
+        });
+
+        $this->reset('showOwnerEditor', 'caseOwnerId');
     }
 
     public function editCaseTeam(): void
@@ -174,7 +291,7 @@ class Workspace extends Component
             return;
         }
 
-        $contact = auth()->user()->contacts()->findOrFail($contactId);
+        $contact = Contact::query()->findOrFail($contactId);
         $this->form['contact_id'] = (string) $contact->id;
         $this->resetValidation('form.contact_id');
     }
@@ -185,14 +302,14 @@ class Workspace extends Component
             'form.title' => 'required|string|max:160',
             'form.team_id' => 'nullable|integer|min:1',
             'form.description' => 'required|string|max:4000',
-            'form.contact_id' => ['required', 'integer', Rule::exists('contacts', 'id')->where('user_id', auth()->id())],
+            'form.contact_id' => ['required', 'integer', Rule::exists('contacts', 'id')],
             'form.party' => 'nullable|string|max:160',
             'form.owner' => 'required|string|max:160',
             'form.practice' => ['required', Rule::in(array_keys(config('matterdesk.practices')))],
         ])['form'];
 
         $matter = DB::transaction(function () use ($data) {
-            $contact = auth()->user()->contacts()->findOrFail($data['contact_id']);
+            $contact = Contact::query()->findOrFail($data['contact_id']);
             unset($data['contact_id']);
             $data['team_id'] = Team::assignmentId(auth()->user(), $data['team_id'] ?? null, 'form.team_id');
             $data['description'] = trim($data['description']);
@@ -399,19 +516,23 @@ class Workspace extends Component
             ? $this->reviewingStage
             : null;
         $register = collect();
-        if ($this->screen === 'register') {
+        if (in_array($this->screen, ['register', 'archive'], true)) {
             $register = $this->matters()
+                ->when($this->screen === 'archive', fn (Builder $query) => $query->whereNotNull('archived_at'), fn (Builder $query) => $query->whereNull('archived_at'))
                 ->when(in_array($this->status, ['Open', 'Closed', 'Declined'], true), fn (Builder $query) => $query->where('status', $this->status))
                 ->when(trim($this->search) !== '', function (Builder $query) {
                     $term = '%'.trim($this->search).'%';
                     $query->where(fn (Builder $match) => $match->whereLike('title', $term)->orWhereLike('client', $term)->orWhereLike('party', $term)->orWhereLike('owner', $term));
                 })
                 ->withMin(['tasks as next_due' => fn (Builder $query) => $query->where('done', false)], 'due_on')
-                ->latest('id')->get();
+                ->latest('id')->paginate(self::CASES_PER_PAGE, pageName: 'casePage');
         }
 
         return view('livewire.workspace', [
             'register' => $register,
+            'ownerGroups' => $this->screen === 'owners'
+                ? $this->matters()->whereNull('archived_at')->where('status', 'Open')->orderBy('owner')->orderBy('title')->orderBy('id')->get(['id', 'owner', 'title', 'client', 'stage'])->groupBy('owner')
+                : collect(),
             'summaryMatter' => $this->showCaseSummary && $this->summaryMatterId !== null
                 ? $this->matters()->with(['entries' => fn ($query) => $query->where('kind', '!=', 'Task')->latest('created_at')->latest('id')])->findOrFail($this->summaryMatterId)
                 : null,
@@ -425,7 +546,8 @@ class Workspace extends Component
             'teamOptions' => ($this->screen === 'new' || $this->showTeamEditor)
                 ? Team::assignmentOptions(auth()->user(), $matter?->team_id)
                 : collect(),
-            'contactOptions' => $this->screen === 'new' ? auth()->user()->contacts()->orderBy('name')->get() : collect(),
+            'ownerOptions' => $this->showOwnerEditor ? User::query()->where('has_access', true)->orderBy('name')->orderBy('id')->get(['id', 'name', 'email']) : collect(),
+            'contactOptions' => $this->screen === 'new' ? Contact::query()->orderBy('name')->get() : collect(),
         ]);
     }
 
@@ -433,7 +555,7 @@ class Workspace extends Component
     {
         abort_unless(auth()->check(), 403);
 
-        return Matter::query()->where('user_id', auth()->id());
+        return Matter::query();
     }
 
     private function change(Closure $callback): void
