@@ -37,9 +37,7 @@
                 </flux:table.rows>
             </flux:table>
 
-            @if ($contacts->hasPages())
-                <flux:pagination :paginator="$contacts" />
-            @endif
+            <x-page-elements.pagination :paginator="$contacts" label="contacts" :livewire="false" />
         </flux:card>
 
         <livewire:contact-address />

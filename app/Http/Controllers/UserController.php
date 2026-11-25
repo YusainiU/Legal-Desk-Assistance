@@ -15,7 +15,7 @@ class UserController
 {
     public function index(): View
     {
-        return view('users.index', ['users' => User::query()->orderBy('name')->orderBy('id')->paginate(25)]);
+        return view('users.index', ['users' => User::query()->orderBy('name')->orderBy('id')->paginate(15)]);
     }
 
     public function create(): View

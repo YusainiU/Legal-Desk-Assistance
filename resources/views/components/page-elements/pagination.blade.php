@@ -1,8 +1,8 @@
-@props(['paginator'])
+@props(['paginator', 'label' => 'cases', 'livewire' => true])
 
 @if ($paginator->total() > 0)
     <p class="text-center text-sm text-zinc-500 dark:text-zinc-400">
-        Showing {{ $paginator->firstItem() }}–{{ $paginator->lastItem() }} of {{ $paginator->total() }} cases
+        Showing {{ $paginator->firstItem() }}–{{ $paginator->lastItem() }} of {{ $paginator->total() }} {{ $label }}
     </p>
 @endif
 
@@ -20,7 +20,8 @@
                 Previous
             </span>
         @else
-            <button
+            @if ($livewire)
+                <button
                 type="button"
                 wire:click="previousPage('{{ $paginator->getPageName() }}')"
                 wire:loading.attr="disabled"
@@ -29,6 +30,14 @@
             >
                 Previous
             </button>
+            @else
+                <a href="{{ $paginator->previousPageUrl() }}"
+                rel="prev"
+                class="rounded bg-slate-200 px-3 py-2 text-slate-700 hover:bg-slate-300 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+            >
+                Previous
+            </a>
+            @endif
         @endif
 
         {{-- Page numbers --}}
@@ -49,6 +58,7 @@
                     {{ $page }}
                 </span>
             @else
+                @if ($livewire)
                 <button
                     type="button"
                     wire:click="gotoPage({{ $page }}, '{{ $paginator->getPageName() }}')"
@@ -57,12 +67,20 @@
                 >
                     {{ $page }}
                 </button>
+            @else
+                <a href="{{ $paginator->url($page) }}"
+                    class="rounded bg-slate-100 px-3 py-2 text-slate-700 hover:bg-slate-200 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
+                >
+                    {{ $page }}
+                </a>
+            @endif
             @endif
         @endforeach
 
         {{-- Next page --}}
         @if ($paginator->hasMorePages())
-            <button
+            @if ($livewire)
+                <button
                 type="button"
                 wire:click="nextPage('{{ $paginator->getPageName() }}')"
                 wire:loading.attr="disabled"
@@ -71,6 +89,14 @@
             >
                 Next
             </button>
+            @else
+                <a href="{{ $paginator->nextPageUrl() }}"
+                rel="next"
+                class="rounded bg-slate-200 px-3 py-2 text-slate-700 hover:bg-slate-300 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+            >
+                Next
+            </a>
+            @endif
         @else
             <span class="rounded bg-slate-100 px-3 py-2 text-slate-400 dark:bg-slate-800 dark:text-slate-500">
                 Next

@@ -25,7 +25,7 @@ class ContactController
                     ->orWhereLike('phone', $term)
                     ->orWhereLike('organisation', $term));
             })
-            ->orderBy('name')->orderBy('id')->paginate(25)->withQueryString();
+            ->orderBy('name')->orderBy('id')->paginate(15)->withQueryString();
 
         return view('contacts.index', compact('contacts', 'search'));
     }

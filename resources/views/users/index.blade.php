@@ -69,9 +69,7 @@
                 </flux:table.rows>
             </flux:table>
 
-            @if ($users->hasPages())
-                <flux:pagination :paginator="$users" />
-            @endif
+            <x-page-elements.pagination :paginator="$users" label="users" :livewire="false" />
         </flux:card>
     </div>
 </x-layouts.app>
