@@ -77,13 +77,10 @@ class ContactAddress extends Component
         $owner = auth()->user();
         abort_unless($owner, 403);
 
-        $contact = $owner->contacts()->findOrFail($id);
-
         if ($this->matterId !== null) {
-            abort_unless(Matter::query()->whereKey($this->matterId)->where('user_id', $owner->id)
-                ->whereHas('contacts', fn ($query) => $query->whereKey($contact->id))->exists(), 404);
+            return Matter::query()->findOrFail($this->matterId)->contacts()->findOrFail($id);
         }
 
-        return $contact;
+        return $owner->contacts()->findOrFail($id);
     }
 }

@@ -495,7 +495,7 @@ class Workspace extends Component
     {
         abort_unless(auth()->check(), 403);
 
-        return Matter::query()->where('user_id', auth()->id());
+        return Matter::query();
     }
 
     private function change(Closure $callback): void

@@ -60,7 +60,7 @@ class CaseContacts extends Component
     public function contactCreated(int $contactId): void
     {
         $this->caseQuery()->findOrFail($this->matterId)
-            ->contacts()->where('contacts.user_id', auth()->id())->findOrFail($contactId);
+            ->contacts()->findOrFail($contactId);
 
         $this->reportLinkedContact('Contact created and linked to this case.');
     }
@@ -92,7 +92,7 @@ class CaseContacts extends Component
                 return [$existing, null, false];
             }
 
-            $contact = $matter->contacts()->where('contacts.user_id', auth()->id())->find($data['recipientId']);
+            $contact = $matter->contacts()->find($data['recipientId']);
             if (! $contact || ! $contact->email) {
                 throw ValidationException::withMessages(['recipientId' => 'Choose a linked contact with an email address.']);
             }
@@ -132,7 +132,7 @@ class CaseContacts extends Component
     public function render()
     {
         $matter = $this->caseQuery()->findOrFail($this->matterId);
-        $contacts = $matter->contacts()->where('contacts.user_id', auth()->id())->orderBy('contacts.name')->get();
+        $contacts = $matter->contacts()->orderBy('contacts.name')->get();
         $canLink = $matter->status === 'Open' || $contacts->isEmpty();
 
         return view('livewire.case-contacts', [
@@ -158,7 +158,7 @@ class CaseContacts extends Component
     {
         abort_unless(auth()->check(), 403);
 
-        return Matter::query()->where('user_id', auth()->id());
+        return Matter::query();
     }
 
     private function deliveryMailer(): ?string

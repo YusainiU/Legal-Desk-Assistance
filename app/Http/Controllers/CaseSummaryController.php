@@ -11,7 +11,7 @@ class CaseSummaryController
 {
     public function show(Request $request, int $matter): JsonResponse
     {
-        $case = Matter::query()->where('user_id', $request->user()->id)
+        $case = Matter::query()
             ->with(['entries' => fn ($entries) => $entries->where('kind', '!=', 'Task')->latest('created_at')->latest('id'), 'tasks'])
             ->findOrFail($matter);
 

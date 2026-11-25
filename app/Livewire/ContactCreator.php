@@ -40,7 +40,6 @@ class ContactCreator extends Component
 
         $contact = DB::transaction(function () use ($owner, $details) {
             $matter = $this->matterId === null ? null : Matter::query()
-                ->where('user_id', $owner->id)
                 ->lockForUpdate()
                 ->findOrFail($this->matterId);
 
