@@ -14,6 +14,7 @@ class Matter extends Model
 
     protected $casts = [
         'checks' => 'array',
+        'archived_at' => 'datetime',
         'team_id' => 'integer',
         'stage' => 'integer',
         'final_charge_minutes' => 'integer',

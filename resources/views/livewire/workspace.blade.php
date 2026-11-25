@@ -1,6 +1,7 @@
 <div class="space-y-6">
     <nav class="flex flex-wrap items-center gap-2 border-b border-zinc-200 pb-3 dark:border-zinc-800" aria-label="Workspace">
-        <flux:button type="button" :variant="$screen === 'guide' ? 'ghost' : 'filled'" icon="briefcase" wire:click="show('register')">Case register</flux:button>
+        <flux:button type="button" :variant="in_array($screen, ['register', 'detail', 'new'], true) ? 'filled' : 'ghost'" icon="briefcase" wire:click="show('register')">Case register</flux:button>
+        <flux:button type="button" :variant="$screen === 'archive' ? 'filled' : 'ghost'" wire:click="show('archive')">Archive</flux:button>
         <flux:button type="button" :variant="$screen === 'guide' ? 'filled' : 'ghost'" icon="book-open" wire:click="show('guide')">Workflow guide</flux:button>
     </nav>
 
@@ -85,6 +86,7 @@
                 <div class="flex flex-wrap items-start justify-between gap-3">
                     <h1 class="desk-title">{{ $matter->title }}</h1>
                     @include('livewire.partials.case-summary')
+                    @if ($matter->archived_at)<flux:badge color="amber">Archived</flux:badge>@endif
                 </div>
                 <dl class="flex flex-wrap gap-x-8 gap-y-3 text-sm">
                     <div><dt class="text-zinc-500 dark:text-zinc-400">Client</dt><dd class="font-medium">{{ $matter->client }}</dd></div>
@@ -545,10 +547,19 @@
         </div>
     @else
         <div class="flex flex-wrap items-center justify-between gap-3">
-            <h1 class="desk-title">Case register</h1>
-            <flux:button type="button" variant="primary" icon="plus" wire:click="show('new')">New case</flux:button>
+            <h1 class="desk-title">{{ $screen === 'archive' ? 'Archive' : 'Case register' }}</h1>
+            <div class="flex flex-wrap gap-2">
+                @if ($screen === 'archive')
+                    <flux:button type="button" variant="primary" wire:click="restoreSelected" :disabled="empty($selectedCases)" wire:loading.attr="disabled">Restore</flux:button>
+                @else
+                    <flux:button type="button" wire:click="archiveSelected" wire:confirm="Archive the selected cases?" :disabled="empty($selectedCases)" wire:loading.attr="disabled">Archive</flux:button>
+                    <flux:button type="button" variant="primary" icon="plus" wire:click="show('new')">New case</flux:button>
+                @endif
+            </div>
         </div>
         <flux:card class="desk-panel space-y-4">
+            @if ($archiveNotice)<flux:callout color="green" role="status">{{ $archiveNotice }}</flux:callout>@endif
+            @error('selectedCases')<flux:callout color="red">{{ $message }}</flux:callout>@enderror
             <div class="grid gap-3 sm:grid-cols-2">
                 <flux:input type="search" icon="magnifying-glass" wire:model.live.debounce.250ms="search" aria-label="Search cases" placeholder="Search cases" />
                 <flux:select wire:model.live="status" aria-label="Filter by status">
@@ -558,6 +569,7 @@
             </div>
             <flux:table>
                 <flux:table.columns>
+                    <flux:table.column>Select</flux:table.column>
                     <flux:table.column>Case</flux:table.column>
                     <flux:table.column>Stage / status</flux:table.column>
                     <flux:table.column>Owner</flux:table.column>
@@ -566,6 +578,9 @@
                 <flux:table.rows>
                     @forelse ($register as $row)
                         <flux:table.row :key="$row->id">
+                            <flux:table.cell>
+                                <input type="checkbox" wire:model.live="selectedCases" value="{{ $row->id }}" aria-label="Select case MD-{{ $row->id }}" class="size-4 rounded border-zinc-400" />
+                            </flux:table.cell>
                             <flux:table.cell>
                                 <flux:button type="button" variant="ghost" size="sm" class="-ms-2" wire:click="open({{ $row->id }})">{{ $row->title }}</flux:button>
                                 <flux:text size="sm">MD-{{ $row->id }} · {{ $row->practice }}</flux:text>
@@ -580,7 +595,7 @@
                             <flux:table.cell>{{ $row->status === 'Open' ? ($row->next_due ?? 'No due date') : '—' }}</flux:table.cell>
                         </flux:table.row>
                     @empty
-                        <flux:table.row><flux:table.cell colspan="4">No matching cases.</flux:table.cell></flux:table.row>
+                        <flux:table.row><flux:table.cell colspan="5">No matching cases.</flux:table.cell></flux:table.row>
                     @endforelse
                 </flux:table.rows>
             </flux:table>

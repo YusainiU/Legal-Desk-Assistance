@@ -43,7 +43,60 @@ class Workspace extends Component
 
     public string $screen = 'register';
 
+    public array $selectedCases = [];
+
+    public ?string $archiveNotice = null;
+
     public string $search = '';
+
+    public function updatedSearch(): void
+    {
+        $this->reset('selectedCases');
+    }
+
+    public function updatedStatus(): void
+    {
+        $this->reset('selectedCases');
+    }
+
+    public function archiveSelected(): void
+    {
+        $this->changeArchiveState(true);
+    }
+
+    public function restoreSelected(): void
+    {
+        $this->changeArchiveState(false);
+    }
+
+    private function changeArchiveState(bool $archive): void
+    {
+        abort_unless($this->screen === ($archive ? 'register' : 'archive'), 422);
+
+        $ids = $this->validate([
+            'selectedCases' => 'required|array|min:1',
+            'selectedCases.*' => 'required|integer|min:1|distinct',
+        ])['selectedCases'];
+
+        $count = DB::transaction(function () use ($ids, $archive) {
+            $cases = $this->matters()->whereIn('id', $ids)
+                ->when($archive, fn (Builder $query) => $query->whereNull('archived_at'),
+                    fn (Builder $query) => $query->whereNotNull('archived_at'))
+                ->orderBy('id')->lockForUpdate()->get();
+
+            abort_unless($cases->count() === count($ids), 422);
+
+            foreach ($cases as $matter) {
+                $matter->forceFill(['archived_at' => $archive ? now() : null])->save();
+                $this->log($matter, ($archive ? 'Case archived' : 'Case restored to the register').' by '.auth()->user()->name.'.');
+            }
+
+            return $cases->count();
+        }, 3);
+
+        $this->reset('selectedCases');
+        $this->archiveNotice = $count.' case(s) '.($archive ? 'archived.' : 'restored.');
+    }
 
     public string $status = '';
 
@@ -75,8 +128,8 @@ class Workspace extends Component
 
     public function show(string $screen): void
     {
-        abort_unless(in_array($screen, ['register', 'guide', 'new'], true), 404);
-        $this->reset('selected', 'reviewingStage', 'form', 'caseTeamId', 'showTeamEditor', 'caseDescription', 'showDescriptionEditor', 'descriptionSaved', 'decision', 'stageNote', 'stageNoteSaved', 'body', 'document', 'documentStatus', 'showCaseSummary', 'summaryMatterId');
+        abort_unless(in_array($screen, ['register', 'archive', 'guide', 'new'], true), 404);
+        $this->reset('selectedCases', 'archiveNotice', 'selected', 'reviewingStage', 'form', 'caseTeamId', 'showTeamEditor', 'caseDescription', 'showDescriptionEditor', 'descriptionSaved', 'decision', 'stageNote', 'stageNoteSaved', 'body', 'document', 'documentStatus', 'showCaseSummary', 'summaryMatterId');
         $this->resetValidation();
         $this->screen = $screen;
     }
@@ -399,8 +452,9 @@ class Workspace extends Component
             ? $this->reviewingStage
             : null;
         $register = collect();
-        if ($this->screen === 'register') {
+        if (in_array($this->screen, ['register', 'archive'], true)) {
             $register = $this->matters()
+                ->when($this->screen === 'archive', fn (Builder $query) => $query->whereNotNull('archived_at'), fn (Builder $query) => $query->whereNull('archived_at'))
                 ->when(in_array($this->status, ['Open', 'Closed', 'Declined'], true), fn (Builder $query) => $query->where('status', $this->status))
                 ->when(trim($this->search) !== '', function (Builder $query) {
                     $term = '%'.trim($this->search).'%';
