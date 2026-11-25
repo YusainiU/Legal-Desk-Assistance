@@ -142,7 +142,7 @@ class Workspace extends Component
 
     public function show(string $screen): void
     {
-        abort_unless(in_array($screen, ['register', 'archive', 'guide', 'new'], true), 404);
+        abort_unless(in_array($screen, ['register', 'archive', 'owners', 'guide', 'new'], true), 404);
         $this->reset('selectedCases', 'archiveNotice', 'selected', 'linkedTaskId', 'reviewingStage', 'form', 'caseTeamId', 'showTeamEditor', 'caseOwnerId', 'showOwnerEditor', 'caseDescription', 'showDescriptionEditor', 'descriptionSaved', 'decision', 'stageNote', 'stageNoteSaved', 'body', 'document', 'documentStatus', 'showCaseSummary', 'summaryMatterId');
         $this->resetValidation();
         $this->resetPage('casePage');
@@ -530,6 +530,9 @@ class Workspace extends Component
 
         return view('livewire.workspace', [
             'register' => $register,
+            'ownerGroups' => $this->screen === 'owners'
+                ? $this->matters()->whereNull('archived_at')->where('status', 'Open')->orderBy('owner')->orderBy('title')->orderBy('id')->get(['id', 'owner', 'title', 'client', 'stage'])->groupBy('owner')
+                : collect(),
             'summaryMatter' => $this->showCaseSummary && $this->summaryMatterId !== null
                 ? $this->matters()->with(['entries' => fn ($query) => $query->where('kind', '!=', 'Task')->latest('created_at')->latest('id')])->findOrFail($this->summaryMatterId)
                 : null,

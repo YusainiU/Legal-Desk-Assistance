@@ -2,6 +2,7 @@
     <nav class="flex flex-wrap items-center gap-2 border-b border-zinc-200 pb-3 dark:border-zinc-800" aria-label="Workspace">
         <flux:button type="button" :variant="in_array($screen, ['register', 'detail', 'new'], true) ? 'filled' : 'ghost'" icon="briefcase" wire:click="show('register')">Case register</flux:button>
         <flux:button type="button" :variant="$screen === 'archive' ? 'filled' : 'ghost'" wire:click="show('archive')">Archive</flux:button>
+        <flux:button type="button" :variant="$screen === 'owners' ? 'filled' : 'ghost'" wire:click="show('owners')">Owners</flux:button>
         <flux:button type="button" :variant="$screen === 'guide' ? 'filled' : 'ghost'" icon="book-open" wire:click="show('guide')">Workflow guide</flux:button>
     </nav>
 
@@ -16,6 +17,40 @@
                 </flux:card>
             @endforeach
         </div>
+    @elseif ($screen === 'owners')
+        <div class="space-y-1">
+            <h1 class="desk-title">Owners</h1>
+            <flux:text>Current open cases grouped by case owner.</flux:text>
+        </div>
+        @forelse ($ownerGroups as $owner => $cases)
+            <flux:card class="desk-panel space-y-3" wire:key="owner-group-{{ sha1((string) $owner) }}">
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                    <flux:heading size="lg" level="2">{{ $owner ?: 'Unassigned' }}</flux:heading>
+                    <flux:badge>{{ $cases->count() }} {{ \Illuminate\Support\Str::plural('open case', $cases->count()) }}</flux:badge>
+                </div>
+                <flux:table>
+                    <flux:table.columns>
+                        <flux:table.column>Case</flux:table.column>
+                        <flux:table.column>Client</flux:table.column>
+                        <flux:table.column>Stage</flux:table.column>
+                    </flux:table.columns>
+                    <flux:table.rows>
+                        @foreach ($cases as $case)
+                            <flux:table.row :key="$case->id">
+                                <flux:table.cell>
+                                    <button type="button" class="text-left text-accent-content underline underline-offset-2" wire:click="open({{ $case->id }})">{{ $case->title }}</button>
+                                    <flux:text size="sm">MD-{{ $case->id }}</flux:text>
+                                </flux:table.cell>
+                                <flux:table.cell>{{ $case->client }}</flux:table.cell>
+                                <flux:table.cell>{{ $stages[$case->stage][0] ?? 'Open' }}</flux:table.cell>
+                            </flux:table.row>
+                        @endforeach
+                    </flux:table.rows>
+                </flux:table>
+            </flux:card>
+        @empty
+            <flux:card class="desk-panel"><flux:text>No open cases to display.</flux:text></flux:card>
+        @endforelse
     @elseif ($screen === 'new')
         <div class="flex max-w-xl flex-wrap items-center justify-between gap-3">
             <h1 class="desk-title">New case</h1>
