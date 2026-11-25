@@ -40,7 +40,7 @@
                         <ul class="space-y-2 text-sm">
                             @forelse ($team->openCases as $case)
                                 <li>
-                                    <div class="wrap-break-word font-medium">{{ $case->title }}</div>
+                                    <a class="wrap-break-word font-medium text-accent-content underline underline-offset-2" href="{{ route('workspace', ['case' => $case->id]) }}">{{ $case->title }}</a>
                                     <flux:text size="sm">MD-{{ $case->id }} · {{ $case->owner }} · {{ $stages[$case->stage][0] ?? 'Open' }}</flux:text>
                                 </li>
                             @empty
@@ -54,7 +54,7 @@
                         <ul class="space-y-2 text-sm">
                             @forelse ($team->openTasks as $task)
                                 <li>
-                                    <div class="wrap-break-word font-medium">{{ $task->body }}</div>
+                                    <a class="wrap-break-word font-medium text-accent-content underline underline-offset-2" href="{{ route('workspace', ['case' => $task->matter_id, 'task' => $task->id]) }}">{{ $task->body }}</a>
                                     <flux:text size="sm">MD-{{ $task->matter_id }} · {{ $task->matter->title }} · {{ $task->assignee ?? 'Unassigned' }}
                                         @if ($task->due_on) · Due {{ $task->due_on->format('j M Y') }} @endif
                                     </flux:text>

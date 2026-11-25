@@ -143,10 +143,32 @@ class Workspace extends Component
     public function show(string $screen): void
     {
         abort_unless(in_array($screen, ['register', 'archive', 'guide', 'new'], true), 404);
-        $this->reset('selectedCases', 'archiveNotice', 'selected', 'reviewingStage', 'form', 'caseTeamId', 'showTeamEditor', 'caseOwnerId', 'showOwnerEditor', 'caseDescription', 'showDescriptionEditor', 'descriptionSaved', 'decision', 'stageNote', 'stageNoteSaved', 'body', 'document', 'documentStatus', 'showCaseSummary', 'summaryMatterId');
+        $this->reset('selectedCases', 'archiveNotice', 'selected', 'linkedTaskId', 'reviewingStage', 'form', 'caseTeamId', 'showTeamEditor', 'caseOwnerId', 'showOwnerEditor', 'caseDescription', 'showDescriptionEditor', 'descriptionSaved', 'decision', 'stageNote', 'stageNoteSaved', 'body', 'document', 'documentStatus', 'showCaseSummary', 'summaryMatterId');
         $this->resetValidation();
         $this->resetPage('casePage');
         $this->screen = $screen;
+    }
+
+    #[Locked]
+    public ?int $linkedTaskId = null;
+
+    public function mount(): void
+    {
+        if (! request()->has('case')) {
+            return;
+        }
+
+        $data = request()->validate([
+            'case' => 'required|integer|min:1',
+            'task' => 'nullable|integer|min:1',
+        ]);
+
+        $this->open((int) $data['case']);
+
+        if (isset($data['task'])) {
+            $task = $this->matters()->findOrFail($this->selected)->tasks()->findOrFail($data['task']);
+            $this->linkedTaskId = $task->id;
+        }
     }
 
     public function open(int $id): void

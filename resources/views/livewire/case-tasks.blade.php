@@ -28,7 +28,7 @@
             </div>
             <ul class="divide-y divide-zinc-200 dark:divide-zinc-800">
                 @foreach ($tasks as $task)
-                    <li class="flex flex-wrap items-start justify-between gap-3 py-3" wire:key="stage-task-{{ $task->id }}">
+                    <li id="case-task-{{ $task->id }}" tabindex="-1" class="flex flex-wrap items-start justify-between gap-3 py-3 focus:outline-2 focus:outline-offset-2 focus:outline-indigo-500" wire:key="stage-task-{{ $task->id }}">
                         <div class="min-w-0 flex-1 space-y-1">
                             <div class="flex flex-wrap items-center gap-2">
                                 <p class="wrap-break-word text-sm font-medium">{{ $task->body }}</p>

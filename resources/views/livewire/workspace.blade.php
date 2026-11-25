@@ -66,7 +66,17 @@
         @endphp
         <div class="space-y-5" wire:key="case-detail-{{ $matter->id }}"
             x-data="{
-                casePanel: 'workflow',
+                casePanel: @js($linkedTaskId !== null ? 'tasks' : 'workflow'),
+                init() {
+                    const taskId = @js($linkedTaskId);
+                    if (taskId !== null) {
+                        this.$nextTick(() => {
+                            const task = document.getElementById('case-task-' + taskId);
+                            task?.focus();
+                            task?.scrollIntoView({ block: 'center' });
+                        });
+                    }
+                },
                 openPanel(panel) {
                     this.casePanel = panel;
                     this.$nextTick(() => document.getElementById('case-panel-' + panel)?.focus());
