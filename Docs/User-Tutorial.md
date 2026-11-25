@@ -104,3 +104,15 @@ Administrators can open **Teams → New team**, enter a name and description, an
 When creating a case, use **Team (optional)** to assign it alongside the owner. On an existing open case, select **Assign Team** or the assigned team’s name. In **Tasks**, select a team when creating or editing a task. A task can have a different team from its case.
 
 Open **Teams** to see the members, open cases, and incomplete tasks assigned to each team you belong to. Administrators can see all teams. The team list shows assigned work. Full case details and documents are available to the case owner.
+
+## 12. Archive and restore cases
+
+Archiving removes cases from the Case Register without deleting their records or changing their status or workflow stage. Open, Closed and Declined cases can all be archived.
+
+1. In **Case register**, tick the checkbox beside one or more cases.
+2. Select **Archive** and confirm. The selected cases move to the Archive list.
+3. Open the **Archive** tab to search or filter archived cases, or select a case title to review its details.
+4. Tick one or more archived cases and select **Restore** to return them to the Case Register.
+
+Both actions are recorded in **Case history** with the name of the user who performed them. Restoring a closed or declined case does not reopen it. Archiving is not file closure and does not complete outstanding tasks.
+

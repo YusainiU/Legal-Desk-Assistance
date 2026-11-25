@@ -17,6 +17,16 @@
                 </flux:card>
             @endforeach
         </div>
+        <flux:card class="desk-panel space-y-3">
+            <flux:heading size="lg" level="2">Archive and restore cases</flux:heading>
+            <flux:text size="sm">Archiving removes a case from the Case Register without deleting its records or changing its status or workflow stage. Open, Closed and Declined cases can all be archived.</flux:text>
+            <ol class="list-decimal space-y-2 ps-6 text-sm leading-relaxed">
+                <li>In <strong>Case register</strong>, tick the checkbox beside one or more cases. Select <strong>Archive</strong> and confirm.</li>
+                <li>Select the <strong>Archive</strong> tab to find archived cases. Select a case title to review its details.</li>
+                <li>Tick the cases to return to the register and select <strong>Restore</strong>. They return with their original status and stage.</li>
+            </ol>
+            <flux:text size="sm">Both actions are recorded in Case history with the user’s name. Archiving is not file closure and does not complete outstanding tasks.</flux:text>
+        </flux:card>
     @elseif ($screen === 'owners')
         <div class="space-y-1">
             <h1 class="desk-title">Owners</h1>

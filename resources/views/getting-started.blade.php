@@ -9,6 +9,7 @@
                 <flux:link href="#workflow-stages">Follow the nine stages</flux:link>
                 <flux:link href="#reference-search">Find and reuse references</flux:link>
                 <flux:link href="#using-teams">Use teams</flux:link>
+                <flux:link href="#archive-cases">Archive and restore cases</flux:link>
             </nav>
         </header>
 
@@ -96,6 +97,17 @@
                 <li>Open <flux:link :href="route('teams.index')">Teams</flux:link> to see each team’s members, open cases, and incomplete tasks. Staff see their own teams, and administrators can see all teams.</li>
             </ol>
             <flux:text size="sm">The case keeps its owner. Full case details and documents are available to that owner.</flux:text>
+        </flux:card>
+
+        <flux:card id="archive-cases" class="desk-panel space-y-3 scroll-mt-6">
+            <flux:heading size="lg" level="2">6. Archive and restore cases</flux:heading>
+            <flux:text size="sm">Archiving removes a case from the Case Register without deleting its records or changing its status or workflow stage. Open, Closed and Declined cases can all be archived.</flux:text>
+            <ol class="list-decimal space-y-2 ps-6 text-sm leading-relaxed">
+                <li>In <strong>Case register</strong>, tick the checkbox beside one or more cases. Select <strong>Archive</strong> and confirm.</li>
+                <li>Select the <strong>Archive</strong> tab to find archived cases. Select a case title to review its details.</li>
+                <li>Tick the cases to return to the register and select <strong>Restore</strong>. They return with their original status and stage.</li>
+            </ol>
+            <flux:text size="sm">Both actions are recorded in Case history with the user’s name. Archiving is not file closure and does not complete outstanding tasks.</flux:text>
         </flux:card>
 
         <flux:card class="desk-panel flex flex-wrap items-center justify-between gap-3">
