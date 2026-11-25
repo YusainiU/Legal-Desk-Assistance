@@ -7,6 +7,7 @@ use App\Models\Contact;
 use App\Models\CaseDocument;
 use App\Models\Matter;
 use App\Models\Team;
+use App\Models\User;
 use App\Support\CaseBilling;
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
@@ -121,6 +122,10 @@ class Workspace extends Component
 
     public bool $showTeamEditor = false;
 
+    public string $caseOwnerId = '';
+
+    public bool $showOwnerEditor = false;
+
     public string $decision = '';
 
     public string $stageNote = '';
@@ -138,7 +143,7 @@ class Workspace extends Component
     public function show(string $screen): void
     {
         abort_unless(in_array($screen, ['register', 'archive', 'guide', 'new'], true), 404);
-        $this->reset('selectedCases', 'archiveNotice', 'selected', 'reviewingStage', 'form', 'caseTeamId', 'showTeamEditor', 'caseDescription', 'showDescriptionEditor', 'descriptionSaved', 'decision', 'stageNote', 'stageNoteSaved', 'body', 'document', 'documentStatus', 'showCaseSummary', 'summaryMatterId');
+        $this->reset('selectedCases', 'archiveNotice', 'selected', 'reviewingStage', 'form', 'caseTeamId', 'showTeamEditor', 'caseOwnerId', 'showOwnerEditor', 'caseDescription', 'showDescriptionEditor', 'descriptionSaved', 'decision', 'stageNote', 'stageNoteSaved', 'body', 'document', 'documentStatus', 'showCaseSummary', 'summaryMatterId');
         $this->resetValidation();
         $this->resetPage('casePage');
         $this->screen = $screen;
@@ -150,6 +155,33 @@ class Workspace extends Component
         $this->show('register');
         $this->selected = $matter->id;
         $this->screen = 'detail';
+    }
+
+    public function editCaseOwner(): void
+    {
+        $matter = $this->matters()->findOrFail($this->selected);
+        abort_unless($matter->status === 'Open', 422);
+
+        $matches = User::query()->where('has_access', true)->where('name', $matter->owner)->limit(2)->pluck('id');
+        $this->caseOwnerId = $matches->count() === 1 ? (string) $matches->first() : '';
+        $this->resetValidation('caseOwnerId');
+        $this->showOwnerEditor = true;
+    }
+
+    public function saveCaseOwner(): void
+    {
+        $data = $this->validate(['caseOwnerId' => ['required', 'integer', Rule::exists('users', 'id')->where('has_access', true)->whereNull('deleted_at')]]);
+
+        $this->change(function (Matter $matter) use ($data) {
+            $owner = User::query()->where('has_access', true)->findOrFail($data['caseOwnerId']);
+            $previous = $matter->owner;
+            $matter->update(['owner' => $owner->name]);
+            if ($previous !== $owner->name) {
+                $this->log($matter, 'Case owner changed from '.$previous.' to '.$owner->name.' by '.auth()->user()->name.'.');
+            }
+        });
+
+        $this->reset('showOwnerEditor', 'caseOwnerId');
     }
 
     public function editCaseTeam(): void
@@ -489,6 +521,7 @@ class Workspace extends Component
             'teamOptions' => ($this->screen === 'new' || $this->showTeamEditor)
                 ? Team::assignmentOptions(auth()->user(), $matter?->team_id)
                 : collect(),
+            'ownerOptions' => $this->showOwnerEditor ? User::query()->where('has_access', true)->orderBy('name')->orderBy('id')->get(['id', 'name', 'email']) : collect(),
             'contactOptions' => $this->screen === 'new' ? Contact::query()->orderBy('name')->get() : collect(),
         ]);
     }

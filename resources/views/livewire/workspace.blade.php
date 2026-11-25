@@ -90,7 +90,16 @@
                 </div>
                 <dl class="flex flex-wrap gap-x-8 gap-y-3 text-sm">
                     <div><dt class="text-zinc-500 dark:text-zinc-400">Client</dt><dd class="font-medium">{{ $matter->client }}</dd></div>
-                    <div><dt class="text-zinc-500 dark:text-zinc-400">Case owner</dt><dd class="font-medium">{{ $matter->owner }}</dd></div>
+                    <div>
+                        <dt class="text-zinc-500 dark:text-zinc-400">Case owner</dt>
+                        <dd class="font-medium">
+                            @if ($active)
+                                <button type="button" class="text-accent-content underline underline-offset-2" wire:click="editCaseOwner" aria-haspopup="dialog">{{ $matter->owner ?: 'Assign Owner' }}</button>
+                            @else
+                                {{ $matter->owner }}
+                            @endif
+                        </dd>
+                    </div>
                     @if ($matter->party)
                         <div><dt class="text-zinc-500 dark:text-zinc-400">Other party</dt><dd class="font-medium">{{ $matter->party }}</dd></div>
                     @endif
@@ -109,6 +118,23 @@
                     </div>
                 </dl>
                 @if ($active)
+                    <flux:modal wire:model.self="showOwnerEditor" class="w-full max-w-md">
+                        <form wire:submit="saveCaseOwner" class="space-y-4">
+                            <flux:heading size="lg">Change case owner</flux:heading>
+                            <flux:select label="Case owner" wire:model="caseOwnerId" required>
+                                <option value="">Select a user</option>
+                                @foreach ($ownerOptions as $owner)
+                                    <option value="{{ $owner->id }}">{{ $owner->name }} ({{ $owner->email }})</option>
+                                @endforeach
+                            </flux:select>
+                            <div class="flex justify-end gap-2">
+                                <flux:modal.close>
+                                    <flux:button type="button" variant="ghost">Cancel</flux:button>
+                                </flux:modal.close>
+                                <flux:button type="submit" variant="primary" wire:loading.attr="disabled" wire:target="saveCaseOwner">Save owner</flux:button>
+                            </div>
+                        </form>
+                    </flux:modal>
                     <flux:modal wire:model.self="showTeamEditor" class="w-full max-w-md">
                         <form wire:submit="saveCaseTeam" class="space-y-4">
                             <flux:heading size="lg">Assign a case team</flux:heading>
