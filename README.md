@@ -1,25 +1,41 @@
 # Legal Desk Assistance
 
-An authenticated legal matter workflow prototype built with Laravel 13, Livewire 4, Tailwind CSS 4, and MySQL. The matter register keeps a case history, checklists, tasks, deadlines, client updates, and billing records for each signed-in account.
+A self-hosted, single-firm legal case management application built with Laravel 13, Livewire 4, Flux UI, Tailwind CSS 4 and MySQL. Authenticated staff share the case register and contacts. It is not a multi-tenant application or a substitute for professional legal advice.
 
 See the [user tutorial](Docs/User-Tutorial.md) for a walkthrough from sign-in to file closure.
 
 ## Run locally
 
-Install PHP 8.3 or newer with the Laravel extensions and `pdo_mysql`, Composer, Node.js 22.12 or newer, and a MySQL server. Create a MySQL database and user with access to that database. Configure the database settings in `.env` before running the migration.
+Install PHP 8.4.1 or newer (required by the current lockfile) with the Laravel extensions and `pdo_mysql`, Composer, Node.js 22.12 or newer, and a MySQL server. Create a MySQL database and user with access to that database. Configure the database settings in `.env` before running the migration.
 
 ```sh
 cp .env.example .env
 composer install
 php artisan key:generate
 php artisan migrate
-npm install
+npm ci
 npm run build
-php artisan matterdesk:user demo@example.test --demo
+php artisan legal-desk:setup-super-admin
 php artisan serve
 ```
 
-Open http://localhost:8000 and use the account and password entered at the prompt. The optional `--demo` flag adds a fictional sample matter. To work on the styles with Vite hot reload, run `npm run dev` in a separate terminal. For a hosted environment, point the web root at `public/`, set `APP_ENV=production` and `APP_DEBUG=false`, and serve it over HTTPS.
+Open http://localhost:8000 and sign in as `legaldesk@admin.test` with the password set at the prompt. Create staff accounts through Users. Demo data is optional and intended only for local/testing environments. To work on the styles with Vite hot reload, run `npm run dev` in a separate terminal. For a hosted environment, point the web root at `public/`, set `APP_ENV=production` and `APP_DEBUG=false`, and serve it over HTTPS.
+
+## Features
+
+- Dashboard with open case counts, task deadlines and workflow stage totals.
+- Nine-stage case register, archive and restore, ownership and incomplete task views.
+- Task deadlines with configurable warning hours, contacts, teams, private documents and time charges.
+- Knowledge base, judgment library, AI-assisted legal research and case references.
+- User administration, firm settings and Super Admin login audit log.
+
+AI research is optional and requires provider configuration in .env. Verify citations and avoid submitting confidential client information without appropriate authorization and safeguards.
+
+See the [Knowledge Base guide](docs/knowledge-base-user-guide.md), [security policy](SECURITY.md), [contribution guide](CONTRIBUTING.md) and [release checklist](Docs/Public-Release-Checklist.md).
+
+## Licence
+
+The application and bundled legal resources package currently declare a proprietary licence. No open-source licence has been granted. Repository visibility does not change those terms.
 
 ## Application structure
 
@@ -53,7 +69,7 @@ This command prompts for a password and confirmation. An existing enabled accoun
 
 Sign in as Super Admin, select **Users**, and set a user’s role to **Administrator** to grant admin access. Administrators can manage staff accounts and view **Firm settings**. Only the Super Admin can grant the Administrator role or change Firm settings. New users need **Granted** workspace access to sign in.
 
-Deleting an account blocks sign-in and removes it from the Users page while retaining its existing case records. Use **Revoked** to suspend an account you may need to reactivate. Cases remain scoped to their owning account. Public self-registration is disabled.
+Deleting an account blocks sign-in and removes it from the Users page while retaining its existing case records. Use **Revoked** to suspend an account you may need to reactivate. Case and contact records are shared across authenticated firm staff. Case ownership identifies responsibility, not an access boundary. Public self-registration is disabled.
 
 ## Teams
 
@@ -61,7 +77,7 @@ Administrators can open **Teams → New team**, enter the required name and desc
 
 Assign an optional team when creating a case or select **Assign Team** or the assigned team’s name on an open case. The case retains its owner. Tasks have a separate optional team field, so a task can be assigned to a different team from its case.
 
-The **Teams** page lists members, assigned open cases, and incomplete tasks on open cases. Staff see the teams they belong to. Administrators can see all teams. Access to full case records and documents remains scoped to the owning account.
+The **Teams** page lists members, assigned open cases, and incomplete tasks on open cases. Staff see the teams they belong to. Administrators can see all teams. Team membership does not isolate the shared case register.
 
 ## Archive and restore cases
 
@@ -88,4 +104,4 @@ Both actions are recorded in **Case history** with the name of the user who perf
 
 Client updates and billing entries can be recorded throughout an open matter. The app records milestones and notes for work handled externally, including signing, issuing invoices, collecting payments, and communicating with clients.
 
-The Laravel application starts with its own database. The existing static demonstration uses browser storage. The Laravel port does not import those records. Case access is account-scoped. Task assignees are recorded by name, and team assignments appear in the Teams page.
+The Laravel application starts with its own database. The existing static demonstration uses browser storage. The Laravel port does not import those records. Case access is shared within the firm. Task assignees are recorded by name, and team assignments appear in the Teams page.

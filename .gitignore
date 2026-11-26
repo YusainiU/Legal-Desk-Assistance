@@ -9,3 +9,16 @@
 /storage/framework/sessions/*
 /storage/framework/views/*
 !.gitkeep
+
+/.env.*
+!/.env.example
+/auth.json
+/public/storage
+/storage/app/
+/database/*.sqlite*
+*.log
+*:Zone.Identifier
+.DS_Store
+Thumbs.db
+/.phpunit.cache/
+/.phpunit.result.cache
