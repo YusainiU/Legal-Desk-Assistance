@@ -27,7 +27,7 @@ Open http://localhost:8000 and sign in as `legaldesk@admin.test` with the passwo
 - Nine-stage case register, archive and restore, ownership and incomplete task views.
 - Task deadlines with configurable warning hours, contacts, teams, private documents and time charges.
 - Knowledge base, judgment library, AI-assisted legal research and case references.
-- User administration, firm settings and Super Admin login audit log.
+- User administration, configurable page access for individual users and permission groups, firm settings and Super Admin login audit log.
 
 AI research is optional and requires provider configuration in .env. Verify citations and avoid submitting confidential client information without appropriate authorization and safeguards.
 
@@ -70,6 +70,18 @@ This command prompts for a password and confirmation. An existing enabled accoun
 Sign in as Super Admin, select **Users**, and set a user’s role to **Administrator** to grant admin access. Administrators can manage staff accounts and view **Firm settings**. Only the Super Admin can grant the Administrator role or change Firm settings. New users need **Granted** workspace access to sign in.
 
 Deleting an account blocks sign-in and removes it from the Users page while retaining its existing case records. Use **Revoked** to suspend an account you may need to reactivate. Case and contact records are shared across authenticated firm staff. Case ownership identifies responsibility, not an access boundary. Public self-registration is disabled.
+
+## Page access and permissions
+
+Sign in as an active Super Admin and open **Administration → Page Access & Permissions**. Create permission groups, select their members, and save them. Groups are independent of operational teams; users can belong to multiple groups.
+
+Under **Page permissions**, expand a page and choose **All eligible active users** (the default) or **Selected users and groups only**. In restricted mode, select permitted groups and/or individual users, then select **Save permissions**. Either a direct grant or membership in an allowed group is sufficient. An empty restricted list denies ordinary users and administrators. Active Super Admins retain access.
+
+Configurable pages include Case Register, Contacts, Teams, Build Resources, Library, Court Judgement Builder, Search AI Resources, AI Search Settings, Users, Firm Settings, Login Audit Log, Knowledge Base Guide and Getting Started. Existing role requirements still apply; a page grant does not make a staff member an administrator. Dashboard, authentication and permission administration remain available according to existing account and role rules.
+
+Restricted sidebar links are hidden and direct requests are guarded server-side, including associated document and export routes. The Dashboard hides case statistics when Case Register access is denied. Page permissions do not isolate individual cases or prevent related information appearing in other permitted modules.
+
+For an existing installation, run `php artisan migrate` and `php artisan optimize:clear` after updating. See the [user tutorial](Docs/User-Tutorial.md#13-manage-page-access-and-permissions) and [technical permission guide](Docs/Page-Permissions.md).
 
 ## Teams
 

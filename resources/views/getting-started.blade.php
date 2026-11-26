@@ -10,6 +10,7 @@
                 <flux:link href="#reference-search">Find and reuse references</flux:link>
                 <flux:link href="#using-teams">Use teams</flux:link>
                 <flux:link href="#archive-cases">Archive and restore cases</flux:link>
+                <flux:link href="#page-permissions">Page access and permissions</flux:link>
             </nav>
         </header>
 
@@ -96,7 +97,7 @@
                 <li>Choose <strong>Team (optional)</strong> when creating a case, or select <strong>Assign Team</strong> or the assigned team’s name on an open case. A team can also be set separately when creating or editing a task.</li>
                 <li>Open <flux:link :href="route('teams.index')">Teams</flux:link> to see each team’s members, open cases, and incomplete tasks. Staff see their own teams, and administrators can see all teams.</li>
             </ol>
-            <flux:text size="sm">The case keeps its owner. Full case details and documents are available to that owner.</flux:text>
+            <flux:text size="sm">The case keeps its owner. Case details and documents are shared among eligible staff with Case Register access; ownership identifies responsibility.</flux:text>
         </flux:card>
 
         <flux:card id="archive-cases" class="desk-panel space-y-3 scroll-mt-6">
@@ -108,6 +109,21 @@
                 <li>Tick the cases to return to the register and select <strong>Restore</strong>. They return with their original status and stage.</li>
             </ol>
             <flux:text size="sm">Both actions are recorded in Case history with the user’s name. Archiving is not file closure and does not complete outstanding tasks.</flux:text>
+        </flux:card>
+
+        <flux:card id="page-permissions" class="desk-panel space-y-3 scroll-mt-6">
+            <flux:heading size="lg" level="2">7. Manage page access and permissions</flux:heading>
+            <flux:text>Only an active Super Admin can configure page permissions. Permission groups are separate from operational teams.</flux:text>
+            <ol class="list-decimal space-y-2 ps-6 text-sm leading-relaxed">
+                <li>Open <strong>Administration → Page Access &amp; Permissions</strong>. Expand <strong>Create permission group</strong>, enter a name, select members and save using <strong>Create group</strong>.</li>
+                <li>Under <strong>Page permissions</strong>, expand a page such as Search AI Resources. Choose <strong>Selected users and groups only</strong>, tick the allowed groups or individual users and select <strong>Save permissions</strong>.</li>
+                <li>Test with an ordinary staff account. Restricted sidebar links are hidden and unauthorized direct requests are denied. Choose <strong>All eligible active users</strong> and save to remove the restriction.</li>
+            </ol>
+            <flux:text size="sm">A direct grant or any permitted group membership allows access, subject to existing role requirements. An empty restricted list denies everyone except active Super Admins. Dashboard and sign-out remain available; case statistics are hidden without Case Register access.</flux:text>
+            <flux:text size="sm">Page permissions do not isolate individual cases or prevent related information appearing in other permitted modules.</flux:text>
+            @can('manage-page-permissions')
+                <flux:button :href="route('admin.page-permissions.index')">Open Page Access &amp; Permissions</flux:button>
+            @endcan
         </flux:card>
 
         <flux:card class="desk-panel flex flex-wrap items-center justify-between gap-3">

@@ -103,7 +103,7 @@ Administrators can open **Teams → New team**, enter a name and description, an
 
 When creating a case, use **Team (optional)** to assign it alongside the owner. On an existing open case, select **Assign Team** or the assigned team’s name. In **Tasks**, select a team when creating or editing a task. A task can have a different team from its case.
 
-Open **Teams** to see the members, open cases, and incomplete tasks assigned to each team you belong to. Administrators can see all teams. The team list shows assigned work. Full case details and documents are available to the case owner.
+Open **Teams** to see the members, open cases, and incomplete tasks assigned to each team you belong to. Administrators can see all teams. The team list shows assigned work. Case details and documents remain shared among eligible staff with Case Register access; ownership identifies responsibility.
 
 ## 12. Archive and restore cases
 
@@ -116,3 +116,29 @@ Archiving removes cases from the Case Register without deleting their records or
 
 Both actions are recorded in **Case history** with the name of the user who performed them. Restoring a closed or declined case does not reopen it. Archiving is not file closure and does not complete outstanding tasks.
 
+
+## 13. Manage page access and permissions
+
+Only an active Super Admin can configure this facility. Open **Administration → Page Access & Permissions** in the sidebar.
+
+### Create a permission group
+
+1. Expand **Create permission group** under **Permission groups**.
+2. Enter a name, such as Research Team, and tick the active users who should belong to it.
+3. Select **Create group**. Expand an existing group to change its name or membership and select **Save group**. Use **Delete group** to remove it and its grants.
+
+Permission groups are separate from operational Teams. A user may belong to several groups.
+
+### Restrict a page
+
+1. Under **Page permissions**, expand **Search AI Resources**, for example.
+2. Choose **Selected users and groups only** in **Access mode**.
+3. Tick Research Team under **Permission groups** and any additional individual users under **Individual users**.
+4. Select **Save permissions**.
+5. Sign in using an ordinary staff account in a separate browser session. Verify that a permitted user can open the page and an unpermitted user cannot see its sidebar link or access its direct URL (HTTP 403).
+
+Choose **All eligible active users** and save to remove the additional restriction. In restricted mode, either a direct user grant or a permitted group membership is sufficient. Removing one grant does not revoke access if another grant still applies. An empty restricted list denies everyone except active Super Admins.
+
+The configurable pages are Case Register, Contacts, Teams, Build Resources, Library, Court Judgement Builder, Search AI Resources, AI Search Settings, Users, Firm Settings, Login Audit Log, Knowledge Base Guide and Getting Started. Existing administrative roles remain required where applicable. Dashboard, sign-in, sign-out and permission administration are not configurable; the Dashboard hides case statistics if Case Register access is denied.
+
+Page access is not confidential-case access. Information from a case may still appear in another permitted module. Case and document policies and workflow rules continue to apply. See [Page Permissions](Page-Permissions.md) for technical details.
