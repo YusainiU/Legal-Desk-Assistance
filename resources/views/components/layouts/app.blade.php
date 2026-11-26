@@ -67,6 +67,13 @@
                         Firm settings
                     </flux:sidebar.item>
                 @endcan
+                @can('view-login-audit')
+                    <flux:sidebar.group heading="Administration">
+                        <flux:sidebar.item icon="shield-check" :href="route('admin.login-audit')" :current="request()->routeIs('admin.login-audit')">
+                            Login Audit Log
+                        </flux:sidebar.item>
+                    </flux:sidebar.group>
+                @endcan
             </flux:sidebar.nav>
 
             <flux:spacer />
