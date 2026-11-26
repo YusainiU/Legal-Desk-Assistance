@@ -68,6 +68,8 @@ export function caseSummaryDefinition(summary) {
             { text: value(record.description) },
             section('Completed stages'),
             ...(completed.length ? completed : [{ text: 'No stages have been completed.' }]),
+            section('Final decision'),
+            { text: record.finalDecision || 'No final decision has been recorded.' },
             section('Case history'),
             ...(timeline.length ? timeline : [{ text: 'No history has been recorded.' }]),
         ],

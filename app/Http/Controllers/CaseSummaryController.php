@@ -6,6 +6,7 @@ use App\Models\FirmSetting;
 use App\Models\Matter;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Simplydigital\LegalDeskLawResources\Support\LegalHtmlSanitizer;
 
 class CaseSummaryController
 {
@@ -41,6 +42,11 @@ class CaseSummaryController
             ];
         }
 
+        $decision = LegalHtmlSanitizer::clean($case->final_decision);
+        $decision = preg_replace('~<br\s*/?>|</(?:p|div|h[1-4]|li|blockquote|tr)>~i', "\n", $decision);
+        $decision = preg_replace('~</(?:td|th)>~i', "  ", $decision);
+        $decision = trim(html_entity_decode(strip_tags($decision), ENT_QUOTES | ENT_HTML5, 'UTF-8'));
+
         return response()->json([
             'firm' => FirmSetting::displayName(),
             'generated' => now()->format('j M Y'),
@@ -53,6 +59,7 @@ class CaseSummaryController
                 'otherParty' => $case->party,
                 'owner' => $case->owner,
                 'description' => $case->description,
+                'finalDecision' => $decision,
             ],
             'stages' => $completed,
             'history' => $case->entries->map(fn ($entry) => [
