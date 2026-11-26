@@ -2,7 +2,7 @@
   "name": "simplydigital/legal-desk-law-resources",
   "description": "Reusable legal knowledge base and case law research for Laravel",
   "type": "library",
-  "license": "proprietary",
+  "license": "GPL-3.0-only",
   "require": {
     "php": "^8.3",
     "illuminate/support": "^13.0",
