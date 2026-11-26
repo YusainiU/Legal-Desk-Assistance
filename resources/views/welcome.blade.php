@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Legal Desk Assistance brings case management, nine-stage workflows, legal knowledge and AI-assisted research together for modern law firms.">
+    <meta name="description" content="Legal Desk Assistance brings case management, nine-stage workflows, legal knowledge, AI-assisted research, access controls and audit tools together for modern law firms.">
     <title>Legal Desk Assistance — Case Management &amp; AI Legal Research</title>
     @vite(['resources/css/app.css'])
 </head>
@@ -17,7 +17,8 @@
             <nav aria-label="Main navigation" class="flex items-center gap-3 sm:gap-6">
                 <a href="#features" class="hidden text-sm text-slate-300 hover:text-white sm:inline">Features</a>
                 <a href="#workflow" class="hidden text-sm text-slate-300 hover:text-white sm:inline">Workflow</a>
-                <a href="#research" class="hidden text-sm text-slate-300 hover:text-white sm:inline">AI Research</a>
+                <a href="#research" class="hidden text-sm text-slate-300 hover:text-white lg:inline">AI Research</a>
+                <a href="#security" class="hidden text-sm text-slate-300 hover:text-white lg:inline">Security</a>
                 @auth
                     <a href="{{ route('dashboard') }}" class="rounded-lg bg-amber-300 px-4 py-2.5 text-sm font-bold text-slate-950 hover:bg-amber-200">Open workspace</a>
                 @else
@@ -64,7 +65,7 @@
             <section id="features" class="border-y border-white/10 bg-slate-950/35 py-20 scroll-mt-10">
                 <div class="mx-auto max-w-7xl px-5 sm:px-8">
                     <p class="text-sm font-bold uppercase tracking-widest text-amber-300">One connected workspace</p>
-                    <h2 class="mt-3 max-w-3xl text-3xl font-bold sm:text-4xl">Everything your practice needs to keep casework organised.</h2>
+                    <h2 class="mt-3 max-w-3xl text-3xl font-bold sm:text-4xl">Tools to keep your practice and casework organised.</h2>
                     <div class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                         @foreach ([
                             ['Case management', 'Maintain client, party, case owner, team and progress information in one case record.', '01'],
@@ -72,9 +73,16 @@
                             ['AI Legal Search', 'Explore potential legal authorities with AI assistance and verify original sources.', '03'],
                             ['Legal Knowledge Base', 'Save and search judgments, legal references, research notes and case-linked resources.', '04'],
                             ['Teams and tasks', 'Assign responsibilities, organise staff and track outstanding work.', '05'],
-                            ['Documents and case history', 'Keep documents, recorded actions and important decisions connected to the case.', '06'],
+                            ['Documents and case history', 'Attach private documents, review case history and keep important decisions connected to the case.', '06'],
                             ['Time and charges', 'Log time, review charges and export records for further processing.', '07'],
                             ['Court Judgement Builder', 'Index judgment text from authorised sources for reference and future research.', '08'],
+                            ['Dashboard and deadlines', 'Review open cases, workflow totals, upcoming deadlines and outstanding tasks.', '09'],
+                            ['Contacts and correspondence', 'Maintain a shared address book and send case emails using firm-branded templates and the sender’s signature.', '10'],
+                            ['Final decisions', 'Record the outcome before closure and optionally publish the decision to the Knowledge Base.', '11'],
+                            ['PDF reports and exports', 'Print case summaries and legal reference reports, and export time and charge records as CSV.', '12'],
+                            ['Archive and restore', 'Remove cases from the active register without deleting their records or changing their workflow status.', '13'],
+                            ['Firm and user administration', 'Manage firm settings, staff accounts, access grants and operational teams.', '14'],
+                            ['Permission groups', 'Configure page and operation access for individual staff and groups, subject to existing role restrictions.', '15'],
                         ] as [$heading, $description, $number])
                             <article class="rounded-2xl border border-slate-700/70 bg-slate-800/60 p-6">
                                 <span class="text-sm font-bold text-amber-300">{{ $number }}</span>
@@ -103,21 +111,49 @@
                         <p class="text-sm font-bold uppercase tracking-widest text-amber-300">Knowledge Base + AI Legal Search</p>
                         <h2 class="mt-3 text-3xl font-bold leading-tight sm:text-4xl">Discover. Verify. Organise. Reuse.</h2>
                         <p class="mt-5 text-lg leading-8 text-slate-300">Explore public legal sources with AI assistance, build a searchable library of legal research, index authorised court judgments and link relevant references to individual cases.</p>
-                        <p class="mt-5 rounded-xl border border-amber-300/30 bg-amber-300/10 p-4 text-sm leading-6 text-amber-100">AI-generated research is preliminary. Legal practitioners must verify citations, judgments and authorities against original sources before relying on them.</p>
+                        <p class="mt-5 rounded-xl border border-amber-300/30 bg-amber-300/10 p-4 text-sm leading-6 text-amber-100">AI research is optional and requires administrator enablement, provider configuration and confidentiality acknowledgement. Do not submit confidential information without authorisation. Verify citations and legal propositions against original sources.</p>
                     </div>
                     <div class="grid gap-3">
-                        @foreach ([['AI-assisted discovery', 'Ask research questions and explore potential authorities.'], ['Court judgments and citations', 'Keep authorised judgment records and relevant citations organised.'], ['Reusable legal knowledge', 'Retain research notes and case references in a searchable library.'], ['Case-linked references', 'Connect relevant resources to the matters they support.']] as [$title, $detail])
+                        @foreach ([['AI-assisted discovery', 'Ask research questions and explore potential authorities.'], ['Court judgments and citations', 'Keep authorised judgment records and relevant citations organised.'], ['Reusable legal knowledge', 'Retain research notes and case references in a searchable library.'], ['Case-linked references', 'Connect relevant resources to the matters they support.'], ['Final decision library', 'Reuse published case outcomes as internal references.'], ['Indexed judgment analysis', 'Explore selected judgment excerpts with optional AI assistance.']] as [$title, $detail])
                             <div class="rounded-xl border border-slate-500/40 bg-slate-950/40 p-5"><h3 class="font-semibold text-amber-200">{{ $title }}</h3><p class="mt-2 text-sm leading-6 text-slate-300">{{ $detail }}</p></div>
                         @endforeach
                     </div>
                 </div>
             </section>
 
+            <section id="security" class="border-b border-white/10 bg-slate-950/35 py-20 scroll-mt-10">
+                <div class="mx-auto max-w-7xl px-5 sm:px-8">
+                    <p class="text-sm font-bold uppercase tracking-widest text-amber-300">Security and accountability</p>
+                    <h2 class="mt-3 text-3xl font-bold sm:text-4xl">Manage access and protect your firm's records.</h2>
+                    <p class="mt-4 max-w-3xl leading-7 text-slate-300">Built-in controls support responsible administration, document handling and oversight. Secure hosting and appropriate firm policies remain essential.</p>
+                    <div class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                        @foreach ([
+                            ['Account security', 'Administrator-managed accounts, restricted public registration, password recovery and optional multi-factor authentication.'],
+                            ['Granular access controls', 'Role-based administration and configurable page and operation permissions for staff and groups.'],
+                            ['Private document storage', 'Authorised preview and download, optional ClamAV scanning and retryable file deletion cleanup.'],
+                            ['Safe rich-text content', 'Centralised HTML sanitisation for legal content and final decisions.'],
+                            ['Login audit log', 'Review recorded sign-in activity with configurable retention and scheduled cleanup.'],
+                            ['Case Activity Audit', 'Super Administrators can filter recorded case changes and document access events, review details and configure retention.'],
+                            ['Email safeguards', 'Per-user and firm-wide case email quotas help limit excessive outbound correspondence.'],
+                            ['AI research safeguards', 'Explicit enablement, confidentiality acknowledgement and shared request quotas help govern external AI use.'],
+                            ['Scheduled maintenance', 'Configured scheduler tasks support document cleanup, quota expiry and audit retention.'],
+                        ] as [$heading, $description])
+                            <article class="rounded-2xl border border-slate-700/70 bg-slate-800/60 p-6">
+                                <h3 class="text-xl font-semibold text-amber-200">{{ $heading }}</h3>
+                                <p class="mt-3 leading-7 text-slate-300">{{ $description }}</p>
+                            </article>
+                        @endforeach
+                    </div>
+                    <p class="mt-8 rounded-xl border border-slate-600/60 p-5 text-sm leading-6 text-slate-300">Legal Desk Assistance is a self-hosted, single-firm application. Case records are shared among eligible staff; permissions do not provide individual confidential-case isolation. Audit records are not tamper-resistant or comprehensive. These controls do not constitute regulatory compliance certification.</p>
+                </div>
+            </section>
+
             <section class="mx-auto max-w-4xl px-5 py-24 text-center sm:px-8">
                 <h2 class="text-3xl font-bold sm:text-4xl">Ready to modernise your legal practice?</h2>
-                <p class="mx-auto mt-5 max-w-2xl text-lg leading-8 text-slate-300">Move from scattered files and disconnected research to a clearer, more organised way of working.</p>
+                <p class="mx-auto mt-5 max-w-2xl text-lg leading-8 text-slate-300">Move from scattered files and disconnected research to a clearer, more organised way of working. Self-host Legal Desk Assistance on your own infrastructure under the GNU GPL v3 licence.</p>
                 <div class="mt-8">
                     <a href="{{ auth()->check() ? route('dashboard') : route('login') }}" class="inline-block rounded-xl bg-amber-300 px-7 py-3.5 font-bold text-slate-950 hover:bg-amber-200">{{ auth()->check() ? 'Open your workspace' : 'Sign in to Legal Desk Assistance' }}</a>
+                    <a href="https://github.com/YusainiU/Legal-Desk-Assistance" class="mt-4 inline-block rounded-xl border border-slate-500/60 px-7 py-3.5 font-semibold hover:border-amber-300 hover:text-amber-200">Source code and deployment guide</a>
                 </div>
             </section>
         </main>
