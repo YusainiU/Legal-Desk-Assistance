@@ -104,6 +104,8 @@ class CaseContacts extends Component
                 throw ValidationException::withMessages(['recipientId' => 'Choose a linked contact with an email address.']);
             }
 
+            app(\App\Support\CaseEmailQuota::class)->consume((int) auth()->id());
+
             $entry = $matter->entries()->make([
                 'kind' => 'Email',
                 'body' => "To: {$contact->name} <{$contact->email}>\nSubject: {$data['subject']}\n\n{$data['message']}",
@@ -192,5 +194,6 @@ class CaseContacts extends Component
         }
 
         $entry->forceFill(['email_status' => $status])->save();
+        Log::info('Case email delivery outcome', ['entry_id' => $entry->id, 'actor_id' => auth()->id(), 'status' => $status]);
     }
 }

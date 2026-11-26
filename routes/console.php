@@ -103,3 +103,10 @@ Artisan::command('legal-desk:document-cleanup {--orphans : Report unreferenced f
 })->purpose('Retry committed document deletions and optionally report orphaned files');
 
 \Illuminate\Support\Facades\Schedule::command('legal-desk:document-cleanup')->hourly()->withoutOverlapping();
+
+Artisan::command('legal-desk:email-quota-cleanup', function () {
+    $count = DB::table('case_email_quotas')->where('expires_at', '<', now('UTC')->subDays(2))->delete();
+    $this->info('Expired case email quota records removed: '.$count);
+})->purpose('Remove expired case email quota counters');
+
+\Illuminate\Support\Facades\Schedule::command('legal-desk:email-quota-cleanup')->daily()->withoutOverlapping();

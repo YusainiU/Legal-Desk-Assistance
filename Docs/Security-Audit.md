@@ -52,3 +52,16 @@ Run php artisan migrate. Optional ClamAV scanning is disabled by default; instal
 ### Secure demo accounts (S-12)
 
 Demo seeding is restricted to local and testing environments. Run `php artisan db:seed --class=DemoDataSeeder` only in a disposable development or test database. Newly seeded demo users receive unique random passwords and revoked sign-in access. To use one, sign in as an authorized administrator, open Users, set a new password and grant access. Existing accounts are not changed by reseeding; review and rotate or revoke any previously seeded credentials, especially before deployment. The `matterdesk:user {email} --demo` command is also restricted to local/testing and requires an operator-supplied password of at least 12 characters and at most 72 bytes. It does not use the seeder's random-password workflow. Keep APP_ENV=production on production servers. Historical commits may still contain the former demo password; it must not be reused. Runtime verification remains outstanding.
+
+
+### Case email quotas (S-15)
+
+Run `php artisan migrate` after upgrading. Case correspondence requires existing send-email permission, an open case, a linked contact and a configured delivery mailer. Set the following in .env to override defaults:
+
+```dotenv
+CASE_EMAIL_USER_MINUTE=5
+CASE_EMAIL_USER_DAILY=50
+CASE_EMAIL_FIRM_DAILY=500
+```
+
+Clear or rebuild configuration cache after changes. Zero blocks new case email attempts. Limits apply across cases, use fixed UTC minute/day windows, and count reserved delivery attempts including unconfirmed delivery. Duplicate existing email tokens do not reserve another quota. The quota reservation and pending correspondence entry share a database transaction. When a limit is reached, wait until the relevant window resets or contact an administrator. Do not repeatedly resend unconfirmed messages; check with the mail provider first. Logs record entry ID, actor ID and outcome, not message contents or recipient in the new diagnostic event. Case history intentionally retains correspondence. These quotas do not cover authentication or other framework mail. The scheduler runs `legal-desk:email-quota-cleanup` daily to remove counters expired more than two days ago; the command can also be run manually. Runtime and concurrency testing remain outstanding.
