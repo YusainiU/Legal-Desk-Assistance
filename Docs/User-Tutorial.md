@@ -59,6 +59,10 @@ Open a case and select **Documents**. Choose a file and select **Upload document
 
 Use **Preview** to open a PDF, image, or plain-text file in a new tab. Use **Download** to save any attachment, including Office files. On an open case, use **Delete** next to a document and confirm **Delete document** to remove the attachment. Closed and declined cases keep their existing documents available for preview and download.
 
+### Upload security and deletion
+
+If scanning is enabled, a document must pass malware inspection before it appears in the case. If the scanner rejects a file or is unavailable, do not attempt to bypass the check; contact your administrator. Existing files are not automatically rescanned. Deleting a document removes it from the case; physical cleanup may finish later. See the administrator maintenance instructions below.
+
 ## 6. Log time and review charges
 
 Open **Time & charges → Log time**. Select the stage, describe the work, and enter the time in minutes and the hourly rate. The first entry sets the case currency. The charge is calculated from the minutes and rate, and the panel shows a subtotal for each stage. You can edit or delete entries while the case is open. Select **Download CSV** in **Time & charges** to export all entries with their total minutes and charges.
@@ -89,13 +93,26 @@ Use the matter history to record work performed outside the application, includi
 
 Open **Legal References → Add reference** to record a statute, provision, legal or contract clause, precedent, or other authority. Choose a type and title and explain **Why it applies to this case**. Add a citation or section number, jurisdiction or court, and a source URL when available. References stay with the case and can be edited or deleted while the case is open.
 
+### Print legal references
+
+1. Open the case and select **Legal References**.
+2. Select **Print references** next to **Add reference**.
+3. Review the PDF preview, then select **Print** or **Download PDF**.
+4. Review confidentiality before sharing the report.
+
+The report contains all recorded references, including those on other pages, with type, title, citation, jurisdiction, source URL and applicability. The published final-decision reference is excluded. Open and closed cases can be printed if permitted. The Super Admin controls this through Case Register's References export operation.
+
 ## 9. Search and reuse references
 
 Open **Knowledge base** from the sidebar to search references recorded in your cases. Search by title, citation, jurisdiction, or reasoning and filter by reference type. Use **Copy to case** to carry the citation details into another open case, then write a new explanation of why the reference applies there.
 
+### Record and publish the final decision
+
+Open **Final Decision**, enter the outcome and reasons, and save or update it. A meaningful text decision is required before closing the case. Use the rich-text formatting controls for legal text; embedded images are removed by the centralized sanitizer. Upload supporting images under Documents instead. Use the option to add the final decision to the Knowledge Base when appropriate and authorized. Review confidentiality before publication.
+
 ## 10. Print a case summary
 
-Open a case and select **Print case summary**. The PDF preview shows the firm name, full case details, completed stages, and all recorded case history. Review the contents before sharing, then select **Print** or **Download PDF**. Attach the downloaded file using your email application.
+Open a case and select **Print case summary**. The PDF preview shows the firm name, full case details, completed stages, final decision, and all recorded case history. Review the contents before sharing, then select **Print** or **Download PDF**. Attach the downloaded file using your email application. The final decision is exported as plain text with paragraph breaks; rich formatting is not reproduced.
 
 ## 11. Teams and assigned work
 
@@ -132,7 +149,7 @@ Permission groups are separate from operational Teams. A user may belong to seve
 ### Restrict a page
 
 1. Under **Page permissions**, expand **Search AI Resources**, for example.
-2. Choose **Selected users and groups only** in **Access mode**.
+2. Click the **View** rule (or the desired granular operation) to open its permission dialog. Choose **Selected users and groups only** in **Access mode**.
 3. Tick Research Team under **Permission groups** and any additional individual users under **Individual users**.
 4. Select **Save permissions**.
 5. Sign in using an ordinary staff account in a separate browser session. Verify that a permitted user can open the page and an unpermitted user cannot see its sidebar link or access its direct URL (HTTP 403).
@@ -149,8 +166,72 @@ In Administration → Page Access & Permissions, each module now has a View rule
 
 Expand the application page under Page permissions, then click View or a granular operation to open its permission dialog. Select the access mode, groups and individual users, and save. Use the user search to filter the list; selected users remain selected when filtered.
 
-### AI security (S-05–S-07)
-Run `php artisan migrate` before use. AI Search administration explicitly enables external AI search and indexed analysis; without a saved enablement setting both are disabled, even if the old environment flag is true. Existing saved enablement is retained. Default shared quotas: 5 requests/user/minute, 50/user/day, 500/installation/day (fixed UTC windows). Failed attempts count; these are request counts, not token or monetary limits. Both AI actions require confidentiality acknowledgement; successful requests reset it. Indexed analysis sends the question and selected passages to OpenAI, while public search sends the question and filters to the configured provider. Review provider terms and authorization before enabling. No raw provider errors are intentionally logged by these guarded paths. Existing research remains available. Quota rows are retained; periodic cleanup is outstanding. Runtime, concurrency, and browser testing remain outstanding.
+## 14. Use AI research safely
 
-### Document security (S-09 / S-10)
-Run php artisan migrate. Optional ClamAV scanning is disabled by default; install ClamAV, maintain current signatures and set DOCUMENT_SCAN_ENABLED=true in .env, then clear configuration cache. DOCUMENT_SCAN_BINARY must point to a trusted clamscan executable. Uploads are scanned in temporary storage before permanent storage or database registration; detection, timeout or scanner failure rejects the upload. Rejected temporary files remain subject to Livewire temporary upload cleanup; no persistent quarantine or release workflow is provided. Existing documents are not retrospectively scanned. Ensure temporary and permanent storage are private. Deletion records are committed with document deletion, then filesystem cleanup is attempted after commit. Run php artisan legal-desk:document-cleanup to retry; hourly scheduling requires Laravel scheduler running. Add --orphans to report unreferenced files older than 24 hours; this does not delete them. Review backups and retention requirements before manual removal. Runtime tests and scanner verification remain outstanding.
+1. Ask an authorized administrator to enable AI in **AI Search Settings** and configure the limits.
+2. Open **Search AI Resources**, enter a research question and choose the relevant court filter.
+3. Read and acknowledge the confidentiality notice before submitting.
+4. Review the result and original sources independently before saving it to the Knowledge Base.
+5. Where indexed judgment analysis is available, acknowledge its separate notice before generating an AI draft. Internal search does not require external AI.
+
+If a quota is reached, wait until the applicable window resets. If AI is disabled or the provider fails, existing research remains accessible. Contact an administrator rather than repeatedly retrying.
+
+## AI research security and configuration
+
+Configure the provider credentials in the environment using the supplied .env.example. Open **AI Search Settings** as an authorized Administrator or Super Admin. Select the jurisdiction, explicitly enable external AI research and analysis, configure the quotas, and save.
+
+| Shared quota | Default |
+| --- | ---: |
+| Per user per minute | 5 |
+| Per user per day | 50 |
+| Per installation per day | 500 |
+
+Both public AI search and indexed judgment analysis consume these database-backed quotas. Fixed windows reset on UTC minute/day boundaries; failed provider attempts count. These are request counts, not token or spending limits. Without a saved enablement setting, AI is disabled regardless of the old environment flag. Existing saved settings are retained. Disabling AI does not remove saved research.
+
+Before submitting, acknowledge the confidentiality notice. Public search sends the question and filters to the configured provider; indexed analysis sends the question and selected judgment excerpts to OpenAI. Do not submit privileged, confidential or personal information without authorization. Review provider privacy terms and independently verify citations and legal propositions. Successful requests reset acknowledgement. Provider failures are presented as controlled messages; guarded diagnostics omit raw provider responses and question text. Expired quota records currently have no scheduled cleanup.
+
+Run `php artisan migrate` after upgrading. Verify disabled access, missing acknowledgement, shared quota exhaustion and safe provider failures before production use.
+
+## Document security and maintenance
+
+Case attachments are private. Optional ClamAV scanning checks temporary uploads before permanent storage or database registration. Scanning is disabled by default; enable it for deployments handling real documents.
+
+On Ubuntu:
+
+```sh
+sudo apt update
+sudo apt install clamav clamav-freshclam
+clamscan --version
+sudo systemctl status clamav-freshclam
+```
+
+Keep virus signatures current and ensure the PHP process can execute the trusted scanner and read temporary files. Configure .env:
+
+```dotenv
+DOCUMENT_SCAN_ENABLED=true
+DOCUMENT_SCAN_BINARY=/usr/bin/clamscan
+DOCUMENT_SCAN_TIMEOUT=60
+```
+
+Run `php artisan config:clear` (and rebuild the production config cache if used). When enabled, detection, scanner errors and timeouts reject uploads. Existing documents are not retrospectively scanned. Rejected temporary files are handled by Livewire temporary cleanup; there is no persistent quarantine or administrator release workflow. Antivirus is not a guarantee of safety.
+
+Document deletion records are committed with the database deletion. Physical cleanup runs after commit; failed cleanup remains recorded for retry. Run:
+
+```sh
+php artisan migrate
+php artisan legal-desk:document-cleanup
+php artisan legal-desk:document-cleanup --orphans
+php artisan schedule:list
+```
+
+The orphan option reports unreferenced files older than 24 hours; it does not delete them. Review retention obligations and backups before manual removal. Cleanup is scheduled hourly, provided the Laravel scheduler is running. For example, configure the application account's cron with the correct deployment path and PHP executable:
+
+```cron
+* * * * * cd /var/www/legal-desk-assistance && php artisan schedule:run >> /dev/null 2>&1
+```
+
+Do not duplicate an existing scheduler entry. Scanner rejection/failure and cleanup exceptions have controlled application log entries. Verify clean uploads, scanner failure, deletion rollback and cleanup in a test environment before production use.
+
+## Verification status
+
+The recent security controls and PDF enhancements have been implemented, but runtime, browser and security regression verification remains outstanding. See [Security Audit](Security-Audit.md) for limitations and release gates.
