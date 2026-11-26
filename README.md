@@ -23,7 +23,7 @@ Open http://localhost:8000 and sign in as `legaldesk@admin.test` with the passwo
 
 ## Production deployment (Ubuntu / Apache / MySQL)
 
-This is a self-hosted, single-firm application. Staff share case data; it is not a multi-tenant service. Public repository visibility does not constitute a production security certification or grant a licence. Review the licence terms, [security audit](Docs/Security-Audit.md) and [release checklist](Docs/Public-Release-Checklist.md) before deploying real client data.
+This is a self-hosted, single-firm application. Staff share case data; it is not a multi-tenant service. Public repository visibility does not constitute a production security certification; see the Licence section for licensing terms. Review the licence terms, [security audit](Docs/Security-Audit.md) and [release checklist](Docs/Public-Release-Checklist.md) before deploying real client data.
 
 The following example assumes a dedicated Ubuntu server, Apache, PHP-FPM (or an appropriately configured Apache PHP handler), MySQL and a dedicated HTTPS hostname. Replace example paths, hostnames and account names with your own. Use a staging installation first.
 
@@ -243,7 +243,7 @@ See the [Knowledge Base guide](docs/knowledge-base-user-guide.md), [security pol
 
 ## Licence
 
-The application and bundled legal resources package currently declare a proprietary licence. No open-source licence has been granted. Repository visibility does not change those terms.
+Legal Desk Assistance and its bundled legal resources package are licensed under the GNU General Public License, version 3 only (GPL-3.0-only). See [LICENSE](LICENSE) for the full licence text. Third-party dependencies remain subject to their respective licences. The software is provided without warranty as described in the licence. Public availability does not constitute a production security certification.
 
 ## Application structure
 
