@@ -6,6 +6,7 @@ use App\Models\Contact;
 
 use App\Models\CaseDocument;
 use App\Models\Matter;
+use App\Models\MatterEntry;
 use App\Models\Team;
 use App\Models\User;
 use App\Support\CaseBilling;
@@ -142,7 +143,7 @@ class Workspace extends Component
 
     public function show(string $screen): void
     {
-        abort_unless(in_array($screen, ['register', 'archive', 'owners', 'guide', 'new'], true), 404);
+        abort_unless(in_array($screen, ['register', 'archive', 'owners', 'incomplete-tasks', 'guide', 'new'], true), 404);
         $this->reset('selectedCases', 'archiveNotice', 'selected', 'linkedTaskId', 'reviewingStage', 'form', 'caseTeamId', 'showTeamEditor', 'caseOwnerId', 'showOwnerEditor', 'caseDescription', 'showDescriptionEditor', 'descriptionSaved', 'decision', 'stageNote', 'stageNoteSaved', 'body', 'document', 'documentStatus', 'showCaseSummary', 'summaryMatterId');
         $this->resetValidation();
         $this->resetPage('casePage');
@@ -534,6 +535,14 @@ class Workspace extends Component
 
         return view('livewire.workspace', [
             'register' => $register,
+            'incompleteTasks' => $this->screen === 'incomplete-tasks'
+                ? MatterEntry::query()->where('kind', 'Task')->where('done', false)
+                    ->whereIn('matter_id', $this->matters()->whereNull('archived_at')->where('status', 'Open')->select('id'))
+                    ->with('matter:id,title')
+                    ->orderByRaw('CASE WHEN due_on IS NULL AND due_at IS NULL THEN 1 ELSE 0 END')
+                    ->orderByRaw("COALESCE(due_at, CONCAT(due_on, ' 23:59:59'))")
+                    ->orderBy('id')->paginate(self::CASES_PER_PAGE, pageName: 'casePage')
+                : collect(),
             'ownerGroups' => $this->screen === 'owners'
                 ? $this->matters()->whereNull('archived_at')->where('status', 'Open')->orderBy('owner')->orderBy('title')->orderBy('id')->get(['id', 'owner', 'title', 'client', 'stage'])->groupBy('owner')
                 : collect(),

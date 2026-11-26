@@ -3,6 +3,7 @@
         <flux:button type="button" :variant="in_array($screen, ['register', 'detail', 'new'], true) ? 'filled' : 'ghost'" icon="briefcase" wire:click="show('register')">Case register</flux:button>
         <flux:button type="button" :variant="$screen === 'archive' ? 'filled' : 'ghost'" wire:click="show('archive')">Archive</flux:button>
         <flux:button type="button" :variant="$screen === 'owners' ? 'filled' : 'ghost'" wire:click="show('owners')">Owners</flux:button>
+        <flux:button type="button" :variant="$screen === 'incomplete-tasks' ? 'filled' : 'ghost'" wire:click="show('incomplete-tasks')">Incomplete Tasks</flux:button>
         <flux:button type="button" :variant="$screen === 'guide' ? 'filled' : 'ghost'" icon="book-open" wire:click="show('guide')">Workflow guide</flux:button>
     </nav>
 
@@ -61,6 +62,37 @@
         @empty
             <flux:card class="desk-panel"><flux:text>No open cases to display.</flux:text></flux:card>
         @endforelse
+    @elseif ($screen === 'incomplete-tasks')
+        <div class="space-y-1">
+            <h1 class="desk-title">Incomplete Tasks</h1>
+            <flux:text>Outstanding tasks across open, non-archived cases.</flux:text>
+        </div>
+        <flux:card class="desk-panel space-y-3">
+            <flux:table>
+                <flux:table.columns>
+                    <flux:table.column>Task name</flux:table.column>
+                    <flux:table.column>Task owner</flux:table.column>
+                    <flux:table.column>Case name</flux:table.column>
+                    <flux:table.column>Due date</flux:table.column>
+                </flux:table.columns>
+                <flux:table.rows>
+                    @foreach ($incompleteTasks as $task)
+                        <flux:table.row :key="$task->id">
+                            <flux:table.cell>
+                                <a class="block max-w-xs truncate text-accent-content underline underline-offset-2" title="{{ $task->body }}" href="{{ route('workspace', ['case' => $task->matter_id, 'task' => $task->id]) }}">{{ \Illuminate\Support\Str::limit($task->body, 80) }}</a>
+                            </flux:table.cell>
+                            <flux:table.cell>{{ $task->assignee ?: 'Unassigned' }}</flux:table.cell>
+                            <flux:table.cell>{{ $task->matter->title }}</flux:table.cell>
+                            <flux:table.cell>{{ $task->deadline()?->format('j M Y H:i') ?? 'No due date' }}</flux:table.cell>
+                        </flux:table.row>
+                    @endforeach
+                </flux:table.rows>
+            </flux:table>
+            @if ($incompleteTasks->isEmpty())
+                <flux:text>No incomplete tasks to display.</flux:text>
+            @endif
+            <x-page-elements.pagination :paginator="$incompleteTasks" label="tasks" />
+        </flux:card>
     @elseif ($screen === 'new')
         <div class="flex max-w-xl flex-wrap items-center justify-between gap-3">
             <h1 class="desk-title">New case</h1>
