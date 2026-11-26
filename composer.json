@@ -2,7 +2,7 @@
   "name": "yusainiu/legal-desk-assistance",
   "type": "project",
   "description": "A legal desk assistance application built with Laravel and Livewire",
-  "license": "proprietary",
+  "license": "GPL v3",
   "require": {
     "php": "^8.3",
     "laravel/framework": "^13.0",
