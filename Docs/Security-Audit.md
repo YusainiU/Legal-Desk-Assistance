@@ -65,3 +65,8 @@ CASE_EMAIL_FIRM_DAILY=500
 ```
 
 Clear or rebuild configuration cache after changes. Zero blocks new case email attempts. Limits apply across cases, use fixed UTC minute/day windows, and count reserved delivery attempts including unconfirmed delivery. Duplicate existing email tokens do not reserve another quota. The quota reservation and pending correspondence entry share a database transaction. When a limit is reached, wait until the relevant window resets or contact an administrator. Do not repeatedly resend unconfirmed messages; check with the mail provider first. Logs record entry ID, actor ID and outcome, not message contents or recipient in the new diagnostic event. Case history intentionally retains correspondence. These quotas do not cover authentication or other framework mail. The scheduler runs `legal-desk:email-quota-cleanup` daily to remove counters expired more than two days ago; the command can also be run manually. Runtime and concurrency testing remain outstanding.
+
+
+### Login audit retention (S-13)
+
+Login audit persistence failures no longer interrupt authentication; monitor application error logs for audit gaps. `LOGIN_AUDIT_RETENTION_DAYS=90` sets retention (minimum one day). Choose retention according to firm policy before enabling the scheduler. `php artisan legal-desk:login-audit-cleanup` permanently deletes expired records and runs daily through the scheduler. Existing Login/Failed event coverage is retained; throttled attempts and unsuccessful second-factor/passkey challenges are not guaranteed to be captured. Runtime verification remains outstanding.

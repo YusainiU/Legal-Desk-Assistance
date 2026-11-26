@@ -258,3 +258,8 @@ Clear or rebuild configuration cache after changes. Zero blocks new case email a
 ### Professional case correspondence
 
 Outgoing case emails use a reusable HTML letterhead with the firm name from Firm Settings, the entered subject and message, and a confidentiality notice. A plain-text alternative is included. Enter the greeting and message yourself; the application preserves your line breaks and treats the message as plain text rather than executable HTML. Both email formats automatically append Kind regards, the authenticated sender's display name and the firm name. Omit your manual sign-off to avoid duplication. The case history retains the entered message rather than the rendered signature. No case details are added automatically. Existing permissions, quotas, delivery status and case history are unchanged. Templates are in `resources/views/emails/case-correspondence.blade.php` and `case-correspondence-text.blade.php`. Authentication emails are unchanged.
+
+
+### Login audit retention (S-13)
+
+Login audit persistence failures no longer interrupt authentication; monitor application error logs for audit gaps. `LOGIN_AUDIT_RETENTION_DAYS=90` sets retention (minimum one day). Choose retention according to firm policy before enabling the scheduler. `php artisan legal-desk:login-audit-cleanup` permanently deletes expired records and runs daily through the scheduler. Existing Login/Failed event coverage is retained; throttled attempts and unsuccessful second-factor/passkey challenges are not guaranteed to be captured. Runtime verification remains outstanding.

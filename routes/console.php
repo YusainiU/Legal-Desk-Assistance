@@ -110,3 +110,11 @@ Artisan::command('legal-desk:email-quota-cleanup', function () {
 })->purpose('Remove expired case email quota counters');
 
 \Illuminate\Support\Facades\Schedule::command('legal-desk:email-quota-cleanup')->daily()->withoutOverlapping();
+
+Artisan::command('legal-desk:login-audit-cleanup', function () {
+    $cutoff = now()->subDays(config('security-audit.login_retention_days'));
+    $count = DB::table('login_audits')->where('attempted_at', '<', $cutoff)->delete();
+    $this->info('Expired login audit records removed: '.$count);
+})->purpose('Remove login audit records outside the configured retention period');
+
+\Illuminate\Support\Facades\Schedule::command('legal-desk:login-audit-cleanup')->daily()->withoutOverlapping();
