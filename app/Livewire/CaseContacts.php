@@ -185,7 +185,15 @@ class CaseContacts extends Component
         $status = 'unconfirmed';
 
         try {
-            $sent = Mail::mailer($mailer)->raw($body, fn (Message $message) => $message->to($email)->subject($subject));
+            $sent = Mail::mailer($mailer)->send(
+                ['html' => 'emails.case-correspondence', 'text' => 'emails.case-correspondence-text'],
+                [
+                    'firmName' => \App\Models\FirmSetting::displayName(),
+                    'correspondenceSubject' => $subject,
+                    'correspondenceBody' => $body,
+                ],
+                fn (Message $message) => $message->to($email)->subject($subject),
+            );
             if ($sent !== null) {
                 $status = 'sent';
             }

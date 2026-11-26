@@ -209,3 +209,8 @@ CASE_EMAIL_FIRM_DAILY=500
 ```
 
 Clear or rebuild configuration cache after changes. Zero blocks new case email attempts. Limits apply across cases, use fixed UTC minute/day windows, and count reserved delivery attempts including unconfirmed delivery. Duplicate existing email tokens do not reserve another quota. The quota reservation and pending correspondence entry share a database transaction. When a limit is reached, wait until the relevant window resets or contact an administrator. Do not repeatedly resend unconfirmed messages; check with the mail provider first. Logs record entry ID, actor ID and outcome, not message contents or recipient in the new diagnostic event. Case history intentionally retains correspondence. These quotas do not cover authentication or other framework mail. The scheduler runs `legal-desk:email-quota-cleanup` daily to remove counters expired more than two days ago; the command can also be run manually. Runtime and concurrency testing remain outstanding.
+
+
+### Professional case correspondence
+
+Outgoing case emails use a reusable HTML letterhead with the firm name from Firm Settings, the entered subject and message, and a confidentiality notice. A plain-text alternative is included. Enter the greeting, message and sign-off yourself; the application preserves your line breaks and treats the message as plain text rather than executable HTML. No case details are added automatically. Existing permissions, quotas, delivery status and case history are unchanged. Templates are in `resources/views/emails/case-correspondence.blade.php` and `case-correspondence-text.blade.php`. Authentication emails are unchanged.
