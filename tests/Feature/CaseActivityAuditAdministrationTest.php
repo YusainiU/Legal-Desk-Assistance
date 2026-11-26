@@ -86,6 +86,25 @@ class CaseActivityAuditAdministrationTest extends TestCase
         $this->assertSame(0, FirmSetting::caseAuditRetentionDays());
     }
 
+    public function test_retention_changes_are_audited_without_duplicate_events(): void
+    {
+        $admin = $this->actor(['is_super_admin' => true]);
+        $this->actingAs($admin);
+        $url = route('admin.case-activity-audit.retention');
+        $this->put($url, ['retention_days' => 90])->assertRedirect();
+        $this->put($url, ['retention_days' => 90])->assertRedirect();
+        $this->assertDatabaseHas('case_activity_audits', [
+            'actor_id' => $admin->id,
+            'matter_id' => null,
+            'record_type' => 'FirmSetting',
+            'record_id' => 1,
+            'action' => 'retention_changed',
+        ]);
+        $this->assertSame(1, DB::table('case_activity_audits')->where('action', 'retention_changed')->count());
+        $this->put($url, ['retention_days' => 0])->assertRedirect();
+        $this->assertSame(2, DB::table('case_activity_audits')->where('action', 'retention_changed')->count());
+    }
+
     public function test_cleanup_preserves_indefinite_and_dry_run_and_cutoff(): void
     {
         $this->travelTo(now()->startOfDay());
