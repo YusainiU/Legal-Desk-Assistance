@@ -17,6 +17,16 @@ class FirmSetting extends Model
         return static::query()->whereKey(1)->value('firm_name') ?? self::DEFAULT_NAME;
     }
 
+    public static function taskWarningHours(): int
+    {
+        return (int) (static::query()->whereKey(1)->value('task_warning_hours') ?? 3);
+    }
+
+    public static function setTaskWarningHours(int $hours): void
+    {
+        static::query()->upsert([['id' => 1, 'task_warning_hours' => $hours]], ['id'], ['task_warning_hours']);
+    }
+
     public static function setName(?string $name): void
     {
         static::query()->upsert([['id' => 1, 'firm_name' => $name]], ['id'], ['firm_name']);

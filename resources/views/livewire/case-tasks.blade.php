@@ -35,8 +35,15 @@
                                 <flux:badge size="sm" :color="$task->done ? 'green' : 'amber'">
                                     {{ $task->done ? 'Complete' : 'To do' }}
                                 </flux:badge>
+                                @if (!$task->done && $task->deadline())
+                                    @if ($task->deadline()->lte(now()))
+                                        <flux:badge size="sm" color="red">Overdue</flux:badge>
+                                    @elseif ($task->deadline()->lte(now()->addHours($warningHours)))
+                                        <flux:badge size="sm" color="amber">Due soon</flux:badge>
+                                    @endif
+                                @endif
                             </div>
-                            <flux:text size="sm">{{ $task->assignee ?? 'Unassigned' }} · {{ $task->due_on?->format('j M Y') ?? 'No due date' }}@if ($task->team) · {{ $task->team->name }} @endif</flux:text>
+                            <flux:text size="sm">{{ $task->assignee ?? 'Unassigned' }} · {{ $task->deadline()?->format('j M Y H:i') ?? 'No due date' }}@if ($task->team) · {{ $task->team->name }} @endif</flux:text>
                         </div>
                         @if ($active)
                             <div class="flex flex-wrap items-center gap-1">
@@ -81,6 +88,8 @@
                 <div class="grid gap-4 sm:grid-cols-2">
                     <flux:input label="Assigned to" wire:model="assignee" required maxlength="160" />
                     <flux:input label="Due date" wire:model="due" type="date" />
+                    <flux:input label="Due time (optional)" wire:model="dueTime" type="time" />
+                    <flux:text size="sm">Without a time, the deadline is the end of the due date (application time zone).</flux:text>
                 </div>
                 @if ($teamOptions->isNotEmpty())
                     <flux:select label="Team (optional)" wire:model="teamId">

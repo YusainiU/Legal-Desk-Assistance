@@ -28,6 +28,8 @@ class CaseTasks extends Component
 
     public string $due = '';
 
+    public string $dueTime = '';
+
     public string $teamId = '';
 
     public ?string $notice = null;
@@ -43,7 +45,7 @@ class CaseTasks extends Component
         $matter = $this->caseRecord();
         $this->ensureEditable($matter);
 
-        $this->reset('editingTaskId', 'title', 'due', 'teamId');
+        $this->reset('editingTaskId', 'title', 'due', 'dueTime', 'teamId');
         $this->assignee = $matter->owner;
         $this->resetValidation();
         $this->showEditor = true;
@@ -59,6 +61,7 @@ class CaseTasks extends Component
         $this->title = $task->body;
         $this->assignee = $task->assignee ?? '';
         $this->due = $task->due_on?->format('Y-m-d') ?? '';
+        $this->dueTime = $task->due_at?->format('H:i') ?? '';
         $this->teamId = (string) ($task->team_id ?? '');
         $this->resetValidation();
         $this->showEditor = true;
@@ -69,7 +72,8 @@ class CaseTasks extends Component
         $data = $this->validate([
             'title' => 'required|string|max:4000',
             'assignee' => 'required|string|max:160',
-            'due' => 'nullable|date_format:Y-m-d',
+            'due' => 'nullable|required_with:dueTime|date_format:Y-m-d',
+            'dueTime' => 'nullable|date_format:H:i',
             'teamId' => 'nullable|integer|min:1',
         ]);
         $editing = $this->editingTaskId !== null;
@@ -81,6 +85,7 @@ class CaseTasks extends Component
                 'body' => trim($data['title']),
                 'assignee' => trim($data['assignee']),
                 'due_on' => $data['due'] ?: null,
+                'due_at' => !empty($data['due']) && !empty($data['dueTime']) ? $data['due'].' '.$data['dueTime'].':00' : null,
             ];
 
             if ($task) {
@@ -92,7 +97,7 @@ class CaseTasks extends Component
             $matter->tasks()->create($attributes + ['kind' => 'Task', 'task_stage' => $matter->stage]);
         });
 
-        $this->reset('showEditor', 'editingTaskId', 'title', 'assignee', 'due', 'teamId');
+        $this->reset('showEditor', 'editingTaskId', 'title', 'assignee', 'due', 'dueTime', 'teamId');
         $this->taskChanged($editing ? 'Task updated.' : 'Task added to this stage.');
     }
 
@@ -119,6 +124,7 @@ class CaseTasks extends Component
             ) : collect(),
             'taskGroups' => $tasks->groupBy(fn ($task) => $task->task_stage ?? $matter->stage),
             'stages' => config('matterdesk.stages'),
+            'warningHours' => \App\Models\FirmSetting::taskWarningHours(),
             'active' => $matter->status === 'Open' && $matter->stage === $this->stage,
         ]);
     }

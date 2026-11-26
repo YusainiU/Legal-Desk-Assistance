@@ -269,6 +269,8 @@
                 </flux:modal>
             </header>
 
+            <livewire:case-task-status :matter-id="$matter->id" :key="'case-task-status-'.$matter->id" />
+
             <section class="desk-panel space-y-4 border-s-4 border-s-teal-700 p-5 dark:border-s-teal-400" aria-labelledby="case-progress-title">
                 <div aria-live="polite" class="space-y-2">
                     <div class="flex flex-wrap items-center gap-2">
