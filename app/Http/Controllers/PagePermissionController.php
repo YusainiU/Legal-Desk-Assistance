@@ -44,7 +44,7 @@ class PagePermissionController
             }
         });
         \Illuminate\Support\Facades\Log::notice('Permission rule changed', ['actor_id' => $request->user()->id, 'rule' => $page, 'restricted' => $data['restricted'], 'users' => $data['users'] ?? [], 'groups' => $data['groups'] ?? []]);
-        return back()->with('status', 'Page permissions saved.');
+        return back()->with('status', 'Page permissions saved.')->with('permission_page', explode('.', $page, 2)[0]);
     }
 
     public function saveGroup(Request $request, ?int $group = null)

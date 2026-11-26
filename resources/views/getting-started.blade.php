@@ -122,6 +122,7 @@
             <flux:text size="sm">A direct grant or any permitted group membership allows access, subject to existing role requirements. An empty restricted list denies everyone except active Super Admins. Dashboard and sign-out remain available; case statistics are hidden without Case Register access.</flux:text>
             <flux:text size="sm">Page permissions do not isolate individual cases or prevent related information appearing in other permitted modules.</flux:text>
             <flux:text size="sm">Each page now has a View rule and separate operation rules. For view-only access, allow View and restrict every operation to other groups or leave their grants empty. Unrestricted operations inherit View access. Existing role and workflow checks remain in force.</flux:text>
+            <flux:text size="sm">Expand the application page under Page permissions, then click View or a granular operation to open its permission dialog. Select the access mode, groups and individual users, and save. Use the user search to filter the list; selected users remain selected when filtered.</flux:text>
             @can('manage-page-permissions')
                 <flux:button :href="route('admin.page-permissions.index')">Open Page Access &amp; Permissions</flux:button>
             @endcan
