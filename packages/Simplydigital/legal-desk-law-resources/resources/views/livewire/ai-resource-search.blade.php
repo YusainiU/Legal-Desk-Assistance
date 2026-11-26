@@ -54,7 +54,7 @@
                 </flux:button>
             </div>
             <flux:callout color="amber">Unverified AI research. Check every citation, quotation and legal proposition against original sources.</flux:callout>
-            <div class="legal-markdown text-sm">{!! \Illuminate\Support\Str::markdown($research->analysis ?? '', ['html_input' => 'strip', 'allow_unsafe_links' => false]) !!}</div>
+            <div class="legal-markdown text-sm">{!! \Simplydigital\LegalDeskLawResources\Support\LegalHtmlSanitizer::clean(\Illuminate\Support\Str::markdown($research->analysis ?? '', ['html_input' => 'strip', 'allow_unsafe_links' => false])) !!}</div>
         </flux:card>
     @endif
 

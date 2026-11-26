@@ -38,3 +38,7 @@ Fortify login throttling and 2FA support; active-user provider; explicit admin g
 - Resolve high-priority findings or document accepted risks before public release.
 
 No application code was modified by this review. No credentials, repository visibility or history were changed.
+
+### S-03 / S-04 remediation
+
+Centralized legal HTML sanitization in the law resources package (Support/LegalHtmlSanitizer). Final decision save, editor initialization, publication, case closure validation, summary and Library rendering use the shared sanitizer. AI Markdown display also passes through it to remove embedded images. Existing stored HTML is not rewritten automatically; legacy images are removed on these read paths and on subsequent saves. Supporting images should be attached as case documents. Package declares HTMLPurifier explicitly; refresh the Composer lock for the path package. Unit tests added; runtime and browser verification pending. This does not certify unrelated HTML rendering or the rich editor's own upload endpoints.

@@ -1,10 +1,3 @@
-@php
-    $htmlConfig = \HTMLPurifier_Config::createDefault();
-    $htmlConfig->set('HTML.Allowed', 'p,br,strong,b,em,i,u,s,strike,h1,h2,h3,h4,blockquote,ul,ol,li,a[href|title],span[style],div,table,thead,tbody,tr,th,td');
-    $htmlConfig->set('CSS.AllowedProperties', ['color', 'background-color', 'text-align']);
-    $htmlConfig->set('URI.AllowedSchemes', ['http' => true, 'https' => true]);
-    $htmlPurifier = new \HTMLPurifier($htmlConfig);
-@endphp
 <div class="space-y-5">
     <header class="space-y-2">
         <h1 class="desk-title">Library</h1>
@@ -61,7 +54,7 @@
                             </div>
                             <div x-show="expanded" x-cloak class="space-y-3">
                                 <flux:badge color="amber">AI-generated · unverified</flux:badge>
-                                <div class="legal-markdown text-sm">{!! \Illuminate\Support\Str::markdown($saved->analysis ?? '', ['html_input' => 'strip', 'allow_unsafe_links' => false]) !!}</div>
+                                <div class="legal-markdown text-sm">{!! \Simplydigital\LegalDeskLawResources\Support\LegalHtmlSanitizer::clean(\Illuminate\Support\Str::markdown($saved->analysis ?? '', ['html_input' => 'strip', 'allow_unsafe_links' => false])) !!}</div>
                                 <flux:button size="sm" variant="outline" wire:click="removeSavedResearch({{ $saved->id }})"
                                     wire:confirm="Remove this saved research note from your Knowledge Base?">Remove</flux:button>
                             </div>
@@ -124,7 +117,7 @@
                             <details class="text-sm">
                                 <summary class="cursor-pointer font-medium">Why it applied in the source case</summary>
                                 @if ($reference->matter->final_decision_reference_id === $reference->id)
-                                    <div class="legal-markdown mt-2 max-w-none wrap-break-word leading-relaxed">{!! $htmlPurifier->purify($reference->applicability ?? '') !!}</div>
+                                    <div class="legal-markdown mt-2 max-w-none wrap-break-word leading-relaxed">{!! \Simplydigital\LegalDeskLawResources\Support\LegalHtmlSanitizer::clean($reference->applicability ?? '') !!}</div>
                                 @else
                                     <p class="mt-2 wrap-break-word whitespace-pre-wrap leading-relaxed">{{ $reference->applicability }}</p>
                                 @endif

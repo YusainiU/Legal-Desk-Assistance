@@ -638,7 +638,7 @@ class Workspace extends Component
 
     private function closeFile(Matter $matter): void
     {
-        if (blank($matter->final_decision)) {
+        if (! \Simplydigital\LegalDeskLawResources\Support\LegalHtmlSanitizer::hasText(\Simplydigital\LegalDeskLawResources\Support\LegalHtmlSanitizer::clean($matter->final_decision))) {
             throw ValidationException::withMessages(['workflow' => 'Save the Final Decision in its tab before closing this case.']);
         }
 
