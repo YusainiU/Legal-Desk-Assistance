@@ -40,6 +40,7 @@ class AppServiceProvider extends ServiceProvider
         \Livewire\Livewire::addPersistentMiddleware([\App\Http\Middleware\EnforcePageAccess::class]);
         Gate::define('access-page', fn (User $user, string $page): bool => \App\Support\PageAccess::allows($user, $page));
         Gate::define('manage-page-permissions', fn (User $user): bool => $user->has_access && ! $user->trashed() && $user->is_super_admin);
+        Gate::define('view-case-activity-audit', fn (User $user): bool => $user->has_access && ! $user->trashed() && $user->is_super_admin);
         Gate::define('view-login-audit', fn (User $user): bool => $user->has_access && $user->is_super_admin);
         Gate::define('manage-users', fn (User $user): bool => $user->has_access && ($user->is_super_admin || $user->is_admin));
         Gate::define('manage-user', fn (User $actor, User $target): bool => $actor->has_access
