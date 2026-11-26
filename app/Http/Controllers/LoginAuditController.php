@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 
-class LoginAuditController extends Controller
+class LoginAuditController
 {
     public function index(Request $request): View
     {
