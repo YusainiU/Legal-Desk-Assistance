@@ -21,6 +21,190 @@ php artisan serve
 
 Open http://localhost:8000 and sign in as `legaldesk@admin.test` with the password set at the prompt. Create staff accounts through Users. Demo data is optional and intended only for local/testing environments. To work on the styles with Vite hot reload, run `npm run dev` in a separate terminal. For a hosted environment, point the web root at `public/`, set `APP_ENV=production` and `APP_DEBUG=false`, and serve it over HTTPS.
 
+## Production deployment (Ubuntu / Apache / MySQL)
+
+This is a self-hosted, single-firm application. Staff share case data; it is not a multi-tenant service. Public repository visibility does not constitute a production security certification or grant a licence. Review the licence terms, [security audit](Docs/Security-Audit.md) and [release checklist](Docs/Public-Release-Checklist.md) before deploying real client data.
+
+The following example assumes a dedicated Ubuntu server, Apache, PHP-FPM (or an appropriately configured Apache PHP handler), MySQL and a dedicated HTTPS hostname. Replace example paths, hostnames and account names with your own. Use a staging installation first.
+
+### 1. Prepare the server
+
+- Install a supported PHP version compatible with the lockfile (PHP 8.4.1 or newer), matching CLI and web PHP versions, Composer 2, Node.js 22.12 or newer, npm, Git, Apache and MySQL.
+- Enable PHP extensions required by Composer and Laravel, including PDO MySQL, mbstring, XML/DOM, cURL, OpenSSL, fileinfo, tokenizer and ZIP. SQLite is needed for the development test suite.
+- Configure DNS, HTTPS, firewall rules and security updates. Restrict MySQL to trusted hosts and do not expose it publicly.
+- Use an unprivileged deployment account and a separate web-service account/group. Do not run Composer, npm or Artisan as root.
+
+### 2. Clone the reviewed release
+
+```sh
+git clone https://github.com/YusainiU/Legal-Desk-Assistance.git
+cd Legal-Desk-Assistance
+git rev-parse HEAD
+```
+
+Choose a reviewed release tag or commit before deployment; the default branch may not contain all recent changes. Record the deployed commit. Composer must be able to access the Rich HTML Editor dependency and the bundled local package. Do not bypass platform checks or substitute an unreviewed dependency if installation fails.
+
+### 3. Create a dedicated database
+
+Connect as a MySQL administrator and adapt the following example. Replace the password placeholder with a unique strong secret; do not reuse it elsewhere.
+
+```sql
+CREATE DATABASE legal_desk CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE USER 'legal_desk'@'localhost' IDENTIFIED BY 'REPLACE_WITH_UNIQUE_SECRET';
+GRANT ALL PRIVILEGES ON legal_desk.* TO 'legal_desk'@'localhost';
+```
+
+These privileges are scoped to the application database and allow migrations. Where operationally feasible, use a separate migration account and reduce runtime privileges after testing.
+
+### 4. Configure the production environment
+
+```sh
+cp .env.example .env
+chmod 600 .env
+```
+
+Ensure the web PHP process can read the environment file through appropriately restricted ownership/group permissions (for example mode 640 with a dedicated trusted group). Never commit it. Edit it before installation:
+
+```dotenv
+APP_NAME="Legal Desk Assistance"
+APP_ENV=production
+APP_DEBUG=false
+APP_URL=https://legal.example.com
+APP_KEY=
+
+DB_CONNECTION=mysql
+DB_HOST=localhost
+DB_PORT=3306
+DB_DATABASE=legal_desk
+DB_USERNAME=legal_desk
+DB_PASSWORD="REPLACE_WITH_UNIQUE_SECRET"
+
+SESSION_DRIVER=file
+SESSION_SECURE_COOKIE=true
+SESSION_HTTP_ONLY=true
+SESSION_SAME_SITE=lax
+CACHE_STORE=file
+QUEUE_CONNECTION=sync
+
+MAIL_MAILER=log
+AI_CASE_ASSISTANT_ENABLED=false
+OPENAI_API_KEY=
+DEEPSEEK_API_KEY=
+DOCUMENT_SCAN_ENABLED=true
+DOCUMENT_SCAN_BINARY=/usr/bin/clamscan
+DOCUMENT_SCAN_TIMEOUT=60
+LOGIN_AUDIT_RETENTION_DAYS=90
+```
+
+Choose audit retention according to your firm's obligations, not merely the example. Install and verify ClamAV before accepting uploads. Configure a real SMTP transport before enabling staff correspondence or password reset email; the log transport is not delivery and may retain sensitive mail content. Keep external AI disabled until explicitly approved in AI Search Settings, including provider confidentiality terms and quotas.
+
+### 5. Install and initialize
+
+From the application root, as the deployment account:
+
+```sh
+composer install --no-dev --prefer-dist --optimize-autoloader --no-interaction
+composer check-platform-reqs --no-dev
+php artisan key:generate --force
+php artisan migrate --force
+npm ci
+npm run build
+php artisan legal-desk:setup-super-admin
+```
+
+Generate APP_KEY only on a fresh installation; preserve it securely for upgrades and disaster recovery. Never run migrate:fresh, migrate:refresh or demo seeders on production data. The setup command prompts for a new password for legaldesk@admin.test; use a unique strong password. Create staff accounts through Users, grant only required access and configure MFA where supported. Review the reserved administrator email and recovery arrangements before opening access.
+
+### 6. Configure filesystem permissions and Apache
+
+Place the application at a path such as /var/www/legal-desk-assistance. The web process needs read access to application code and write access to storage and bootstrap/cache only. Configure ownership and group permissions for your service accounts; never use chmod 777. Keep private documents under storage/app/private and outside the public web root. Do not expose private storage through a symlink or Apache alias.
+
+Example HTTPS virtual host (assuming TLS certificates already provisioned and PHP handling configured):
+
+```apache
+<VirtualHost *:443>
+    ServerName legal.example.com
+    DocumentRoot /var/www/legal-desk-assistance/public
+    SSLEngine on
+    SSLCertificateFile /path/to/fullchain.pem
+    SSLCertificateKeyFile /path/to/privkey.pem
+
+    <Directory /var/www/legal-desk-assistance/public>
+        Options -Indexes +FollowSymLinks
+        AllowOverride All
+        Require all granted
+    </Directory>
+</VirtualHost>
+```
+
+Enable rewrite and SSL modules, verify the Laravel public/.htaccess exists (restore the standard Laravel front-controller rewrite rules if missing), configure HTTP-to-HTTPS redirection, then validate and reload Apache:
+
+```sh
+sudo a2enmod rewrite ssl
+sudo apache2ctl configtest
+sudo systemctl reload apache2
+```
+
+For a subdirectory deployment, configure an Alias to public/ only and set APP_URL to the full HTTPS subpath. Verify Livewire requests, assets and authentication redirects. Do not use php artisan serve or npm run dev as production servers.
+
+### 7. Enable document scanning and scheduled maintenance
+
+```sh
+sudo apt install clamav clamav-freshclam
+clamscan --version
+sudo systemctl status clamav-freshclam
+php artisan optimize:clear
+php artisan schedule:list
+```
+
+Ensure current signatures and scanner access from the web PHP account. Scanner errors reject uploads when scanning is enabled. Configure PHP and web-server request limits for 10 MB attachments plus multipart overhead.
+
+Add one cron entry under the application service account (adjust paths and PHP executable):
+
+```cron
+* * * * * cd /var/www/legal-desk-assistance && /usr/bin/php artisan schedule:run
+```
+
+Route scheduler output to monitored logs with rotation. Scheduled tasks include document deletion retries, email quota cleanup and audit retention cleanup. Review retention before enabling cron. With QUEUE_CONNECTION=sync no persistent queue worker is required; if switching to an asynchronous queue, configure a supervised worker and restart it after deployments.
+
+### 8. Cache configuration and verify before go-live
+
+```sh
+php artisan optimize:clear
+php artisan config:cache
+php artisan view:cache
+php artisan migrate:status
+php artisan schedule:list
+```
+
+In a separate staging/development environment with development dependencies and SQLite installed, run ./vendor/bin/phpunit. The suite passed 17 tests on PHP 8.4.28 during local verification; this is not a substitute for staging tests with MySQL.
+
+- Verify HTTPS, login/logout, password recovery, MFA, staff permissions and direct unauthorized requests.
+- Verify case workflow, private upload/download, malware scanner failure handling, PDF exports, email delivery and audit entries.
+- Verify that .env, private documents, Git metadata and logs cannot be fetched directly over HTTP.
+- Configure Firm Settings, permission groups and audit retention. Keep AI disabled unless approved.
+- Establish encrypted, access-controlled backups of MySQL, private storage and required secrets; test restoration. Monitor errors, disk space, scheduler, mail and security updates.
+- Review confidentiality, data protection and legal retention requirements before entering real client information.
+
+### 9. Maintain and upgrade
+
+Back up database and private files before every upgrade. Review release notes and dependency advisories, test the selected revision in staging, and schedule downtime where needed. Deploy as the unprivileged application operator:
+
+```sh
+php artisan down
+# Fetch and check out the reviewed revision using your deployment process.
+composer install --no-dev --prefer-dist --optimize-autoloader --no-interaction
+npm ci
+npm run build
+php artisan migrate --force
+php artisan optimize:clear
+php artisan config:cache
+php artisan view:cache
+php artisan up
+```
+
+Restart supervised queue workers if configured. Verify functionality and monitor logs. If a step fails, keep maintenance mode enabled until recovery; do not blindly roll back code after database changes. Use a tested rollback and restore plan. Run Composer and npm vulnerability audits regularly and apply reviewed updates. Never regenerate the existing application key or reseed production.
+
+
 ## Features
 
 - Dashboard with open case counts, task deadlines and workflow stage totals.
