@@ -15,6 +15,8 @@
 
     <flux:card class="desk-panel space-y-4">
         <form wire:submit="search" class="space-y-4">
+            <flux:callout color="amber">Your question is sent to the external AI provider ({{ $provider }}). Do not submit confidential, privileged or personal information without authorization. Verify all results independently.</flux:callout>
+            <flux:checkbox wire:model="acknowledged" label="I acknowledge the confidentiality notice and authorize this request." />
             @unless ($searchEnabled)
                 <flux:callout color="amber">AI Search is currently disabled by an administrator.</flux:callout>
             @endunless

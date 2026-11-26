@@ -14,6 +14,7 @@ use Simplydigital\LegalDeskLawResources\Services\AiSearchSettings;
 #[Layout('components.layouts.app')]
 class AiResourceSearch extends Component
 {
+    public bool $acknowledged = false;
     public string $question = '';
     public string $court = 'all';
     public string $matterId = '';
@@ -47,17 +48,17 @@ class AiResourceSearch extends Component
         $this->researchId = null;
 
         try {
-            $analysis = $service->search(trim($data['question']), $data['court']);
-        } catch (\RuntimeException $error) {
-            report($error);
+            $analysis = $service->search(trim($data['question']), $data['court'], $this->acknowledged);
+        } catch (\Simplydigital\LegalDeskLawResources\Services\AiRequestDenied $error) {
             $this->notice = $error->getMessage();
             return;
         } catch (\Throwable $error) {
-            report($error);
-            $this->notice = 'AI search failed. Check the Laravel application log for details.';
+            \Illuminate\Support\Facades\Log::warning('Legal AI search unavailable', ['exception_type' => get_class($error)]);
+            $this->notice = 'AI search unavailable. Try again later.';
             return;
         }
 
+        $this->acknowledged = false;
         $research = LegalResearch::create([
             'user_id' => auth()->id(),
             'matter_id' => $matter?->id,

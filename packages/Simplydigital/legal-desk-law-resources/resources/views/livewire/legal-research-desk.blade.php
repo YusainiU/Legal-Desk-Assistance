@@ -20,6 +20,8 @@
                     <flux:text size="sm">{{ $research->authorities->count() }} indexed passages</flux:text>
                 </div>
                 @if ($research->authorities->isNotEmpty())
+                    <flux:callout color="amber">AI analysis sends the research question and selected indexed judgment passages to OpenAI. Confirm you are authorized to share them and verify the results independently.</flux:callout>
+                    <flux:checkbox wire:model="acknowledged" label="I acknowledge the confidentiality notice and authorize this request." />
                     <flux:button type="button" variant="outline" wire:click="analyse"
                         wire:loading.attr="disabled" wire:target="analyse">Generate AI draft (optional)</flux:button>
                 @endif
