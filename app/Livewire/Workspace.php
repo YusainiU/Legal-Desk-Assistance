@@ -155,6 +155,10 @@ class Workspace extends Component
     public function mount(): void
     {
         if (! request()->has('case')) {
+            $status = request()->query('status');
+            if (in_array($status, ['Open', 'Closed', 'Declined'], true)) {
+                $this->status = $status;
+            }
             return;
         }
 
