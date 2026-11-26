@@ -66,3 +66,26 @@ Artisan::command('legal-desk:setup-super-admin', function () {
 
     return 0;
 })->purpose('Set the password and enable the default Super Admin account');
+
+Artisan::command('legal-desk:document-cleanup {--orphans : Report unreferenced files older than 24 hours}', function () {
+    $service = app(\App\Support\DocumentFileLifecycle::class);
+    $failed = 0;
+    DB::table('document_file_deletions')->orderBy('id')->chunkById(100, function ($rows) use ($service, &$failed) {
+        foreach ($rows as $row) {
+            if (! $service->remove($row->path)) $failed++;
+        }
+    });
+    $this->info('Pending deletion cleanup completed; unresolved: '.$failed);
+    if ($this->option('orphans')) {
+        $disk = \Illuminate\Support\Facades\Storage::disk('local');
+        foreach ($disk->allFiles('case-documents') as $path) {
+            if ($disk->lastModified($path) < now()->subDay()->timestamp
+                && ! \App\Models\CaseDocument::query()->where('path', $path)->exists()) {
+                $this->line($path);
+            }
+        }
+    }
+    return $failed ? 1 : 0;
+})->purpose('Retry committed document deletions and optionally report orphaned files');
+
+\Illuminate\Support\Facades\Schedule::command('legal-desk:document-cleanup')->hourly()->withoutOverlapping();

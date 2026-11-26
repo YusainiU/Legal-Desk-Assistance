@@ -494,6 +494,7 @@ class Workspace extends Component
         $this->validate(['document' => ['required', 'file', 'max:10240', 'mimes:'.$extensions, 'extensions:'.$extensions]]);
 
         $document = $this->document;
+        app(\App\Support\DocumentScanner::class)->check($document->getRealPath());
         $original = basename(str_replace('\\', '/', $document->getClientOriginalName()));
         $stem = preg_replace('/\p{C}+/u', '', pathinfo($original, PATHINFO_FILENAME));
         $name = (Str::limit(trim($stem ?? ''), 180, '') ?: 'document').'.'.strtolower($document->getClientOriginalExtension());
@@ -536,15 +537,10 @@ class Workspace extends Component
 
             \Illuminate\Support\Facades\Gate::authorize('delete', $document);
             $document->delete();
-
-            if (! Storage::disk('local')->delete($document->path)) {
-                throw ValidationException::withMessages([
-                    $errorKey => 'The file could not be removed. Please try again.',
-                ]);
-            }
+            app(\App\Support\DocumentFileLifecycle::class)->deferDeletion($document->path);
         });
 
-        $this->documentStatus = 'Document deleted.';
+        $this->documentStatus = 'Document removed from the case. File cleanup may complete in the background.';
     }
 
     public function render()
