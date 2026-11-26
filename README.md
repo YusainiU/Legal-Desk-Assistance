@@ -86,14 +86,36 @@ SESSION_SAME_SITE=lax
 CACHE_STORE=file
 QUEUE_CONNECTION=sync
 
-MAIL_MAILER=log
 AI_CASE_ASSISTANT_ENABLED=false
+AI_SEARCH_LOCATION=Malaysia
+AI_MANAGEMENT_PROVIDER=openai
+AI_MANAGEMENT_MODEL=gpt-4o-mini
+AI_CASE_ASSISTANT_ENABLED=true
+OPENAI_BASE_URL=https://api.openai.com/v1
 OPENAI_API_KEY=
-DEEPSEEK_API_KEY=
+
 DOCUMENT_SCAN_ENABLED=true
 DOCUMENT_SCAN_BINARY=/usr/bin/clamscan
 DOCUMENT_SCAN_TIMEOUT=60
+
 LOGIN_AUDIT_RETENTION_DAYS=90
+
+CASE_EMAIL_USER_MINUTE=5
+CASE_EMAIL_USER_DAILY=50
+CASE_EMAIL_FIRM_DAILY=500
+
+
+# SMTP email delivery (replace placeholders with your provider settings)
+# For local development without sending email, use MAIL_MAILER=log.
+MAIL_MAILER=smtp
+MAIL_SCHEME=smtp
+MAIL_HOST=smtp.example.test
+MAIL_PORT=587
+MAIL_USERNAME=
+MAIL_PASSWORD=
+MAIL_FROM_ADDRESS=hello@example.test
+MAIL_FROM_NAME="${APP_NAME}"
+
 ```
 
 Choose audit retention according to your firm's obligations, not merely the example. Install and verify ClamAV before accepting uploads. Configure a real SMTP transport before enabling staff correspondence or password reset email; the log transport is not delivery and may retain sensitive mail content. Keep external AI disabled until explicitly approved in AI Search Settings, including provider confidentiality terms and quotas.
