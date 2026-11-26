@@ -13,7 +13,14 @@ class WelcomePageTest extends TestCase
         $this->get('/')->assertOk()
             ->assertSee('Legal Desk Assistance')
             ->assertSee('AI Legal Search')
-            ->assertSee('From paper files');
+            ->assertSee('From paper files')
+            ->assertSee('Final decisions')
+            ->assertSee('PDF reports and exports')
+            ->assertSee('Permission groups')
+            ->assertSee('Case Activity Audit')
+            ->assertSee('Private document storage')
+            ->assertSee('AI research safeguards')
+            ->assertSee('Source code and deployment guide');
     }
 
     public function test_keeps_case_workspace_behind_authentication(): void
