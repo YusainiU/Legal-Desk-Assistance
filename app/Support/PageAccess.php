@@ -26,7 +26,7 @@ class PageAccess
 
     // Action rules reuse the existing grant tables, keyed by page.action.
     public const ACTIONS = [
-        'workspace' => ['create','update','archive','restore','advance-stage','reinstate-stage','close','assign-owner','assign-team','export','tasks-create','tasks-update','tasks-delete','tasks-complete','documents-create','documents-delete','documents-download','charges-create','charges-update','charges-delete','charges-export','references-create','references-update','references-delete','contacts-link','send-email','decision-update','decision-publish'],
+        'workspace' => ['create','update','archive','restore','advance-stage','reinstate-stage','close','assign-owner','assign-team','export','tasks-create','tasks-update','tasks-delete','tasks-complete','documents-create','documents-delete','documents-download','charges-create','charges-update','charges-delete','charges-export','references-create','references-update','references-delete','references-export','contacts-link','send-email','decision-update','decision-publish'],
         'contacts' => ['create','update'],
         'teams' => ['create','update'],
         'users' => ['create','update','delete'],
@@ -48,6 +48,7 @@ class PageAccess
     {
         return match ($route) {
             'cases.summary' => 'workspace.export',
+            'cases.references-report' => 'workspace.references-export',
             'cases.time-charges.csv' => 'workspace.charges-export',
             'case-documents.download' => 'workspace.documents-download',
             'contacts.edit', 'contacts.update' => 'contacts.update',

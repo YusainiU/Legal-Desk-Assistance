@@ -16,6 +16,9 @@ Route::get('/workspace', Workspace::class)->middleware(['auth', \App\Http\Middle
 Route::view('/getting-started', 'getting-started')->middleware(['auth', \App\Http\Middleware\EnforcePageAccess::class])->name('getting-started');
 Route::view('/knowledge-base/guide', 'knowledge-base-guide')->middleware(['auth', \App\Http\Middleware\EnforcePageAccess::class])->name('knowledge-base.guide');
 
+Route::get('/cases/{matter}/references-report', [\App\Http\Controllers\CaseReferenceExportController::class, 'show'])
+    ->whereNumber('matter')->middleware(['auth', \App\Http\Middleware\EnforcePageAccess::class])->name('cases.references-report');
+
 Route::get('/cases/{matter}/summary', [CaseSummaryController::class, 'show'])
     ->whereNumber('matter')->middleware(['auth', \App\Http\Middleware\EnforcePageAccess::class])->name('cases.summary');
 
