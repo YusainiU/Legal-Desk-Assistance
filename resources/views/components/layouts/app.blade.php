@@ -102,6 +102,11 @@
                             Login Audit Log
                         </flux:sidebar.item>
                         @endcan
+                        @can('view-case-activity-audit')
+                            <flux:sidebar.item icon="shield-check" :href="route('admin.case-activity-audit')" :current="request()->routeIs('admin.case-activity-audit*')">
+                                Case Activity Audit
+                            </flux:sidebar.item>
+                        @endcan
                     </flux:sidebar.group>
                 @endcan
             </flux:sidebar.nav>

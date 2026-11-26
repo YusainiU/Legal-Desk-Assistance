@@ -8,6 +8,8 @@ use Illuminate\Support\Str;
 
 class PageAccess
 {
+    // Case Activity Audit is deliberately excluded from delegable page grants.
+    // Its routes and controller enforce the dedicated Super Admin gate.
     public const PAGES = [
         'workspace' => ['Case Register', ['workspace', 'cases.*', 'case-documents.*']],
         'contacts' => ['Contacts', ['contacts.*']],

@@ -50,6 +50,14 @@ Route::middleware(['auth', \App\Http\Middleware\EnforcePageAccess::class, 'can:m
 Route::get('/admin/login-audit', [\App\Http\Controllers\LoginAuditController::class, 'index'])
     ->middleware(['auth', \App\Http\Middleware\EnforcePageAccess::class, 'can:view-login-audit'])->name('admin.login-audit');
 
+// Case activity audits are non-delegable Super Admin operations.
+Route::middleware(['auth', 'can:view-case-activity-audit'])->group(function () {
+    Route::get('/admin/case-activity-audit', [\App\Http\Controllers\CaseActivityAuditController::class, 'index'])
+        ->name('admin.case-activity-audit');
+    Route::put('/admin/case-activity-audit/retention', [\App\Http\Controllers\CaseActivityAuditController::class, 'updateRetention'])
+        ->name('admin.case-activity-audit.retention');
+});
+
 Route::middleware(['auth', 'can:manage-page-permissions'])->prefix('admin/page-permissions')->name('admin.page-permissions.')->group(function () {
     Route::get('/', [\App\Http\Controllers\PagePermissionController::class, 'index'])->name('index');
     Route::put('/pages/{page}', [\App\Http\Controllers\PagePermissionController::class, 'update'])->name('update');
