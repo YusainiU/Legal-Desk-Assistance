@@ -118,3 +118,66 @@ Artisan::command('legal-desk:login-audit-cleanup', function () {
 })->purpose('Remove login audit records outside the configured retention period');
 
 \Illuminate\Support\Facades\Schedule::command('legal-desk:login-audit-cleanup')->daily()->withoutOverlapping();
+
+Artisan::command('legal-desk:case-audit-cleanup {--dry-run : Count expired records without deleting them}', function () {
+    $days = \App\Models\FirmSetting::caseAuditRetentionDays();
+
+    if ($days === 0) {
+        $this->info('Case activity audit retention is indefinite; no records removed.');
+
+        return 0;
+    }
+
+    $cutoff = now()->subDays($days);
+    $expired = DB::table('case_activity_audits')->where('occurred_at', '<', $cutoff);
+
+    if ($this->option('dry-run')) {
+        $this->info('Expired case activity audit records eligible for removal: '.$expired->count());
+
+        return 0;
+    }
+
+    $count = 0;
+    $policyChanged = false;
+
+    $expired->select('id')->chunkById(500, function ($rows) use ($days, $cutoff, &$count, &$policyChanged) {
+        // Serialize each deletion batch with updates to the retention setting.
+        $removed = DB::transaction(function () use ($rows, $days, $cutoff) {
+            $current = DB::table('firm_settings')->where('id', 1)->lockForUpdate()->value('case_audit_retention_days');
+
+            if ((int) $current !== $days) {
+                return null;
+            }
+
+            return DB::table('case_activity_audits')
+                ->whereIn('id', $rows->pluck('id')->all())
+                ->where('occurred_at', '<', $cutoff)
+                ->delete();
+        });
+
+        if ($removed === null) {
+            $policyChanged = true;
+
+            return false;
+        }
+
+        $count += $removed;
+    });
+
+    \Illuminate\Support\Facades\Log::notice('Case activity audit retention cleanup', [
+        'retention_days' => $days,
+        'cutoff' => $cutoff->toDateTimeString(),
+        'removed' => $count,
+        'policy_changed' => $policyChanged,
+    ]);
+
+    $this->info('Expired case activity audit records removed: '.$count);
+
+    if ($policyChanged) {
+        $this->warn('Retention policy changed during cleanup; remaining records were not processed.');
+    }
+
+    return 0;
+})->purpose('Remove expired case activity audit records according to the firm retention policy');
+
+\Illuminate\Support\Facades\Schedule::command('legal-desk:case-audit-cleanup')->daily()->withoutOverlapping();
