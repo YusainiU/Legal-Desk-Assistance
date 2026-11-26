@@ -1,16 +1,24 @@
 <?php
 
-use App\Livewire\Workspace;
+namespace Tests\Feature;
+
 use Illuminate\Support\Facades\Route;
+use Tests\TestCase;
 
-it('serves the public welcome page to guests', function () {
-    $this->get('/')->assertOk()
-        ->assertSee('Legal Desk Assistance')
-        ->assertSee('AI Legal Search')
-        ->assertSee('From paper files');
-});
+class WelcomePageTest extends TestCase
+{
+    public function test_serves_public_welcome_page_to_guests(): void
+    {
+        $this->withoutVite();
+        $this->get('/')->assertOk()
+            ->assertSee('Legal Desk Assistance')
+            ->assertSee('AI Legal Search')
+            ->assertSee('From paper files');
+    }
 
-it('keeps the case workspace behind authentication', function () {
-    expect(Route::getRoutes()->getByName('workspace')->uri())->toBe('workspace');
-    $this->get('/workspace')->assertRedirect('/login');
-});
+    public function test_keeps_case_workspace_behind_authentication(): void
+    {
+        $this->assertSame('workspace', Route::getRoutes()->getByName('workspace')->uri());
+        $this->get('/workspace')->assertRedirect('/login');
+    }
+}
