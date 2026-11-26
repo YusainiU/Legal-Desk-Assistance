@@ -191,6 +191,7 @@ class CaseContacts extends Component
                     'firmName' => \App\Models\FirmSetting::displayName(),
                     'correspondenceSubject' => $subject,
                     'correspondenceBody' => $body,
+                    'senderName' => (string) auth()->user()->name,
                 ],
                 fn (Message $message) => $message->to($email)->subject($subject),
             );

@@ -4,6 +4,10 @@
 
 {!! $correspondenceBody !!}
 
+Kind regards,
+{!! $senderName !!}
+{!! $firmName !!}
+
 ---
 {!! $firmName !!}
 

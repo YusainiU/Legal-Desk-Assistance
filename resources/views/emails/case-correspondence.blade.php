@@ -16,6 +16,11 @@
         <tr><td style="padding:32px;">
             <h1 style="font-size:20px;line-height:1.4;margin:0 0 24px;color:#172b45;overflow-wrap:anywhere;">{{ $correspondenceSubject }}</h1>
             <div style="font-size:15px;line-height:1.75;overflow-wrap:anywhere;">{!! nl2br(e($correspondenceBody)) !!}</div>
+            <div style="margin-top:28px;font-size:15px;line-height:1.6;color:#243247;">
+                Kind regards,<br>
+                <strong style="color:#172b45;">{{ $senderName }}</strong><br>
+                <span style="color:#526174;">{{ $firmName }}</span>
+            </div>
         </td></tr>
         <tr><td style="padding:22px 32px;border-top:1px solid #dce3eb;background-color:#f8fafc;">
             <div style="font-size:13px;font-weight:bold;color:#172b45;">{{ $firmName }}</div>
