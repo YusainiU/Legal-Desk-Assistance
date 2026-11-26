@@ -66,6 +66,13 @@
         <div class="space-y-1">
             <h1 class="desk-title">Incomplete Tasks</h1>
             <flux:text>Outstanding tasks across open, non-archived cases.</flux:text>
+            <div class="max-w-xs">
+                <flux:select label="Task filter" wire:model.live="taskFilter">
+                    <option value="all">All incomplete tasks</option>
+                    <option value="soon">Tasks nearing expiry</option>
+                    <option value="expired">Expired tasks</option>
+                </flux:select>
+            </div>
         </div>
         <flux:card class="desk-panel space-y-3">
             <flux:table>
@@ -89,7 +96,7 @@
                 </flux:table.rows>
             </flux:table>
             @if ($incompleteTasks->isEmpty())
-                <flux:text>No incomplete tasks to display.</flux:text>
+                <flux:text>No incomplete tasks match this filter.</flux:text>
             @endif
             <x-page-elements.pagination :paginator="$incompleteTasks" label="tasks" />
         </flux:card>

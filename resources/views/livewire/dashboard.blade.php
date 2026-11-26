@@ -12,21 +12,30 @@
                 <span class="text-sm text-accent-content underline">View open cases &rarr;</span>
             </flux:card>
         </a>
-        <flux:card class="desk-panel space-y-2">
+        <a href="{{ route('workspace', ['screen' => 'incomplete-tasks', 'task_filter' => 'all']) }}" class="block rounded-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-500">
+        <flux:card class="desk-panel h-full space-y-2 hover:ring-1 hover:ring-teal-500">
             <flux:text>Incomplete tasks</flux:text>
             <p class="text-3xl font-semibold tabular-nums">{{ $incomplete }}</p>
             <flux:text size="sm">Across open cases</flux:text>
+            <span class="text-sm text-accent-content underline">View tasks &rarr;</span>
         </flux:card>
-        <flux:card class="desk-panel space-y-2">
+        </a>
+        <a href="{{ route('workspace', ['screen' => 'incomplete-tasks', 'task_filter' => 'soon']) }}" class="block rounded-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-500">
+        <flux:card class="desk-panel h-full space-y-2 hover:ring-1 hover:ring-teal-500">
             <flux:text>Tasks nearing expiry</flux:text>
             <p @class(['text-3xl font-semibold tabular-nums', 'text-amber-700 dark:text-amber-300' => $soon > 0])>{{ $soon }}</p>
             <flux:text size="sm">Due within {{ $warningHours }} hours</flux:text>
+            <span class="text-sm text-accent-content underline">View tasks &rarr;</span>
         </flux:card>
-        <flux:card class="desk-panel space-y-2">
+        </a>
+        <a href="{{ route('workspace', ['screen' => 'incomplete-tasks', 'task_filter' => 'expired']) }}" class="block rounded-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-500">
+        <flux:card class="desk-panel h-full space-y-2 hover:ring-1 hover:ring-teal-500">
             <flux:text>Expired tasks</flux:text>
             <p @class(['text-3xl font-semibold tabular-nums', 'text-red-700 dark:text-red-400' => $expired > 0])>{{ $expired }}</p>
             <flux:text size="sm">Overdue and incomplete</flux:text>
+            <span class="text-sm text-accent-content underline">View tasks &rarr;</span>
         </flux:card>
+        </a>
     </div>
 
     <section class="space-y-3">
