@@ -19,6 +19,7 @@ class AppServiceProvider extends ServiceProvider
                 ->withQuery(fn (Builder $query) => $query->where('has_access', true));
         });
 
+        Gate::define('view-login-audit', fn (User $user): bool => $user->has_access && $user->is_super_admin);
         Gate::define('manage-users', fn (User $user): bool => $user->has_access && ($user->is_super_admin || $user->is_admin));
         Gate::define('manage-user', fn (User $actor, User $target): bool => $actor->has_access
             && ($actor->is_super_admin || $actor->is_admin)

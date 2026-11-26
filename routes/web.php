@@ -42,3 +42,6 @@ Route::middleware(['auth', 'can:manage-users'])->group(function () {
     Route::get('/settings/firm', [FirmSettingsController::class, 'edit'])->name('settings.firm.edit');
     Route::put('/settings/firm', [FirmSettingsController::class, 'update'])->middleware('can:update-firm-settings')->name('settings.firm.update');
 });
+
+Route::get('/admin/login-audit', [\App\Http\Controllers\LoginAuditController::class, 'index'])
+    ->middleware(['auth', 'can:view-login-audit'])->name('admin.login-audit');
