@@ -14,6 +14,7 @@ class PagePermissionController
     {
         return view('admin.page-permissions', [
             'pages' => PageAccess::PAGES,
+            'actions' => PageAccess::ACTIONS,
             'users' => User::where('has_access', true)->orderBy('name')->get(),
             'groups' => DB::table('permission_groups')->orderBy('name')->get(),
             'rules' => DB::table('page_permissions')->pluck('restricted', 'page'),
@@ -25,7 +26,7 @@ class PagePermissionController
 
     public function update(Request $request, string $page)
     {
-        abort_unless(isset(PageAccess::PAGES[$page]), 404);
+        abort_unless(PageAccess::validKey($page), 404);
         $data = $request->validate([
             'restricted' => 'required|boolean',
             'users' => 'nullable|array',
@@ -42,6 +43,7 @@ class PagePermissionController
                 }
             }
         });
+        \Illuminate\Support\Facades\Log::notice('Permission rule changed', ['actor_id' => $request->user()->id, 'rule' => $page, 'restricted' => $data['restricted'], 'users' => $data['users'] ?? [], 'groups' => $data['groups'] ?? []]);
         return back()->with('status', 'Page permissions saved.');
     }
 

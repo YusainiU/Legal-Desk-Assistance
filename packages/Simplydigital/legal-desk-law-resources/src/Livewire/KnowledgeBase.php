@@ -90,6 +90,10 @@ class KnowledgeBase extends Component
 
     public function copyReference(): void
     {
+        if (\Illuminate\Support\Facades\Gate::has('access-page')) {
+            \Illuminate\Support\Facades\Gate::authorize('access-page', 'library.create');
+            \Illuminate\Support\Facades\Gate::authorize('access-page', 'workspace.references-create');
+        }
         abort_unless($this->copyReferenceId !== null, 422);
 
         $data = $this->validate([
@@ -116,6 +120,9 @@ class KnowledgeBase extends Component
 
     public function removeSavedResearch(int $id): void
     {
+        if (\Illuminate\Support\Facades\Gate::has('access-page')) {
+            \Illuminate\Support\Facades\Gate::authorize('access-page', 'library.delete');
+        }
         SavedLegalResearch::where('user_id', auth()->id())->findOrFail($id)->delete();
         $this->notice = 'Saved AI research removed from your Library.';
     }

@@ -71,11 +71,13 @@ class Workspace extends Component
 
     public function archiveSelected(): void
     {
+        \Illuminate\Support\Facades\Gate::authorize('access-page', 'workspace.archive');
         $this->changeArchiveState(true);
     }
 
     public function restoreSelected(): void
     {
+        \Illuminate\Support\Facades\Gate::authorize('access-page', 'workspace.restore');
         $this->changeArchiveState(false);
     }
 
@@ -212,6 +214,7 @@ class Workspace extends Component
 
     public function saveCaseOwner(): void
     {
+        \Illuminate\Support\Facades\Gate::authorize('access-page', 'workspace.assign-owner');
         $data = $this->validate(['caseOwnerId' => ['required', 'integer', Rule::exists('users', 'id')->where('has_access', true)->whereNull('deleted_at')]]);
 
         $this->change(function (Matter $matter) use ($data) {
@@ -238,6 +241,7 @@ class Workspace extends Component
 
     public function saveCaseTeam(): void
     {
+        \Illuminate\Support\Facades\Gate::authorize('access-page', 'workspace.assign-team');
         $data = $this->validate(['caseTeamId' => 'nullable|integer|min:1']);
 
         $this->change(function (Matter $matter) use ($data) {
@@ -259,6 +263,7 @@ class Workspace extends Component
 
     public function saveDescription(): void
     {
+        \Illuminate\Support\Facades\Gate::authorize('access-page', 'workspace.update');
         $matter = $this->matters()->findOrFail($this->selected);
         $data = $this->validate(['caseDescription' => 'required|string|max:4000']);
 
@@ -285,6 +290,7 @@ class Workspace extends Component
 
     public function reinstateStage(int $expectedStage): void
     {
+        \Illuminate\Support\Facades\Gate::authorize('access-page', 'workspace.reinstate-stage');
         $this->change(function (Matter $matter) use ($expectedStage) {
             $stage = $this->reviewingStage;
 
@@ -319,6 +325,7 @@ class Workspace extends Component
 
     public function createMatter(): void
     {
+        \Illuminate\Support\Facades\Gate::authorize('access-page', 'workspace.create');
         \Illuminate\Support\Facades\Gate::authorize('create', Matter::class);
         $data = $this->validate([
             'form.title' => 'required|string|max:160',
@@ -346,6 +353,7 @@ class Workspace extends Component
 
     public function toggleCheck(int $expectedStage, int $index, bool $checked): void
     {
+        \Illuminate\Support\Facades\Gate::authorize('access-page', 'workspace.update');
         $this->change(function (Matter $matter) use ($expectedStage, $index, $checked) {
             abort_unless($matter->stage === $expectedStage && isset(config('matterdesk.stages')[$matter->stage][2][$index]), 422);
             $checks = $matter->checks ?? [];
@@ -357,6 +365,7 @@ class Workspace extends Component
 
     public function recordConflict(string $result): void
     {
+        \Illuminate\Support\Facades\Gate::authorize('access-page', 'workspace.update');
         abort_unless(in_array($result, ['Pending', 'Cleared', 'Escalated'], true), 422);
         $this->change(function (Matter $matter) use ($result) {
             abort_unless(in_array($matter->stage, [1, 2], true), 422);
@@ -369,6 +378,7 @@ class Workspace extends Component
 
     public function advance(int $expectedStage): void
     {
+        \Illuminate\Support\Facades\Gate::authorize('access-page', 'workspace.advance-stage');
         $this->resetValidation('stageTasks');
 
         $this->change(function (Matter $matter) use ($expectedStage) {
@@ -406,6 +416,7 @@ class Workspace extends Component
             }
 
             if ($matter->stage === $last) {
+                \Illuminate\Support\Facades\Gate::authorize('access-page', 'workspace.close');
                 $this->closeFile($matter);
             } else {
                 $matter->update(['stage' => $matter->stage + 1]);
@@ -418,6 +429,7 @@ class Workspace extends Component
 
     public function decline(): void
     {
+        \Illuminate\Support\Facades\Gate::authorize('access-page', 'workspace.close');
         $this->validate(['decision' => 'required|string|max:4000']);
         $this->change(function (Matter $matter) {
             abort_unless($matter->stage === 2, 422);
@@ -440,6 +452,7 @@ class Workspace extends Component
 
     public function saveStageNote(int $expectedStage): void
     {
+        \Illuminate\Support\Facades\Gate::authorize('access-page', 'workspace.update');
         $this->stageNoteSaved = false;
 
         $this->change(function (Matter $matter) use ($expectedStage) {
@@ -459,6 +472,7 @@ class Workspace extends Component
 
     public function addEntry(): void
     {
+        \Illuminate\Support\Facades\Gate::authorize('access-page', 'workspace.update');
         $data = $this->validate([
             'kind' => ['required', Rule::in(['Note', 'Client update', 'Billing'])],
             'body' => 'required|string|max:4000',
@@ -470,6 +484,7 @@ class Workspace extends Component
 
     public function uploadDocument(): void
     {
+        \Illuminate\Support\Facades\Gate::authorize('access-page', 'workspace.documents-create');
         $matter = $this->matters()->findOrFail($this->selected);
         abort_unless($matter->status === 'Open', 422);
 
@@ -511,6 +526,7 @@ class Workspace extends Component
 
     public function deleteDocument(int $id): void
     {
+        \Illuminate\Support\Facades\Gate::authorize('access-page', 'workspace.documents-delete');
         $this->documentStatus = null;
         $errorKey = 'documentDeletion.'.$id;
         $this->resetValidation($errorKey);

@@ -69,6 +69,7 @@ class CaseTasks extends Component
 
     public function saveTask(): void
     {
+        \Illuminate\Support\Facades\Gate::authorize('access-page', $this->editingTaskId === null ? 'workspace.tasks-create' : 'workspace.tasks-update');
         $data = $this->validate([
             'title' => 'required|string|max:4000',
             'assignee' => 'required|string|max:160',
@@ -103,12 +104,14 @@ class CaseTasks extends Component
 
     public function setDone(int $id, bool $done): void
     {
+        \Illuminate\Support\Facades\Gate::authorize('access-page', 'workspace.tasks-complete');
         $this->change(fn (Matter $matter) => $matter->tasks()->findOrFail($id)->update(['done' => $done]));
         $this->taskChanged($done ? 'Task completed.' : 'Task reopened.');
     }
 
     public function deleteTask(int $id): void
     {
+        \Illuminate\Support\Facades\Gate::authorize('access-page', 'workspace.tasks-delete');
         $this->change(fn (Matter $matter) => $matter->tasks()->findOrFail($id)->delete());
         $this->taskChanged('Task deleted.');
     }

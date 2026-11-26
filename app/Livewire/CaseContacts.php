@@ -46,6 +46,7 @@ class CaseContacts extends Component
 
     public function linkContact(): void
     {
+        \Illuminate\Support\Facades\Gate::authorize('access-page', 'workspace.contacts-link');
         $this->validate(['linkContactId' => ['required', 'integer']]);
 
         DB::transaction(function () {
@@ -62,6 +63,7 @@ class CaseContacts extends Component
 
     public function contactCreated(int $contactId): void
     {
+        \Illuminate\Support\Facades\Gate::authorize('access-page', 'workspace.contacts-link');
         $this->caseQuery()->findOrFail($this->matterId)
             ->contacts()->findOrFail($contactId);
 
@@ -70,6 +72,7 @@ class CaseContacts extends Component
 
     public function sendMessage(): void
     {
+        \Illuminate\Support\Facades\Gate::authorize('access-page', 'workspace.send-email');
         $this->messageStatus = null;
         $this->resetValidation('delivery');
 

@@ -45,6 +45,7 @@ class ContactAddress extends Component
 
     public function save(): void
     {
+        \Illuminate\Support\Facades\Gate::authorize('access-page', 'contacts.update');
         abort_unless($this->showModal && $this->contactId !== null, 404);
         $contact = $this->resolveContact($this->contactId);
         $this->saved = false;

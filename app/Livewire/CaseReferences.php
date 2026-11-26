@@ -52,6 +52,7 @@ class CaseReferences extends Component
 
     public function saveReference(): void
     {
+        \Illuminate\Support\Facades\Gate::authorize('access-page', $this->editingReferenceId === null ? 'workspace.references-create' : 'workspace.references-update');
         $data = $this->validate([
             'form.type' => ['required', Rule::in(array_keys(CaseReference::TYPES))],
             'form.title' => 'required|string|max:200',
@@ -83,6 +84,7 @@ class CaseReferences extends Component
 
     public function deleteReference(int $id): void
     {
+        \Illuminate\Support\Facades\Gate::authorize('access-page', 'workspace.references-delete');
         $this->change(fn (Matter $matter) => $matter->references()->whereKeyNot($matter->final_decision_reference_id ?? 0)->findOrFail($id)->delete());
         $this->resetPage('referencePage');
         $this->notice = 'Reference deleted.';

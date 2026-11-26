@@ -75,6 +75,7 @@ class CaseTimeCharges extends Component
 
     public function saveCharge(): void
     {
+        \Illuminate\Support\Facades\Gate::authorize('access-page', $this->editingChargeId === null ? 'workspace.charges-create' : 'workspace.charges-update');
         $editing = $this->editingChargeId !== null;
         $rules = [
             'description' => 'required|string|max:255',
@@ -124,6 +125,7 @@ class CaseTimeCharges extends Component
 
     public function deleteCharge(int $id): void
     {
+        \Illuminate\Support\Facades\Gate::authorize('access-page', 'workspace.charges-delete');
         $this->change(fn (Matter $matter) => $matter->timeCharges()->findOrFail($id)->delete());
         $this->resetPage('chargePage');
         $this->notice = 'Time charge deleted.';

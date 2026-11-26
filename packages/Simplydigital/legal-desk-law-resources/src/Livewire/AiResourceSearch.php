@@ -24,6 +24,9 @@ class AiResourceSearch extends Component
 
     public function search(PublicJudgmentAiSearchService $service, AiSearchSettings $settings): void
     {
+        if (\Illuminate\Support\Facades\Gate::has('access-page')) {
+            \Illuminate\Support\Facades\Gate::authorize('access-page', 'ai-resource-search.execute');
+        }
         if (! $settings->enabled()) {
             $this->notice = 'AI Search is disabled by an administrator.';
             return;
@@ -85,6 +88,10 @@ class AiResourceSearch extends Component
 
     public function saveToKnowledgeBase(): void
     {
+        if (\Illuminate\Support\Facades\Gate::has('access-page')) {
+            \Illuminate\Support\Facades\Gate::authorize('access-page', 'ai-resource-search.create');
+            \Illuminate\Support\Facades\Gate::authorize('access-page', 'library.create');
+        }
         abort_unless($this->researchId !== null, 404);
 
         $research = LegalResearch::query()

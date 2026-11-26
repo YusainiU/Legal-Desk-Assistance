@@ -46,6 +46,9 @@ class LegalResearchDesk extends Component
 
     public function runSearch(CaseSearchService $search): void
     {
+        if (\Illuminate\Support\Facades\Gate::has('access-page')) {
+            \Illuminate\Support\Facades\Gate::authorize('access-page', 'legal-research.execute');
+        }
         $data = $this->validate([
             'question' => 'required|string|min:5|max:2000',
             'court' => ['required', Rule::in(['all', 'Federal Court', 'Court of Appeal', 'High Court'])],
@@ -97,6 +100,9 @@ class LegalResearchDesk extends Component
 
     public function analyse(LegalAnalysisService $service): void
     {
+        if (\Illuminate\Support\Facades\Gate::has('access-page')) {
+            \Illuminate\Support\Facades\Gate::authorize('access-page', 'legal-research.execute');
+        }
         $research = LegalResearch::where('user_id', auth()->id())
             ->with(['authorities.legalCase', 'authorities.passage'])
             ->findOrFail($this->researchId);
@@ -135,6 +141,10 @@ class LegalResearchDesk extends Component
 
     public function attachAuthority(int $id): void
     {
+        if (\Illuminate\Support\Facades\Gate::has('access-page')) {
+            \Illuminate\Support\Facades\Gate::authorize('access-page', 'legal-research.attach');
+            \Illuminate\Support\Facades\Gate::authorize('access-page', 'workspace.references-create');
+        }
         $research = LegalResearch::where('user_id', auth()->id())->findOrFail($this->researchId);
         $matter = config('legal-desk-law-resources.matter_model')::query()->accessibleTo(auth()->user())
             ->where('status', 'Open')->findOrFail($research->matter_id);

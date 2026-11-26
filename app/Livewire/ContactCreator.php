@@ -28,6 +28,7 @@ class ContactCreator extends Component
 
     public function save(): void
     {
+        \Illuminate\Support\Facades\Gate::authorize('access-page', 'contacts.create');
         $owner = auth()->user();
         abort_unless($owner && $owner->has_access && ! $owner->trashed(), 403);
 

@@ -27,6 +27,7 @@ class CaseFinalDecision extends Component
 
     public function saveDecision(): void
     {
+        \Illuminate\Support\Facades\Gate::authorize('access-page', 'workspace.decision-update');
         $data = $this->validate(['finalDecision' => 'required|string|max:50000']);
         $config = HTMLPurifier_Config::createDefault();
         $config->set('HTML.Allowed', 'p,br,strong,b,em,i,u,s,strike,h1,h2,h3,h4,blockquote,ul,ol,li,a[href|title],span[style],div,table,thead,tbody,tr,th,td,img[src|alt|width|height]');
@@ -63,6 +64,7 @@ class CaseFinalDecision extends Component
 
     public function addToKnowledgeBase(): void
     {
+        \Illuminate\Support\Facades\Gate::authorize('access-page', 'workspace.decision-publish');
         DB::transaction(function () {
             $matter = $this->matter(lock: true);
             \Illuminate\Support\Facades\Gate::authorize('update', $matter);

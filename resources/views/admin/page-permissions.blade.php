@@ -47,7 +47,17 @@
         <flux:card class="space-y-4">
             <flux:heading size="lg">Page permissions</flux:heading>
             <flux:text>Unrestricted pages retain existing access rules. Restricted pages require a direct or group grant. Dashboard and sign out remain available.</flux:text>
-            @foreach($pages as $page => [$label, $patterns])
+            @php
+                $permissionRows = [];
+                foreach ($pages as $key => [$name, $patterns]) {
+                    $permissionRows[$key] = [$name . ' — View', $patterns];
+                    foreach ($actions[$key] ?? [] as $action) {
+                        $permissionRows[$key.'.'.$action] = [$name . ' — ' . str_replace('-', ' ', ucfirst($action)), []];
+                    }
+                }
+            @endphp
+            <flux:text>Configure View separately from each operation. To make a page read-only for a group, allow View and restrict every operation to other groups (or leave their grant lists empty). Unrestricted operations inherit page access.</flux:text>
+            @foreach($permissionRows as $page => [$label, $patterns])
                 <details class="border-b border-zinc-700 pb-3">
                     <summary class="cursor-pointer">{{ $label }} — {{ ($rules[$page] ?? false) ? 'Restricted' : 'Unrestricted' }}</summary>
                     <form method="post" action="{{ route('admin.page-permissions.update', $page) }}" class="space-y-4 py-3">

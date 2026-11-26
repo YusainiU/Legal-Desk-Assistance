@@ -23,6 +23,9 @@ class AiSearchAdmin extends Component
 
     public function save(AiSearchSettings $settings): void
     {
+        if (\Illuminate\Support\Facades\Gate::has('access-page')) {
+            \Illuminate\Support\Facades\Gate::authorize('access-page', 'ai-search-admin.update');
+        }
         Gate::authorize('manage-users');
         $this->validate([
             'location' => ['required', 'string', 'min:2', 'max:160'],
