@@ -74,4 +74,42 @@ Login audit persistence failures no longer interrupt authentication; monitor app
 
 ### Structured case activity audit (S-14)
 
-Run `php artisan migrate` before using the upgraded application. The `case_activity_audits` table records actor ID (nullable for system operations), case ID, record type and ID, action, changed field names and timestamp. Eloquent observers cover create/update/delete events for matters, entries (including tasks and email), documents, references and time charges. Authorized document preview/download response preparation is recorded separately; this does not prove receipt of the file. No field values or document contents are copied. Audit inserts participate in existing database transactions; operations outside a transaction are not guaranteed atomic. Bulk query updates, pivot changes, package models and administrative changes are not comprehensively covered. No audit viewer, automatic retention or tamper-resistant external storage is provided yet. Restrict database access and establish a retention policy. Runtime verification remains outstanding.
+Run `php artisan migrate` before using the upgraded application. The `case_activity_audits` table records actor ID (nullable for system operations), case ID, record type and ID, action, changed field names and timestamp. Eloquent observers cover create/update/delete events for matters, entries (including tasks and email), documents, references and time charges. Authorized document preview response preparation is recorded separately; this does not prove receipt of the file. The current download controller does not record a download audit event. No field values or document contents are copied. Audit inserts participate in existing database transactions; operations outside a transaction are not guaranteed atomic. Bulk query updates, pivot changes, package models and administrative changes are not comprehensively covered. S-16 adds a restricted audit viewer and configurable retention cleanup. Tamper-resistant external storage is not provided. Restrict database access and establish a retention policy. Runtime verification remains outstanding.
+
+
+### Case Activity Audit administration (S-16)
+
+After upgrading, run `php artisan migrate` and clear or rebuild application configuration and route caches. Active Super Administrators can open **Administration → Case Activity Audit**. Ordinary users, Admins, disabled accounts and guests cannot access the audit viewer or change its retention policy. This permission is deliberately not delegable through Page Access & Permissions.
+
+The viewer lists 20 records per page, newest first. Filter by user, exact case ID, activity, or inclusive date range; the case reference search accepts a numeric ID (optionally prefixed with #) or case title. Filters can be combined and are preserved across pagination. Select **View details** for actor ID, case ID, record type and ID, action, timestamp and changed field names. Names and titles reflect current records, not historical snapshots; unavailable records retain their stored IDs. Field values and document contents are not displayed. Individual audit records cannot be edited or deleted through this page.
+
+The retention policy is stored in firm settings. The default is indefinite (no automatic deletion). Available finite periods are 90, 180, 365, 730, 1825 and 2555 days. Year labels represent fixed day counts, not calendar anniversaries. A Super Administrator can select a period and save it after confirming the warning. Finite retention permits permanent deletion of expired records. Review legal holds, professional obligations and backup policies first; there are no per-case retention exemptions. Keep indefinite retention if records must be preserved.
+
+The Laravel scheduler registers `legal-desk:case-audit-cleanup` daily with overlap prevention. Ensure the existing scheduler is active and verify with `php artisan schedule:list`. To preview eligible records without deletion:
+
+```bash
+php artisan legal-desk:case-audit-cleanup --dry-run
+```
+
+To execute cleanup manually, only after approving the policy:
+
+```bash
+php artisan legal-desk:case-audit-cleanup
+```
+
+Cleanup deletes only audit rows strictly older than the cutoff, in batches of up to 500. It checks the current retention policy under a database lock before each deletion batch and stops remaining processing if the policy changes. Cleanup results are written to application logs. Indefinite or unsupported stored retention settings do not trigger deletion. No underlying case or document is deleted.
+
+#### Verification before public release
+
+Install development dependencies locally, clear cached configuration, and run the focused tests and full suite:
+
+```bash
+composer install
+php artisan config:clear
+./vendor/bin/phpunit --filter CaseActivityAuditAdministrationTest
+./vendor/bin/phpunit
+```
+
+The committed PHPUnit configuration uses an in-memory SQLite database, array sessions/cache/mail and a test-only application key. PHP SQLite support is required. Verify migration compatibility and test isolation in a development environment; do not run tests against production data. The tests cover guest and role restrictions, combined filters, pagination, retention validation, indefinite retention, dry-run and expiry boundaries. Also manually verify the Flux details modal, navigation, date validation and scheduler on a staging installation using the production database engine.
+
+Implementation is committed, but runtime tests, migration compatibility and staging verification remain outstanding. The audit is not tamper-resistant or immutable; restrict database and log access. Bulk changes and other S-14 coverage gaps remain. Document preview is recorded, but the current download controller does not record a download event; correct and test that gap before public release. Retention policy changes are not independently recorded in the case audit table. Do not treat this feature as proof of complete regulatory compliance.
