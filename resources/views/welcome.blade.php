@@ -19,7 +19,7 @@
                 <a href="#workflow" class="hidden text-sm text-slate-300 hover:text-white sm:inline">Workflow</a>
                 <a href="#research" class="hidden text-sm text-slate-300 hover:text-white sm:inline">AI Research</a>
                 @auth
-                    <a href="{{ route('workspace') }}" class="rounded-lg bg-amber-300 px-4 py-2.5 text-sm font-bold text-slate-950 hover:bg-amber-200">Open workspace</a>
+                    <a href="{{ route('dashboard') }}" class="rounded-lg bg-amber-300 px-4 py-2.5 text-sm font-bold text-slate-950 hover:bg-amber-200">Open workspace</a>
                 @else
                     <a href="{{ route('login') }}" class="rounded-lg bg-amber-300 px-4 py-2.5 text-sm font-bold text-slate-950 hover:bg-amber-200">Sign in</a>
                 @endauth
@@ -34,7 +34,7 @@
                     <p class="max-w-xl text-lg leading-8 text-slate-300">Organise every case. Track every stage. Build your firm's legal knowledge. Bring client records, tasks, documents, legal references and case progress into one structured workspace.</p>
                     <div class="flex flex-wrap gap-3">
                         @auth
-                            <a href="{{ route('workspace') }}" class="rounded-xl bg-amber-300 px-6 py-3 font-semibold text-slate-950 hover:bg-amber-200">Go to case register</a>
+                            <a href="{{ route('dashboard') }}" class="rounded-xl bg-amber-300 px-6 py-3 font-semibold text-slate-950 hover:bg-amber-200">Go to dashboard</a>
                         @else
                             <a href="{{ route('login') }}" class="rounded-xl bg-amber-300 px-6 py-3 font-semibold text-slate-950 hover:bg-amber-200">Sign in to your workspace</a>
                         @endauth
@@ -117,7 +117,7 @@
                 <h2 class="text-3xl font-bold sm:text-4xl">Ready to modernise your legal practice?</h2>
                 <p class="mx-auto mt-5 max-w-2xl text-lg leading-8 text-slate-300">Move from scattered files and disconnected research to a clearer, more organised way of working.</p>
                 <div class="mt-8">
-                    <a href="{{ auth()->check() ? route('workspace') : route('login') }}" class="inline-block rounded-xl bg-amber-300 px-7 py-3.5 font-bold text-slate-950 hover:bg-amber-200">{{ auth()->check() ? 'Open your workspace' : 'Sign in to Legal Desk Assistance' }}</a>
+                    <a href="{{ auth()->check() ? route('dashboard') : route('login') }}" class="inline-block rounded-xl bg-amber-300 px-7 py-3.5 font-bold text-slate-950 hover:bg-amber-200">{{ auth()->check() ? 'Open your workspace' : 'Sign in to Legal Desk Assistance' }}</a>
                 </div>
             </section>
         </main>

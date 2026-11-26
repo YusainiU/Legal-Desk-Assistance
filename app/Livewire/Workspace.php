@@ -6,6 +6,7 @@ use App\Models\Contact;
 
 use App\Models\CaseDocument;
 use App\Models\Matter;
+use App\Models\MatterEntry;
 use App\Models\Team;
 use App\Models\User;
 use App\Support\CaseBilling;
@@ -110,6 +111,13 @@ class Workspace extends Component
 
     public string $status = '';
 
+    public string $taskFilter = 'all';
+
+    public function updatedTaskFilter(): void
+    {
+        $this->resetPage('casePage');
+    }
+
     public array $form = [];
 
     public string $caseDescription = '';
@@ -142,11 +150,12 @@ class Workspace extends Component
 
     public function show(string $screen): void
     {
-        abort_unless(in_array($screen, ['register', 'archive', 'owners', 'guide', 'new'], true), 404);
+        abort_unless(in_array($screen, ['register', 'archive', 'owners', 'incomplete-tasks', 'guide', 'new'], true), 404);
         $this->reset('selectedCases', 'archiveNotice', 'selected', 'linkedTaskId', 'reviewingStage', 'form', 'caseTeamId', 'showTeamEditor', 'caseOwnerId', 'showOwnerEditor', 'caseDescription', 'showDescriptionEditor', 'descriptionSaved', 'decision', 'stageNote', 'stageNoteSaved', 'body', 'document', 'documentStatus', 'showCaseSummary', 'summaryMatterId');
         $this->resetValidation();
         $this->resetPage('casePage');
         $this->screen = $screen;
+        $this->taskFilter = 'all';
     }
 
     #[Locked]
@@ -155,6 +164,16 @@ class Workspace extends Component
     public function mount(): void
     {
         if (! request()->has('case')) {
+            if (request()->query('screen') === 'incomplete-tasks') {
+                $this->screen = 'incomplete-tasks';
+                $filter = request()->query('task_filter');
+                $this->taskFilter = in_array($filter, ['soon', 'expired'], true) ? $filter : 'all';
+                return;
+            }
+            $status = request()->query('status');
+            if (in_array($status, ['Open', 'Closed', 'Declined'], true)) {
+                $this->status = $status;
+            }
             return;
         }
 
@@ -528,8 +547,22 @@ class Workspace extends Component
                 ->latest('id')->paginate(self::CASES_PER_PAGE, pageName: 'casePage');
         }
 
+        $deadline = "COALESCE(due_at, CONCAT(due_on, ' 23:59:59'))";
+        $now = now();
+        $warningLimit = $this->screen === 'incomplete-tasks' ? $now->copy()->addHours(\App\Models\FirmSetting::taskWarningHours()) : $now;
+
         return view('livewire.workspace', [
             'register' => $register,
+            'incompleteTasks' => $this->screen === 'incomplete-tasks'
+                ? MatterEntry::query()->where('kind', 'Task')->where('done', false)
+                    ->whereIn('matter_id', $this->matters()->whereNull('archived_at')->where('status', 'Open')->select('id'))
+                    ->with('matter:id,title')
+                    ->when($this->taskFilter === 'expired', fn ($query) => $query->whereRaw("$deadline <= ?", [$now]))
+                    ->when($this->taskFilter === 'soon', fn ($query) => $query->whereRaw("$deadline > ? AND $deadline <= ?", [$now, $warningLimit]))
+                    ->orderByRaw('CASE WHEN due_on IS NULL AND due_at IS NULL THEN 1 ELSE 0 END')
+                    ->orderByRaw("COALESCE(due_at, CONCAT(due_on, ' 23:59:59'))")
+                    ->orderBy('id')->paginate(self::CASES_PER_PAGE, pageName: 'casePage')
+                : collect(),
             'ownerGroups' => $this->screen === 'owners'
                 ? $this->matters()->whereNull('archived_at')->where('status', 'Open')->orderBy('owner')->orderBy('title')->orderBy('id')->get(['id', 'owner', 'title', 'client', 'stage'])->groupBy('owner')
                 : collect(),

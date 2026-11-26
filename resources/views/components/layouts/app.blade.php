@@ -16,7 +16,7 @@
     @auth
         <flux:sidebar sticky collapsible="mobile" class="desk-sidebar border-e">
             <flux:sidebar.header class="pb-5">
-                <a href="{{ route('workspace') }}" class="inline-flex items-center gap-2.5 min-w-0 break-words text-xl font-medium tracking-tight">
+                <a href="{{ route('dashboard') }}" class="inline-flex items-center gap-2.5 min-w-0 break-words text-xl font-medium tracking-tight">
                     <span aria-hidden="true" class="desk-brand-mark">{{ $brandInitials }}</span>
                     <span class="min-w-0 wrap-anywhere">{{ $brandName }}</span>
                 </a>
@@ -24,6 +24,9 @@
             </flux:sidebar.header>
 
             <flux:sidebar.nav>
+                <flux:sidebar.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')">
+                    Dashboard
+                </flux:sidebar.item>
                 <flux:sidebar.item icon="briefcase" :href="route('workspace')" :current="request()->routeIs('workspace')">
                     Case Register
                 </flux:sidebar.item>
@@ -97,7 +100,7 @@
 
         <flux:header class="desk-mobile-header border-b lg:hidden">
             <flux:sidebar.toggle icon="bars-2" inset="left" />
-            <a href="{{ route('workspace') }}" class="text-lg font-semibold">{{ $brandName }}</a>
+            <a href="{{ route('dashboard') }}" class="text-lg font-semibold">{{ $brandName }}</a>
         </flux:header>
 
         <flux:main>

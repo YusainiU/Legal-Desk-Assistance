@@ -11,6 +11,7 @@ use App\Livewire\Workspace;
 use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'welcome')->name('welcome');
+Route::get('/dashboard', \App\Livewire\Dashboard::class)->middleware('auth')->name('dashboard');
 Route::get('/workspace', Workspace::class)->middleware('auth')->name('workspace');
 Route::view('/getting-started', 'getting-started')->middleware('auth')->name('getting-started');
 Route::view('/knowledge-base/guide', 'knowledge-base-guide')->middleware('auth')->name('knowledge-base.guide');
