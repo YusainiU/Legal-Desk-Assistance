@@ -109,15 +109,18 @@ class CaseReferences extends Component
     {
         abort_unless(auth()->check(), 403);
 
-        return Matter::query()
+        $matter = Matter::query()
             ->when($lock, fn ($query) => $query->lockForUpdate())
             ->findOrFail($this->matterId);
+        \Illuminate\Support\Facades\Gate::authorize('view', $matter);
+        return $matter;
     }
 
     private function change(Closure $callback): void
     {
         DB::transaction(function () use ($callback) {
             $matter = $this->caseRecord(lock: true);
+            \Illuminate\Support\Facades\Gate::authorize('update', $matter);
             abort_unless($matter->status === 'Open', 422);
             $callback($matter);
         }, 3);

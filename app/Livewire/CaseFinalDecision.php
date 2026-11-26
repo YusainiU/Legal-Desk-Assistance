@@ -41,6 +41,7 @@ class CaseFinalDecision extends Component
         }
         DB::transaction(function () use ($decision) {
             $matter = $this->matter(lock: true);
+            \Illuminate\Support\Facades\Gate::authorize('update', $matter);
             abort_unless($matter->status === 'Open', 422);
             $changed = $matter->final_decision !== $decision;
             $matter->update(['final_decision' => $decision]);
@@ -64,6 +65,7 @@ class CaseFinalDecision extends Component
     {
         DB::transaction(function () {
             $matter = $this->matter(lock: true);
+            \Illuminate\Support\Facades\Gate::authorize('update', $matter);
             abort_unless(filled($matter->final_decision), 422);
             $reference = $matter->final_decision_reference_id
                 ? $matter->references()->find($matter->final_decision_reference_id)
@@ -92,8 +94,10 @@ class CaseFinalDecision extends Component
     {
         abort_unless(auth()->check(), 403);
 
-        return Matter::query()
+        $matter = Matter::query()
             ->when($lock, fn ($query) => $query->lockForUpdate())
             ->findOrFail($this->matterId);
+        \Illuminate\Support\Facades\Gate::authorize('view', $matter);
+        return $matter;
     }
 }

@@ -18,6 +18,7 @@ class CaseDocumentController
 
     public function preview(Request $request, CaseDocument $document): BinaryFileResponse
     {
+        \Illuminate\Support\Facades\Gate::authorize('preview', $document);
         $path = $this->authorizedPath($request, $document);
         abort_unless($document->canPreview(), 415, 'Download this file to open it in a compatible application.');
 
@@ -30,6 +31,7 @@ class CaseDocumentController
 
     public function download(Request $request, CaseDocument $document): BinaryFileResponse
     {
+        \Illuminate\Support\Facades\Gate::authorize('download', $document);
         $response = response()->download(
             $this->authorizedPath($request, $document),
             $document->name,

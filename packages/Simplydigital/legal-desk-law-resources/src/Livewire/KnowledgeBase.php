@@ -104,6 +104,7 @@ class KnowledgeBase extends Component
                 throw ValidationException::withMessages(['targetId' => 'Choose a different open case from your Case Register.']);
             }
 
+            \Illuminate\Support\Facades\Gate::authorize('update', $target);
             $target->references()->create($source->only(['type', 'title', 'citation', 'jurisdiction', 'source_url']) + [
                 'applicability' => trim($data['applicability']),
             ]);
@@ -142,7 +143,7 @@ class KnowledgeBase extends Component
             'references' => $references,
             'summaryMatter' => $this->showCaseSummary && $this->summaryMatterId !== null
                 ? config('legal-desk-law-resources.matter_model')::query()
-                    ->where('user_id', auth()->id())
+                    ->accessibleTo(auth()->user())
                     ->with(['entries' => fn ($query) => $query->where('kind', '!=', 'Task')->latest('created_at')->latest('id')])
                     ->findOrFail($this->summaryMatterId)
                 : null,
@@ -179,12 +180,12 @@ class KnowledgeBase extends Component
     {
         abort_unless(auth()->check(), 403);
 
-        return config('legal-desk-law-resources.reference_model')::query()->whereHas('matter', fn (Builder $query) => $query->where('user_id', auth()->id()));
+        return config('legal-desk-law-resources.reference_model')::query()->whereHas('matter', fn (Builder $query) => $query->accessibleTo(auth()->user()));
     }
 
     private function targetCases(\Illuminate\Database\Eloquent\Model $source): Builder
     {
-        return config('legal-desk-law-resources.matter_model')::query()->where('user_id', auth()->id())
+        return config('legal-desk-law-resources.matter_model')::query()->accessibleTo(auth()->user())
             ->where('status', 'Open')
             ->where('id', '!=', $source->matter_id);
     }

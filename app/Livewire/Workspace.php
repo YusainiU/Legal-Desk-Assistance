@@ -97,6 +97,7 @@ class Workspace extends Component
             abort_unless($cases->count() === count($ids), 422);
 
             foreach ($cases as $matter) {
+                \Illuminate\Support\Facades\Gate::authorize($archive ? 'archive' : 'restore', $matter);
                 $matter->forceFill(['archived_at' => $archive ? now() : null])->save();
                 $this->log($matter, ($archive ? 'Case archived' : 'Case restored to the register').' by '.auth()->user()->name.'.');
             }
@@ -261,6 +262,7 @@ class Workspace extends Component
         $matter = $this->matters()->findOrFail($this->selected);
         $data = $this->validate(['caseDescription' => 'required|string|max:4000']);
 
+        \Illuminate\Support\Facades\Gate::authorize('update', $matter);
         $matter->update(['description' => trim($data['caseDescription'])]);
         $this->reset('showDescriptionEditor', 'caseDescription');
         $this->descriptionSaved = true;
@@ -317,6 +319,7 @@ class Workspace extends Component
 
     public function createMatter(): void
     {
+        \Illuminate\Support\Facades\Gate::authorize('create', Matter::class);
         $data = $this->validate([
             'form.title' => 'required|string|max:160',
             'form.team_id' => 'nullable|integer|min:1',
@@ -470,6 +473,7 @@ class Workspace extends Component
         $matter = $this->matters()->findOrFail($this->selected);
         abort_unless($matter->status === 'Open', 422);
 
+        \Illuminate\Support\Facades\Gate::authorize('create', [CaseDocument::class, $matter]);
         $this->documentStatus = null;
         $extensions = implode(',', CaseDocument::EXTENSIONS);
         $this->validate(['document' => ['required', 'file', 'max:10240', 'mimes:'.$extensions, 'extensions:'.$extensions]]);
@@ -514,6 +518,7 @@ class Workspace extends Component
         $this->change(function (Matter $matter) use ($id, $errorKey) {
             $document = $matter->documents()->findOrFail($id);
 
+            \Illuminate\Support\Facades\Gate::authorize('delete', $document);
             $document->delete();
 
             if (! Storage::disk('local')->delete($document->path)) {
@@ -588,13 +593,14 @@ class Workspace extends Component
     {
         abort_unless(auth()->check(), 403);
 
-        return Matter::query();
+        return Matter::query()->accessibleTo(auth()->user());
     }
 
     private function change(Closure $callback): void
     {
         DB::transaction(function () use ($callback) {
             $matter = $this->matters()->lockForUpdate()->findOrFail($this->selected);
+            \Illuminate\Support\Facades\Gate::authorize('update', $matter);
             abort_unless($matter->status === 'Open', 422);
             $callback($matter);
         }, 3);

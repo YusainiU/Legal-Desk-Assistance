@@ -29,7 +29,7 @@ class ContactCreator extends Component
     public function save(): void
     {
         $owner = auth()->user();
-        abort_unless($owner, 403);
+        abort_unless($owner && $owner->has_access && ! $owner->trashed(), 403);
 
         $details = ContactDetails::validate([
             'name' => $this->name,
@@ -43,6 +43,7 @@ class ContactCreator extends Component
                 ->lockForUpdate()
                 ->findOrFail($this->matterId);
 
+            if ($matter) { \Illuminate\Support\Facades\Gate::authorize('update', $matter); }
             abort_if($matter && ! $matter->allowsContactLink(), 422);
 
             $contact = $owner->contacts()->create($details);

@@ -50,6 +50,7 @@ class CaseContacts extends Component
 
         DB::transaction(function () {
             $matter = $this->caseQuery()->lockForUpdate()->findOrFail($this->matterId);
+            \Illuminate\Support\Facades\Gate::authorize('update', $matter);
             abort_unless($matter->allowsContactLink(), 422);
 
             $contact = Contact::query()->findOrFail($this->linkContactId);
@@ -87,6 +88,7 @@ class CaseContacts extends Component
 
         [$entry, $email, $shouldSend] = DB::transaction(function () use ($data) {
             $matter = $this->caseQuery()->lockForUpdate()->findOrFail($this->matterId);
+            \Illuminate\Support\Facades\Gate::authorize('update', $matter);
             abort_unless($matter->status === 'Open', 422);
 
             $existing = $matter->entries()->where('email_token', $this->messageToken)->first();
@@ -160,7 +162,7 @@ class CaseContacts extends Component
     {
         abort_unless(auth()->check(), 403);
 
-        return Matter::query();
+        return Matter::query()->accessibleTo(auth()->user());
     }
 
     private function deliveryMailer(): ?string

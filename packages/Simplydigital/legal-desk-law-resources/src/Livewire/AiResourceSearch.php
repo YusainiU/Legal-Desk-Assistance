@@ -37,7 +37,7 @@ class AiResourceSearch extends Component
 
         $matterModel = config('legal-desk-law-resources.matter_model');
         $matter = filled($data['matterId'] ?? null)
-            ? $matterModel::query()->where('user_id', auth()->id())->where('status', 'Open')->findOrFail($data['matterId'])
+            ? $matterModel::query()->accessibleTo(auth()->user())->where('status', 'Open')->findOrFail($data['matterId'])
             : null;
 
         $this->notice = null;
@@ -124,7 +124,7 @@ class AiResourceSearch extends Component
                 ->where('analysis_status', 'web_research_unverified')
                 ->latest()->limit(10)->get(),
             'matters' => $matterModel::query()
-                ->where('user_id', auth()->id())
+                ->accessibleTo(auth()->user())
                 ->where('status', 'Open')->orderBy('title')->get(['id', 'title']),
             'location' => $settings->location(),
             'searchEnabled' => $settings->enabled(),

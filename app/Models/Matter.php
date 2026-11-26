@@ -25,6 +25,11 @@ class Matter extends Model
         'final_charge_minor' => 'integer',
     ];
 
+    public function scopeAccessibleTo(Builder $query, User $user): Builder
+    {
+        return $user->can('viewAny', self::class) ? $query : $query->whereRaw('1 = 0');
+    }
+
     public function team(): BelongsTo
     {
         return $this->belongsTo(Team::class);

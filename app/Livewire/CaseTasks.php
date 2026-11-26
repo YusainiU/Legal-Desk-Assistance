@@ -133,6 +133,7 @@ class CaseTasks extends Component
     {
         DB::transaction(function () use ($callback) {
             $matter = $this->caseRecord(lock: true);
+            \Illuminate\Support\Facades\Gate::authorize('update', $matter);
             $this->ensureEditable($matter);
             $callback($matter);
         }, 3);
@@ -142,9 +143,11 @@ class CaseTasks extends Component
     {
         abort_unless(auth()->check(), 403);
 
-        return Matter::query()
+        $matter = Matter::query()
             ->when($lock, fn ($query) => $query->lockForUpdate())
             ->findOrFail($this->matterId);
+        \Illuminate\Support\Facades\Gate::authorize('view', $matter);
+        return $matter;
     }
 
     private function ensureEditable(Matter $matter): void

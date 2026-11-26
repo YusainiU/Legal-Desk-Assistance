@@ -53,7 +53,7 @@ class LegalResearchDesk extends Component
         ]);
 
         $matter = filled($data['matterId'] ?? null)
-            ? config('legal-desk-law-resources.matter_model')::where('user_id', auth()->id())->findOrFail($data['matterId']) : null;
+            ? config('legal-desk-law-resources.matter_model')::query()->accessibleTo(auth()->user())->findOrFail($data['matterId']) : null;
 
         $results = $search->search(trim($data['question']), $data['court']);
 
@@ -136,12 +136,13 @@ class LegalResearchDesk extends Component
     public function attachAuthority(int $id): void
     {
         $research = LegalResearch::where('user_id', auth()->id())->findOrFail($this->researchId);
-        $matter = config('legal-desk-law-resources.matter_model')::where('user_id', auth()->id())
+        $matter = config('legal-desk-law-resources.matter_model')::query()->accessibleTo(auth()->user())
             ->where('status', 'Open')->findOrFail($research->matter_id);
         $authority = $research->authorities()->with(['legalCase', 'passage'])->findOrFail($id);
 
         $case = $authority->legalCase;
         abort_unless($case !== null, 404);
+        \Illuminate\Support\Facades\Gate::authorize('update', $matter);
         $matter->references()->create([
             'type' => 'precedent',
             'title' => mb_substr($case->title, 0, 200),
@@ -167,7 +168,7 @@ class LegalResearchDesk extends Component
             'research' => $research,
             'judgments' => LegalCase::query()->orderByDesc('created_at')->orderByDesc('id')->paginate(15, ['*'], 'judgmentsPage'),
             'selectedJudgment' => $this->showJudgment && $this->selectedJudgmentId ? LegalCase::with('passages')->findOrFail($this->selectedJudgmentId) : null,
-            'matters' => config('legal-desk-law-resources.matter_model')::where('user_id', auth()->id())
+            'matters' => config('legal-desk-law-resources.matter_model')::query()->accessibleTo(auth()->user())
                 ->where('status', 'Open')->orderBy('title')->get(['id', 'title']),
         ]);
     }

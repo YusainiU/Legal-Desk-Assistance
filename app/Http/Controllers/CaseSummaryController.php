@@ -15,6 +15,7 @@ class CaseSummaryController
             ->with(['entries' => fn ($entries) => $entries->where('kind', '!=', 'Task')->latest('created_at')->latest('id'), 'tasks'])
             ->findOrFail($matter);
 
+        \Illuminate\Support\Facades\Gate::authorize('view', $case);
         $completed = [];
         $stages = config('matterdesk.stages');
         foreach ($stages as $index => [$name, $description, $checklist]) {
