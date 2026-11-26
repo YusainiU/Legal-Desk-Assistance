@@ -6,6 +6,7 @@ use App\Models\Matter;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use RuntimeException;
 
 class DemoDataSeeder extends Seeder
@@ -22,7 +23,7 @@ class DemoDataSeeder extends Seeder
                 $number = sprintf('%02d', $i);
                 $email = "demo-user-{$number}@example.test";
                 $user = User::withTrashed()->where('email', $email)->first()
-                    ?? User::factory()->create(['email' => $email, 'password' => 'DemoDesk-2026!']);
+                    ?? User::factory()->create(['email' => $email, 'password' => Str::random(64), 'has_access' => false]);
                 $users->push($user);
             }
 

@@ -8,11 +8,16 @@ use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Validator;
 
 Artisan::command('matterdesk:user {email} {--demo}', function () {
-    $data = ['email' => $this->argument('email'), 'name' => $this->ask('Name'), 'password' => $this->secret('Password (at least 12 characters)')];
-    $validator = Validator::make($data, ['email' => 'required|email|unique:users', 'name' => 'required|string|max:160', 'password' => 'required|string|min:12']);
+    if ($this->option('demo') && ! app()->environment('local', 'testing')) {
+        $this->error('Demo data is restricted to local and testing environments.');
+        return 1;
+    }
 
-    if ($validator->fails()) {
-        $this->error(implode(' ', $validator->errors()->all()));
+    $data = ['email' => $this->argument('email'), 'name' => $this->ask('Name'), 'password' => $this->secret('Password (at least 12 characters)')];
+    $validator = Validator::make($data, ['email' => 'required|email|unique:users', 'name' => 'required|string|max:160', 'password' => 'required|string|min:12|max:72']);
+
+    if ($validator->fails() || strlen((string) $data['password']) > 72) {
+        $this->error($validator->fails() ? implode(' ', $validator->errors()->all()) : 'Password must not exceed 72 bytes.');
 
         return 1;
     }

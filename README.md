@@ -191,3 +191,8 @@ Do not duplicate an existing scheduler entry. Scanner rejection/failure and clea
 ## Verification status
 
 The recent security controls and PDF enhancements have been implemented, but runtime, browser and security regression verification remains outstanding. See [Security Audit](Docs/Security-Audit.md) for limitations and release gates.
+
+
+### Secure demo accounts (S-12)
+
+Demo seeding is restricted to local and testing environments. Run `php artisan db:seed --class=DemoDataSeeder` only in a disposable development or test database. Newly seeded demo users receive unique random passwords and revoked sign-in access. To use one, sign in as an authorized administrator, open Users, set a new password and grant access. Existing accounts are not changed by reseeding; review and rotate or revoke any previously seeded credentials, especially before deployment. The `matterdesk:user {email} --demo` command is also restricted to local/testing and requires an operator-supplied password of at least 12 characters and at most 72 bytes. It does not use the seeder's random-password workflow. Keep APP_ENV=production on production servers. Historical commits may still contain the former demo password; it must not be reused. Runtime verification remains outstanding.
