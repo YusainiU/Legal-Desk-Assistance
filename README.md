@@ -73,7 +73,7 @@ The migration reserves `legaldesk@admin.test` as the default **Super Admin**. If
 php artisan legal-desk:setup-super-admin
 ```
 
-This command prompts for a password and confirmation. An existing enabled account at that address keeps its password and gains the Super Admin role on migration. Use the command to reset its password if needed.
+This command prompts for a password and confirmation. On fresh migrations, an existing account at that address is not automatically promoted. The setup command requires explicit confirmation, replaces the password, invalidates reset and remember tokens, and removes database-backed sessions. Other session stores require separate invalidation. Previously applied migrations are not rerun; review existing privileged accounts manually. Use the command to reset its password if needed.
 
 Sign in as Super Admin, select **Users**, and set a user’s role to **Administrator** to grant admin access. Administrators can manage staff accounts and view **Firm settings**. Only the Super Admin can grant the Administrator role or change Firm settings. New users need **Granted** workspace access to sign in.
 

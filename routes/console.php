@@ -34,6 +34,10 @@ Artisan::command('matterdesk:user {email} {--demo}', function () {
 });
 
 Artisan::command('legal-desk:setup-super-admin', function () {
+    if (! $this->confirm('Grant or restore Super Admin access to '.User::DEFAULT_SUPER_ADMIN_EMAIL.' and replace its password?')) {
+        return 1;
+    }
+
     $password = $this->secret('Set a password for '.User::DEFAULT_SUPER_ADMIN_EMAIL);
     $confirmation = $this->secret('Confirm password');
 
@@ -60,7 +64,12 @@ Artisan::command('legal-desk:setup-super-admin', function () {
         ]);
         $user->setRememberToken(null);
         $user->save();
+        if (config('session.driver') === 'database') {
+            DB::connection(config('session.connection'))->table(config('session.table', 'sessions'))->where('user_id', $user->id)->delete();
+        }
     });
+
+    \Illuminate\Support\Facades\Log::notice('Super Admin setup completed');
 
     $this->info('Super Admin access is ready for '.User::DEFAULT_SUPER_ADMIN_EMAIL.'.');
 
