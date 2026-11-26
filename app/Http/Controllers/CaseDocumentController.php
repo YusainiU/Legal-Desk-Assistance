@@ -26,6 +26,8 @@ class CaseDocumentController
             ->setContentDisposition('inline', $document->name, str_replace('%', '', Str::ascii($document->name)));
         $response->setPrivate();
 
+        \App\Support\CaseActivityAudit::record($document, 'preview');
+
         return $response;
     }
 

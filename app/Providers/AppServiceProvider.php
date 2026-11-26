@@ -24,6 +24,16 @@ class AppServiceProvider extends ServiceProvider
                 ->withQuery(fn (Builder $query) => $query->where('has_access', true));
         });
 
+        foreach ([
+            \App\Models\Matter::class,
+            \App\Models\MatterEntry::class,
+            \App\Models\CaseDocument::class,
+            \App\Models\CaseReference::class,
+            \App\Models\CaseTimeCharge::class,
+        ] as $model) {
+            $model::observe(\App\Observers\CaseActivityObserver::class);
+        }
+
         Gate::policy(\App\Models\Matter::class, \App\Policies\MatterPolicy::class);
         Gate::policy(\App\Models\CaseDocument::class, \App\Policies\CaseDocumentPolicy::class);
 

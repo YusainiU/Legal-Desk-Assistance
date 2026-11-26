@@ -219,3 +219,8 @@ Outgoing case emails use a reusable HTML letterhead with the firm name from Firm
 ### Login audit retention (S-13)
 
 Login audit persistence failures no longer interrupt authentication; monitor application error logs for audit gaps. `LOGIN_AUDIT_RETENTION_DAYS=90` sets retention (minimum one day). Choose retention according to firm policy before enabling the scheduler. `php artisan legal-desk:login-audit-cleanup` permanently deletes expired records and runs daily through the scheduler. Existing Login/Failed event coverage is retained; throttled attempts and unsuccessful second-factor/passkey challenges are not guaranteed to be captured. Runtime verification remains outstanding.
+
+
+### Structured case activity audit (S-14)
+
+Run `php artisan migrate` before using the upgraded application. The `case_activity_audits` table records actor ID (nullable for system operations), case ID, record type and ID, action, changed field names and timestamp. Eloquent observers cover create/update/delete events for matters, entries (including tasks and email), documents, references and time charges. Authorized document preview/download response preparation is recorded separately; this does not prove receipt of the file. No field values or document contents are copied. Audit inserts participate in existing database transactions; operations outside a transaction are not guaranteed atomic. Bulk query updates, pivot changes, package models and administrative changes are not comprehensively covered. No audit viewer, automatic retention or tamper-resistant external storage is provided yet. Restrict database access and establish a retention policy. Runtime verification remains outstanding.
