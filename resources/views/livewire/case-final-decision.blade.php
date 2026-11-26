@@ -1,6 +1,6 @@
 <flux:card class="desk-panel space-y-4">
     <flux:heading size="lg">Final Decision</flux:heading>
-    <flux:text size="sm">Record the outcome of this case. A saved final decision is required before closing the case.</flux:text>
+    <flux:text size="sm">Record the outcome of this case. Images are not supported; attach supporting files under Case Documents. A saved final decision is required before closing the case.</flux:text>
     @if ($notice)
         <flux:callout role="status">{{ $notice }}</flux:callout>
     @endif
@@ -15,7 +15,7 @@
         </form>
     @else
         @if (filled($matter->final_decision))
-            <div class="legal-markdown prose prose-invert max-w-none wrap-break-word text-sm">{!! (new \HTMLPurifier((function () { $config = \HTMLPurifier_Config::createDefault(); $config->set('HTML.Allowed', 'p,br,strong,b,em,i,u,s,strike,h1,h2,h3,h4,blockquote,ul,ol,li,a[href|title],span[style],div,table,thead,tbody,tr,th,td,img[src|alt|width|height]'); $config->set('CSS.AllowedProperties', ['color', 'background-color', 'text-align']); $config->set('URI.AllowedSchemes', ['http' => true, 'https' => true]); return $config; })()))->purify($matter->final_decision) !!}</div>
+            <div class="legal-markdown prose prose-invert max-w-none wrap-break-word text-sm">{!! \Simplydigital\LegalDeskLawResources\Support\LegalHtmlSanitizer::clean($matter->final_decision) !!}</div>
         @else
             <p class="text-sm">No final decision was recorded.</p>
         @endif

@@ -1,10 +1,3 @@
-@php
-    $htmlConfig = \HTMLPurifier_Config::createDefault();
-    $htmlConfig->set('HTML.Allowed', 'p,br,strong,b,em,i,u,s,strike,h1,h2,h3,h4,blockquote,ul,ol,li,a[href|title],span[style],div,table,thead,tbody,tr,th,td');
-    $htmlConfig->set('CSS.AllowedProperties', ['color', 'background-color', 'text-align']);
-    $htmlConfig->set('URI.AllowedSchemes', ['http' => true, 'https' => true]);
-    $htmlPurifier = new \HTMLPurifier($htmlConfig);
-@endphp
             <div class="space-y-4">
                 <flux:heading size="xl">Case summary · MD-{{ $summaryMatter->id }}</flux:heading>
                 <flux:heading size="lg">{{ $summaryMatter->title }}</flux:heading>
@@ -26,7 +19,7 @@
                 @if ($summaryMatter->final_decision)
                     <div class="space-y-1">
                         <flux:heading size="sm">Final decision</flux:heading>
-                        <div class="legal-markdown max-w-none wrap-break-word text-sm">{!! $htmlPurifier->purify($summaryMatter->final_decision) !!}</div>
+                        <div class="legal-markdown max-w-none wrap-break-word text-sm">{!! \Simplydigital\LegalDeskLawResources\Support\LegalHtmlSanitizer::clean($summaryMatter->final_decision) !!}</div>
                     </div>
                 @endif
                 <div class="space-y-2">

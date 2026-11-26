@@ -13,9 +13,12 @@ class Dashboard extends Component
 {
     public function render()
     {
-        abort_unless(auth()->check(), 403);
+        \Illuminate\Support\Facades\Gate::authorize('viewAny', Matter::class);
 
-        $openCases = Matter::query()->whereNull('archived_at')->where('status', 'Open');
+        if (! auth()->user()->can('access-page', 'workspace')) {
+            return view('livewire.dashboard-restricted');
+        }
+        $openCases = Matter::query()->accessibleTo(auth()->user())->whereNull('archived_at')->where('status', 'Open');
         $stageCounts = (clone $openCases)->selectRaw('stage, COUNT(*) as total')
             ->groupBy('stage')->pluck('total', 'stage');
 

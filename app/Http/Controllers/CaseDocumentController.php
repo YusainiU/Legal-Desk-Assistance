@@ -18,6 +18,7 @@ class CaseDocumentController
 
     public function preview(Request $request, CaseDocument $document): BinaryFileResponse
     {
+        \Illuminate\Support\Facades\Gate::authorize('preview', $document);
         $path = $this->authorizedPath($request, $document);
         abort_unless($document->canPreview(), 415, 'Download this file to open it in a compatible application.');
 
@@ -25,17 +26,22 @@ class CaseDocumentController
             ->setContentDisposition('inline', $document->name, str_replace('%', '', Str::ascii($document->name)));
         $response->setPrivate();
 
+        \App\Support\CaseActivityAudit::record($document, 'preview');
+
         return $response;
     }
 
     public function download(Request $request, CaseDocument $document): BinaryFileResponse
     {
+        \Illuminate\Support\Facades\Gate::authorize('download', $document);
         $response = response()->download(
             $this->authorizedPath($request, $document),
             $document->name,
             self::HEADERS + ['Content-Type' => 'application/octet-stream'],
         );
         $response->setPrivate();
+
+        \App\Support\CaseActivityAudit::record($document, 'download');
 
         return $response;
     }

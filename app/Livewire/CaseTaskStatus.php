@@ -20,6 +20,7 @@ class CaseTaskStatus extends Component
     {
         abort_unless(auth()->check(), 403);
         $matter = Matter::query()->findOrFail($this->matterId);
+        \Illuminate\Support\Facades\Gate::authorize('view', $matter);
         $tasks = $matter->tasks()->where('done', false)->get();
         $now = now();
         $hours = FirmSetting::taskWarningHours();

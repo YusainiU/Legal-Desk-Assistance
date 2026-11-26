@@ -15,6 +15,8 @@
 
     <flux:card class="desk-panel space-y-4">
         <form wire:submit="search" class="space-y-4">
+            <flux:callout color="amber">Your question is sent to the external AI provider ({{ $provider }}). Do not submit confidential, privileged or personal information without authorization. Verify all results independently.</flux:callout>
+            <flux:checkbox wire:model="acknowledged" label="I acknowledge the confidentiality notice and authorize this request." />
             @unless ($searchEnabled)
                 <flux:callout color="amber">AI Search is currently disabled by an administrator.</flux:callout>
             @endunless
@@ -54,7 +56,7 @@
                 </flux:button>
             </div>
             <flux:callout color="amber">Unverified AI research. Check every citation, quotation and legal proposition against original sources.</flux:callout>
-            <div class="legal-markdown text-sm">{!! \Illuminate\Support\Str::markdown($research->analysis ?? '', ['html_input' => 'strip', 'allow_unsafe_links' => false]) !!}</div>
+            <div class="legal-markdown text-sm">{!! \Simplydigital\LegalDeskLawResources\Support\LegalHtmlSanitizer::clean(\Illuminate\Support\Str::markdown($research->analysis ?? '', ['html_input' => 'strip', 'allow_unsafe_links' => false])) !!}</div>
         </flux:card>
     @endif
 

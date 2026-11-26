@@ -19,7 +19,7 @@ return new class extends Migration
         $existing = DB::table('users')->where('email', $email)->first();
 
         if ($existing) {
-            DB::table('users')->where('id', $existing->id)->update(['is_super_admin' => true]);
+            // Existing accounts require explicit elevation through the setup command.
 
             return;
         }

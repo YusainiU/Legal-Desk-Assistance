@@ -68,10 +68,41 @@ export function caseSummaryDefinition(summary) {
             { text: value(record.description) },
             section('Completed stages'),
             ...(completed.length ? completed : [{ text: 'No stages have been completed.' }]),
+            section('Final decision'),
+            { text: record.finalDecision || 'No final decision has been recorded.' },
             section('Case history'),
             ...(timeline.length ? timeline : [{ text: 'No history has been recorded.' }]),
         ],
     };
+}
+
+export function caseReferencesDefinition(summary) {
+    const { case: record, firm, generated, references } = summary;
+    const definition = caseSummaryDefinition({ ...summary, stages: [], history: [] });
+    definition.info.title = `Legal references · ${record.reference}`;
+    definition.footer = (page, total) => ({
+        columns: [
+            { text: `${record.reference}  |  Legal references` },
+            { text: `Page ${page} of ${total}`, alignment: 'right' },
+        ],
+        margin: [46, 12, 46, 0], color: muted, fontSize: 8,
+    });
+    definition.content = [
+        { text: firm, style: 'firm' },
+        { text: 'Legal references', fontSize: 11, color: muted },
+        { text: record.title, style: 'title' },
+        { text: `${record.reference} · Prepared ${generated}`, color: muted },
+        { text: `Client: ${record.client || 'Not recorded'} · Owner: ${record.owner || 'Not recorded'}` },
+        { text: `Status: ${record.status} · ${references.length} references`, margin: [0, 4, 0, 8] },
+        ...(references.length ? references.flatMap((reference, index) => [
+            { text: `${index + 1}. ${reference.title}`, style: 'section' },
+            { text: reference.type, bold: true },
+            ...[['Citation / section / clause', reference.citation], ['Jurisdiction / court', reference.jurisdiction], ['Source URL', reference.source]].filter(([, value]) => value).map(([label, value]) => ({ text: [{ text: label + ': ', bold: true }, { text: value }], margin: [0, 3, 0, 0] })),
+            { text: 'Why it applies', style: 'subheading' },
+            { text: reference.applicability || 'Not recorded' },
+        ]) : [{ text: 'No references recorded for this case.' }]),
+    ];
+    return definition;
 }
 
 let pdfLibrary;
@@ -146,13 +177,14 @@ class CaseSummary extends HTMLElement {
             if (!response.ok) throw new Error('Case summary request failed.');
             const summary = await response.json();
             const library = await loadPdfLibrary();
-            const pdf = library.createPdf(caseSummaryDefinition(summary));
+            const isReferences = this.dataset.reportKind === 'references';
+            const pdf = library.createPdf(isReferences ? caseReferencesDefinition(summary) : caseSummaryDefinition(summary));
             const blob = await new Promise((resolve) => pdf.getBlob(resolve));
             if (signal.aborted) return;
 
             this.pdf = pdf;
             this.previewUrl = URL.createObjectURL(blob);
-            this.filename = `${summary.case.reference}-case-summary.pdf`;
+            this.filename = `${summary.case.reference}-${isReferences ? 'legal-references' : 'case-summary'}.pdf`;
             frame.src = this.previewUrl;
             frame.hidden = false;
             status.hidden = true;

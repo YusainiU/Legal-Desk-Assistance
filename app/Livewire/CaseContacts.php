@@ -46,10 +46,12 @@ class CaseContacts extends Component
 
     public function linkContact(): void
     {
+        \Illuminate\Support\Facades\Gate::authorize('access-page', 'workspace.contacts-link');
         $this->validate(['linkContactId' => ['required', 'integer']]);
 
         DB::transaction(function () {
             $matter = $this->caseQuery()->lockForUpdate()->findOrFail($this->matterId);
+            \Illuminate\Support\Facades\Gate::authorize('update', $matter);
             abort_unless($matter->allowsContactLink(), 422);
 
             $contact = Contact::query()->findOrFail($this->linkContactId);
@@ -61,6 +63,7 @@ class CaseContacts extends Component
 
     public function contactCreated(int $contactId): void
     {
+        \Illuminate\Support\Facades\Gate::authorize('access-page', 'workspace.contacts-link');
         $this->caseQuery()->findOrFail($this->matterId)
             ->contacts()->findOrFail($contactId);
 
@@ -69,6 +72,7 @@ class CaseContacts extends Component
 
     public function sendMessage(): void
     {
+        \Illuminate\Support\Facades\Gate::authorize('access-page', 'workspace.send-email');
         $this->messageStatus = null;
         $this->resetValidation('delivery');
 
@@ -87,6 +91,7 @@ class CaseContacts extends Component
 
         [$entry, $email, $shouldSend] = DB::transaction(function () use ($data) {
             $matter = $this->caseQuery()->lockForUpdate()->findOrFail($this->matterId);
+            \Illuminate\Support\Facades\Gate::authorize('update', $matter);
             abort_unless($matter->status === 'Open', 422);
 
             $existing = $matter->entries()->where('email_token', $this->messageToken)->first();
@@ -98,6 +103,8 @@ class CaseContacts extends Component
             if (! $contact || ! $contact->email) {
                 throw ValidationException::withMessages(['recipientId' => 'Choose a linked contact with an email address.']);
             }
+
+            app(\App\Support\CaseEmailQuota::class)->consume((int) auth()->id());
 
             $entry = $matter->entries()->make([
                 'kind' => 'Email',
@@ -160,7 +167,7 @@ class CaseContacts extends Component
     {
         abort_unless(auth()->check(), 403);
 
-        return Matter::query();
+        return Matter::query()->accessibleTo(auth()->user());
     }
 
     private function deliveryMailer(): ?string
@@ -178,7 +185,16 @@ class CaseContacts extends Component
         $status = 'unconfirmed';
 
         try {
-            $sent = Mail::mailer($mailer)->raw($body, fn (Message $message) => $message->to($email)->subject($subject));
+            $sent = Mail::mailer($mailer)->send(
+                ['html' => 'emails.case-correspondence', 'text' => 'emails.case-correspondence-text'],
+                [
+                    'firmName' => \App\Models\FirmSetting::displayName(),
+                    'correspondenceSubject' => $subject,
+                    'correspondenceBody' => $body,
+                    'senderName' => (string) auth()->user()->name,
+                ],
+                fn (Message $message) => $message->to($email)->subject($subject),
+            );
             if ($sent !== null) {
                 $status = 'sent';
             }
@@ -187,5 +203,6 @@ class CaseContacts extends Component
         }
 
         $entry->forceFill(['email_status' => $status])->save();
+        Log::info('Case email delivery outcome', ['entry_id' => $entry->id, 'actor_id' => auth()->id(), 'status' => $status]);
     }
 }

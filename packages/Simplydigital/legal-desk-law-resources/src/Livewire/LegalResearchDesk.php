@@ -17,6 +17,7 @@ use Livewire\Component;
 #[Layout('components.layouts.app')]
 class LegalResearchDesk extends Component
 {
+    public bool $acknowledged = false;
     public string $question = '';
     public string $court = 'all';
     public string $matterId = '';
@@ -46,6 +47,9 @@ class LegalResearchDesk extends Component
 
     public function runSearch(CaseSearchService $search): void
     {
+        if (\Illuminate\Support\Facades\Gate::has('access-page')) {
+            \Illuminate\Support\Facades\Gate::authorize('access-page', 'legal-research.execute');
+        }
         $data = $this->validate([
             'question' => 'required|string|min:5|max:2000',
             'court' => ['required', Rule::in(['all', 'Federal Court', 'Court of Appeal', 'High Court'])],
@@ -53,7 +57,7 @@ class LegalResearchDesk extends Component
         ]);
 
         $matter = filled($data['matterId'] ?? null)
-            ? config('legal-desk-law-resources.matter_model')::where('user_id', auth()->id())->findOrFail($data['matterId']) : null;
+            ? config('legal-desk-law-resources.matter_model')::query()->accessibleTo(auth()->user())->findOrFail($data['matterId']) : null;
 
         $results = $search->search(trim($data['question']), $data['court']);
 
@@ -97,6 +101,9 @@ class LegalResearchDesk extends Component
 
     public function analyse(LegalAnalysisService $service): void
     {
+        if (\Illuminate\Support\Facades\Gate::has('access-page')) {
+            \Illuminate\Support\Facades\Gate::authorize('access-page', 'legal-research.execute');
+        }
         $research = LegalResearch::where('user_id', auth()->id())
             ->with(['authorities.legalCase', 'authorities.passage'])
             ->findOrFail($this->researchId);
@@ -111,11 +118,14 @@ class LegalResearchDesk extends Component
             ->all();
 
         try {
-            $analysis = $service->analyse($research->question, array_values($passages));
+            $analysis = $service->analyse($research->question, array_values($passages), $this->acknowledged);
+            $this->acknowledged = false;
             $research->update(['analysis' => $analysis, 'analysis_status' => 'generated_unverified']);
             $this->notice = 'AI draft generated. Passage references are indexed; legal propositions require lawyer review.';
+        } catch (\Simplydigital\LegalDeskLawResources\Services\AiRequestDenied $error) {
+            $this->notice = $error->getMessage();
         } catch (\Throwable $error) {
-            report($error);
+            \Illuminate\Support\Facades\Log::warning('Legal AI analysis unavailable', ['exception_type' => get_class($error)]);
             $this->notice = 'AI analysis unavailable. Search results remain accessible.';
         }
     }
@@ -135,13 +145,18 @@ class LegalResearchDesk extends Component
 
     public function attachAuthority(int $id): void
     {
+        if (\Illuminate\Support\Facades\Gate::has('access-page')) {
+            \Illuminate\Support\Facades\Gate::authorize('access-page', 'legal-research.attach');
+            \Illuminate\Support\Facades\Gate::authorize('access-page', 'workspace.references-create');
+        }
         $research = LegalResearch::where('user_id', auth()->id())->findOrFail($this->researchId);
-        $matter = config('legal-desk-law-resources.matter_model')::where('user_id', auth()->id())
+        $matter = config('legal-desk-law-resources.matter_model')::query()->accessibleTo(auth()->user())
             ->where('status', 'Open')->findOrFail($research->matter_id);
         $authority = $research->authorities()->with(['legalCase', 'passage'])->findOrFail($id);
 
         $case = $authority->legalCase;
         abort_unless($case !== null, 404);
+        \Illuminate\Support\Facades\Gate::authorize('update', $matter);
         $matter->references()->create([
             'type' => 'precedent',
             'title' => mb_substr($case->title, 0, 200),
@@ -167,7 +182,7 @@ class LegalResearchDesk extends Component
             'research' => $research,
             'judgments' => LegalCase::query()->orderByDesc('created_at')->orderByDesc('id')->paginate(15, ['*'], 'judgmentsPage'),
             'selectedJudgment' => $this->showJudgment && $this->selectedJudgmentId ? LegalCase::with('passages')->findOrFail($this->selectedJudgmentId) : null,
-            'matters' => config('legal-desk-law-resources.matter_model')::where('user_id', auth()->id())
+            'matters' => config('legal-desk-law-resources.matter_model')::query()->accessibleTo(auth()->user())
                 ->where('status', 'Open')->orderBy('title')->get(['id', 'title']),
         ]);
     }

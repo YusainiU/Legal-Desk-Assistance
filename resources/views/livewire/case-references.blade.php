@@ -4,10 +4,15 @@
             <flux:heading size="lg" level="2">Case references</flux:heading>
             <flux:text size="sm">Record the authorities and clauses that affect this case, and explain why they apply.</flux:text>
         </div>
+        <div class="flex flex-wrap items-center gap-2">
+            @can('access-page', 'workspace.references-export')
+                @include('livewire.partials.case-references-report', ['matterId' => $matterId])
+            @endcan
         @if ($active)
             <flux:button type="button" variant="primary" icon="plus" wire:click="newReference"
                 wire:loading.attr="disabled" wire:target="newReference,editReference">Add reference</flux:button>
         @endif
+        </div>
     </div>
 
     @if ($notice)

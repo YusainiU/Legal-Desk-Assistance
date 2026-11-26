@@ -75,6 +75,7 @@ class CaseTimeCharges extends Component
 
     public function saveCharge(): void
     {
+        \Illuminate\Support\Facades\Gate::authorize('access-page', $this->editingChargeId === null ? 'workspace.charges-create' : 'workspace.charges-update');
         $editing = $this->editingChargeId !== null;
         $rules = [
             'description' => 'required|string|max:255',
@@ -124,6 +125,7 @@ class CaseTimeCharges extends Component
 
     public function deleteCharge(int $id): void
     {
+        \Illuminate\Support\Facades\Gate::authorize('access-page', 'workspace.charges-delete');
         $this->change(fn (Matter $matter) => $matter->timeCharges()->findOrFail($id)->delete());
         $this->resetPage('chargePage');
         $this->notice = 'Time charge deleted.';
@@ -152,6 +154,7 @@ class CaseTimeCharges extends Component
     {
         DB::transaction(function () use ($callback) {
             $matter = $this->caseRecord(lock: true);
+            \Illuminate\Support\Facades\Gate::authorize('update', $matter);
             $this->ensureEditable($matter);
             $callback($matter);
         }, 3);
@@ -161,9 +164,11 @@ class CaseTimeCharges extends Component
     {
         abort_unless(auth()->check(), 403);
 
-        return Matter::query()
+        $matter = Matter::query()
             ->when($lock, fn ($query) => $query->lockForUpdate())
             ->findOrFail($this->matterId);
+        \Illuminate\Support\Facades\Gate::authorize('view', $matter);
+        return $matter;
     }
 
     private function ensureEditable(Matter $matter): void

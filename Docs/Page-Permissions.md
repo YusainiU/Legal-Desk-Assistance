@@ -1,0 +1,13 @@
+# Page Access & Permissions
+
+Super Admins can manage permission groups and page grants under Administration. Groups are separate from teams and can overlap. By default all pages retain existing role restrictions. Restrict a page to require a direct user grant OR membership in a granted group. An empty restricted list denies everyone except active Super Admins. Grants do not elevate existing administrative roles. Dashboard, authentication and permission administration are not configurable to prevent lockout.
+
+Named routes and associated HTTP actions are guarded by EnforcePageAccess, registered as persistent Livewire middleware. Sidebar links use the same gate. Dashboard hides case statistics when Case Register access is denied. This is module access, not record confidentiality: information shared through another permitted module may remain visible. Case and document policies remain independent.
+
+Run php artisan migrate before serving the new code. Verify restricted routes, direct URLs, Livewire requests after revocation, group membership, and existing role restrictions before production use.
+
+### Granular operation permissions
+
+In Administration → Page Access & Permissions, each module now has a View rule and separate operation rules where applicable. Existing page grants remain unchanged. Unrestricted operations inherit View access; restricted operations require a direct or group grant in addition to View. To configure view-only access, grant View and restrict every operation, leaving its grant list empty or granting it only to other groups. To allow creation but not editing, grant Create and restrict Update. Case Register has separate rules for tasks, documents, charges, references, workflow, email and final decisions. Existing roles and workflow restrictions still apply. Active Super Admins bypass these restrictions. Operation rules reuse the existing permission tables; no additional migration is required after the original page permissions migration. Controls may still appear when an operation is denied; the server rejects guarded actions with HTTP 403. This is not a confidential-case boundary. Test each operation and cross-module path before production deployment.
+
+Expand the application page under Page permissions, then click View or a granular operation to open its permission dialog. Select the access mode, groups and individual users, and save. Use the user search to filter the list; selected users remain selected when filtered.

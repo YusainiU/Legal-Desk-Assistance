@@ -12,6 +12,7 @@ class CaseTimeChargeExportController
     public function show(Request $request, int $matter): StreamedResponse
     {
         $case = Matter::query()->findOrFail($matter);
+        \Illuminate\Support\Facades\Gate::authorize('view', $case);
         $stages = config('matterdesk.stages');
 
         return response()->streamDownload(function () use ($case, $stages) {

@@ -18,7 +18,8 @@ class TeamController
             'teams' => Team::availableTo($request->user())
                 ->with([
                     'members' => fn ($members) => $members->orderBy('name'),
-                    'openCases' => fn ($cases) => $cases->orderBy('title'),
+                    'openCases' => fn ($cases) => $cases->accessibleTo($request->user())->orderBy('title'),
+                    'openTasks' => fn ($tasks) => $tasks->whereHas('matter', fn ($cases) => $cases->accessibleTo($request->user())),
                     'openTasks.matter:id,title',
                 ])
                 ->orderBy('name')->paginate(10),

@@ -14,6 +14,7 @@ use Simplydigital\LegalDeskLawResources\Services\AiSearchSettings;
 #[Layout('components.layouts.app')]
 class AiResourceSearch extends Component
 {
+    public bool $acknowledged = false;
     public string $question = '';
     public string $court = 'all';
     public string $matterId = '';
@@ -24,6 +25,9 @@ class AiResourceSearch extends Component
 
     public function search(PublicJudgmentAiSearchService $service, AiSearchSettings $settings): void
     {
+        if (\Illuminate\Support\Facades\Gate::has('access-page')) {
+            \Illuminate\Support\Facades\Gate::authorize('access-page', 'ai-resource-search.execute');
+        }
         if (! $settings->enabled()) {
             $this->notice = 'AI Search is disabled by an administrator.';
             return;
@@ -37,24 +41,24 @@ class AiResourceSearch extends Component
 
         $matterModel = config('legal-desk-law-resources.matter_model');
         $matter = filled($data['matterId'] ?? null)
-            ? $matterModel::query()->where('user_id', auth()->id())->where('status', 'Open')->findOrFail($data['matterId'])
+            ? $matterModel::query()->accessibleTo(auth()->user())->where('status', 'Open')->findOrFail($data['matterId'])
             : null;
 
         $this->notice = null;
         $this->researchId = null;
 
         try {
-            $analysis = $service->search(trim($data['question']), $data['court']);
-        } catch (\RuntimeException $error) {
-            report($error);
+            $analysis = $service->search(trim($data['question']), $data['court'], $this->acknowledged);
+        } catch (\Simplydigital\LegalDeskLawResources\Services\AiRequestDenied $error) {
             $this->notice = $error->getMessage();
             return;
         } catch (\Throwable $error) {
-            report($error);
-            $this->notice = 'AI search failed. Check the Laravel application log for details.';
+            \Illuminate\Support\Facades\Log::warning('Legal AI search unavailable', ['exception_type' => get_class($error)]);
+            $this->notice = 'AI search unavailable. Try again later.';
             return;
         }
 
+        $this->acknowledged = false;
         $research = LegalResearch::create([
             'user_id' => auth()->id(),
             'matter_id' => $matter?->id,
@@ -85,6 +89,10 @@ class AiResourceSearch extends Component
 
     public function saveToKnowledgeBase(): void
     {
+        if (\Illuminate\Support\Facades\Gate::has('access-page')) {
+            \Illuminate\Support\Facades\Gate::authorize('access-page', 'ai-resource-search.create');
+            \Illuminate\Support\Facades\Gate::authorize('access-page', 'library.create');
+        }
         abort_unless($this->researchId !== null, 404);
 
         $research = LegalResearch::query()
@@ -124,7 +132,7 @@ class AiResourceSearch extends Component
                 ->where('analysis_status', 'web_research_unverified')
                 ->latest()->limit(10)->get(),
             'matters' => $matterModel::query()
-                ->where('user_id', auth()->id())
+                ->accessibleTo(auth()->user())
                 ->where('status', 'Open')->orderBy('title')->get(['id', 'title']),
             'location' => $settings->location(),
             'searchEnabled' => $settings->enabled(),

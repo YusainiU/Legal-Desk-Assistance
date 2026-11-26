@@ -7,7 +7,12 @@ use RuntimeException;
 
 class LegalAnalysisService
 {
-    public function analyse(string $question, array $passages): string
+    public function analyse(string $question, array $passages, bool $acknowledged = false): string
+    {
+        return app(AiRequestGuard::class)->run($acknowledged, fn () => $this->requestAnalysis($question, $passages));
+    }
+
+    private function requestAnalysis(string $question, array $passages): string
     {
         $apiKey = config('services.openai.key');
 
@@ -21,7 +26,6 @@ class LegalAnalysisService
 
         $response = Http::withToken($apiKey)
             ->timeout(60)
-            ->retry(2, 500)
             ->post('https://api.openai.com/v1/responses', [
                 'model' => config('legal-desk-law-resources.model'),
                 'instructions' => <<<'PROMPT'

@@ -7,7 +7,7 @@
         <div class="space-y-4">
             <div class="space-y-1">
                 <flux:heading size="lg">Case summary</flux:heading>
-                <flux:text size="sm">This report includes all recorded case history. Review it before sharing it with a client.</flux:text>
+                <flux:text size="sm">This report includes the final decision and all recorded case history. Review it before sharing it with a client.</flux:text>
             </div>
 
             <p data-summary-status role="status" class="text-sm text-zinc-300">Preparing PDF preview…</p>

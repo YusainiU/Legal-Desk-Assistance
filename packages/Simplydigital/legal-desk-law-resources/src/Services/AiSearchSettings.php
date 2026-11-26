@@ -16,15 +16,27 @@ class AiSearchSettings
     {
         $override = $this->get('search_enabled');
         return $override === null
-            ? (bool) config('ai-management.case_assistant.enabled', true)
+            ? false
             : $override === '1';
     }
 
-    public function save(?string $location, bool $enabled): void
+    public function limits(): array
     {
-        DB::transaction(function () use ($location, $enabled) {
+        return [
+            'userMinute' => max(1, min(60, (int) ($this->get('ai_user_minute') ?? 5))),
+            'userDaily' => max(1, min(10000, (int) ($this->get('ai_user_daily') ?? 50))),
+            'firmDaily' => max(1, min(100000, (int) ($this->get('ai_firm_daily') ?? 500))),
+        ];
+    }
+
+    public function save(?string $location, bool $enabled, array $limits = []): void
+    {
+        DB::transaction(function () use ($location, $enabled, $limits) {
             $this->put('search_location', filled($location) ? trim($location) : null);
             $this->put('search_enabled', $enabled ? '1' : '0');
+            foreach (['userMinute' => 'ai_user_minute', 'userDaily' => 'ai_user_daily', 'firmDaily' => 'ai_firm_daily'] as $field => $key) {
+                if (isset($limits[$field])) $this->put($key, (string) $limits[$field]);
+            }
         });
     }
 

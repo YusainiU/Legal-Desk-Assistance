@@ -52,6 +52,7 @@ class CaseReferences extends Component
 
     public function saveReference(): void
     {
+        \Illuminate\Support\Facades\Gate::authorize('access-page', $this->editingReferenceId === null ? 'workspace.references-create' : 'workspace.references-update');
         $data = $this->validate([
             'form.type' => ['required', Rule::in(array_keys(CaseReference::TYPES))],
             'form.title' => 'required|string|max:200',
@@ -83,6 +84,7 @@ class CaseReferences extends Component
 
     public function deleteReference(int $id): void
     {
+        \Illuminate\Support\Facades\Gate::authorize('access-page', 'workspace.references-delete');
         $this->change(fn (Matter $matter) => $matter->references()->whereKeyNot($matter->final_decision_reference_id ?? 0)->findOrFail($id)->delete());
         $this->resetPage('referencePage');
         $this->notice = 'Reference deleted.';
@@ -109,15 +111,18 @@ class CaseReferences extends Component
     {
         abort_unless(auth()->check(), 403);
 
-        return Matter::query()
+        $matter = Matter::query()
             ->when($lock, fn ($query) => $query->lockForUpdate())
             ->findOrFail($this->matterId);
+        \Illuminate\Support\Facades\Gate::authorize('view', $matter);
+        return $matter;
     }
 
     private function change(Closure $callback): void
     {
         DB::transaction(function () use ($callback) {
             $matter = $this->caseRecord(lock: true);
+            \Illuminate\Support\Facades\Gate::authorize('update', $matter);
             abort_unless($matter->status === 'Open', 422);
             $callback($matter);
         }, 3);

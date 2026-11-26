@@ -8,6 +8,47 @@ class FirmSetting extends Model
 {
     public const DEFAULT_NAME = 'Legal Desk';
 
+    public const CASE_AUDIT_RETENTION = [
+        0 => 'Indefinite (no automatic deletion)',
+        90 => '90 days',
+        180 => '180 days',
+        365 => '1 year',
+        730 => '2 years',
+        1825 => '5 years',
+        2555 => '7 years',
+    ];
+
+    public static function caseAuditRetentionDays(): int
+    {
+        $days = (int) static::query()->whereKey(1)->value('case_audit_retention_days');
+
+        return array_key_exists($days, self::CASE_AUDIT_RETENTION) ? $days : 0;
+    }
+
+    public static function setCaseAuditRetentionDays(int $days): void
+    {
+        if (! array_key_exists($days, self::CASE_AUDIT_RETENTION)) {
+            throw new \InvalidArgumentException('Unsupported audit retention period.');
+        }
+
+        \Illuminate\Support\Facades\DB::transaction(function () use ($days) {
+            // Ensure the singleton exists before locking it, including on fresh installations.
+            static::query()->insertOrIgnore(['id' => 1]);
+            $setting = static::query()->whereKey(1)->lockForUpdate()->firstOrFail();
+            $previous = $setting->getAttribute('case_audit_retention_days');
+            $next = $days === 0 ? null : $days;
+
+            if (($previous === null ? null : (int) $previous) === $next) {
+                return;
+            }
+
+            $setting->setAttribute('case_audit_retention_days', $next);
+            $setting->save();
+
+            \App\Support\CaseActivityAudit::record($setting, 'retention_changed', ['case_audit_retention_days']);
+        });
+    }
+
     public $timestamps = false;
 
     public $incrementing = false;

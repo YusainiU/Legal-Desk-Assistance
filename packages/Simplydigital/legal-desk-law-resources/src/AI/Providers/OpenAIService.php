@@ -31,22 +31,12 @@ class OpenAIService implements AIService
                 'max_output_tokens' => 3200,
             ]);
 
-        // Show a useful, sanitized provider error rather than masking every failure.
         if ($response->failed()) {
-            $status = $response->status();
-            $code = $response->json('error.code') ?: $response->json('error.type') ?: 'request_failed';
-            $detail = (string) ($response->json('error.message') ?? 'Provider did not supply an error message.');
-            $detail = preg_replace('/sk-[A-Za-z0-9_-]+/', '[REDACTED]', $detail);
-            $detail = mb_substr(preg_replace('/\\s+/', ' ', $detail), 0, 250);
-            throw new RuntimeException('OpenAI request failed (HTTP '.$status.', '.mb_substr((string) $code, 0, 70).'): '.$detail);
+            throw new RuntimeException('AI provider request failed.');
         }
-
         $payload = $response->json();
-        if (($payload['status'] ?? '') === 'incomplete') {
-            throw new RuntimeException('OpenAI returned an incomplete response: '.($payload['incomplete_details']['reason'] ?? 'unknown reason').'.');
-        }
-        if (($payload['status'] ?? '') === 'failed') {
-            throw new RuntimeException('OpenAI response failed: '.($payload['error']['code'] ?? 'unknown provider error').'.');
+        if (in_array($payload['status'] ?? '', ['incomplete', 'failed'], true)) {
+            throw new RuntimeException('AI provider did not complete the response.');
         }
         $response = $payload;
 
