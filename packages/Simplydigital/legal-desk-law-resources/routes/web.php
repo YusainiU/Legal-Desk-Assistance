@@ -9,7 +9,7 @@ use Simplydigital\LegalDeskLawResources\Livewire\AiResourceSearch;
 use Simplydigital\LegalDeskLawResources\Livewire\AiSearchAdmin;
 
 
-Route::middleware(['web','auth'])->group(function () {
+Route::middleware(array_merge(['web','auth'], config('legal-desk-law-resources.page_middleware', [])))->group(function () {
     Route::get('/knowledge-base', BuildResources::class)->name('knowledge-base');
     Route::get('/library', KnowledgeBase::class)->name('library');
     Route::get('/legal-research', LegalResearchDesk::class)->name('legal-research');
