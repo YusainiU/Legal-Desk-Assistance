@@ -29,7 +29,7 @@
                     <flux:select name="action" label="Activity">
                         <option value="">All activities</option>
                         @foreach ($actions as $action)
-                            <option value="{{ $action }}" @selected(($filters['action'] ?? '') === $action)>{{ ucfirst($action) }}</option>
+                            <option value="{{ $action }}" @selected(($filters['action'] ?? '') === $action)>{{ ucfirst(str_replace('_', ' ', $action)) }}</option>
                         @endforeach
                     </flux:select>
                     <flux:input name="from" type="date" label="From date" :value="$filters['from'] ?? ''" />
@@ -57,12 +57,12 @@
                                 <flux:table.cell>{{ $audit->occurred_at }}</flux:table.cell>
                                 <flux:table.cell>{{ $audit->actor_name ?? ($audit->actor_id === null ? 'System / unknown' : 'Unavailable user #'.$audit->actor_id) }}</flux:table.cell>
                                 <flux:table.cell>
-                                    {{ $audit->matter_title ?? 'Unavailable case' }}
+                                    {{ $audit->matter_title ?? ($audit->record_type === 'FirmSetting' ? 'Firm-wide policy' : 'Unavailable case') }}
                                     @if ($audit->matter_id !== null)
                                         <span class="text-xs">(#{{ $audit->matter_id }})</span>
                                     @endif
                                 </flux:table.cell>
-                                <flux:table.cell>{{ ucfirst($audit->action) }}</flux:table.cell>
+                                <flux:table.cell>{{ ucfirst(str_replace('_', ' ', $audit->action)) }}</flux:table.cell>
                                 <flux:table.cell>{{ $audit->record_type }} #{{ $audit->record_id }}</flux:table.cell>
                                 <flux:table.cell>
                                     <flux:modal.trigger name="case-audit-{{ $audit->id }}">
@@ -77,7 +77,7 @@
                                                 <dt>Actor name</dt><dd>{{ $audit->actor_name ?? 'Unavailable' }}</dd>
                                                 <dt>Case ID</dt><dd>{{ $audit->matter_id ?? 'Not recorded' }}</dd>
                                                 <dt>Case title</dt><dd>{{ $audit->matter_title ?? 'Unavailable' }}</dd>
-                                                <dt>Activity</dt><dd>{{ ucfirst($audit->action) }}</dd>
+                                                <dt>Activity</dt><dd>{{ ucfirst(str_replace('_', ' ', $audit->action)) }}</dd>
                                                 <dt>Record type</dt><dd>{{ $audit->record_type }}</dd>
                                                 <dt>Record ID</dt><dd>{{ $audit->record_id }}</dd>
                                             </dl>

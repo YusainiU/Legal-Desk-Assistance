@@ -31,9 +31,22 @@ class FirmSetting extends Model
             throw new \InvalidArgumentException('Unsupported audit retention period.');
         }
 
-        static::query()->upsert([
-            ['id' => 1, 'case_audit_retention_days' => $days === 0 ? null : $days],
-        ], ['id'], ['case_audit_retention_days']);
+        \Illuminate\Support\Facades\DB::transaction(function () use ($days) {
+            // Ensure the singleton exists before locking it, including on fresh installations.
+            static::query()->insertOrIgnore(['id' => 1]);
+            $setting = static::query()->whereKey(1)->lockForUpdate()->firstOrFail();
+            $previous = $setting->getAttribute('case_audit_retention_days');
+            $next = $days === 0 ? null : $days;
+
+            if (($previous === null ? null : (int) $previous) === $next) {
+                return;
+            }
+
+            $setting->setAttribute('case_audit_retention_days', $next);
+            $setting->save();
+
+            \App\Support\CaseActivityAudit::record($setting, 'retention_changed', ['case_audit_retention_days']);
+        });
     }
 
     public $timestamps = false;

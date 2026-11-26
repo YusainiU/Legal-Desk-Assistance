@@ -13,7 +13,7 @@ use Illuminate\View\View;
 
 class CaseActivityAuditController
 {
-    public const ACTIONS = ['created', 'updated', 'deleted', 'preview', 'download'];
+    public const ACTIONS = ['created', 'updated', 'deleted', 'preview', 'download', 'retention_changed'];
 
     public function index(Request $request): View
     {

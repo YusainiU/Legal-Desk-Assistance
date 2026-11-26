@@ -41,6 +41,8 @@ class CaseDocumentController
         );
         $response->setPrivate();
 
+        \App\Support\CaseActivityAudit::record($document, 'download');
+
         return $response;
     }
 
