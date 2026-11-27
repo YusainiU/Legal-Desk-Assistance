@@ -1,4 +1,5 @@
 verify_installation(){
+ local mode="${1:?Installation mode required}"
  test -s public/build/manifest.json
  test -w storage
  test -w bootstrap/cache
