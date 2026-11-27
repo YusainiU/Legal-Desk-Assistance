@@ -31,3 +31,25 @@ bash installer/deployment.sh
 ```
 
 The services helper configures SMTP and optional approved OpenAI access. Special characters unsupported by the environment writer must be configured manually. The deployment helper requires an existing PHP-FPM installation, dedicated service account/pool, Apache, TLS certificates, ACL utilities and a path under /var/www. Verify that the selected PHP-FPM socket actually belongs to the intended pool and that Apache can traverse the public path. It offers ACL changes, ClamAV installation and a cron entry separately. Review existing scheduler entries before accepting. It generates an Apache candidate for a dedicated host or an Alias inside an existing HTTPS virtual host; it does not install or enable the candidate or obtain certificates. Review and apply manually, enable required Apache modules, run configtest and reload. Verify scanner signatures and enable document scanning manually. Complete the README go-live checklist. All helpers are experimental and require staging tests.
+
+## Phase 3: upgrading an existing installation (experimental)
+
+The updater is intended for a clean Git checkout of a production installation with MySQL, local storage/app documents, installed Composer dependencies and an unprivileged deployment user. It requires Bash, Git, PHP, Composer, npm, Node, mysqldump, tar, flock and realpath. It supports a simple MySQL connection with host/port, not DB_URL, socket or read/write splitting. Confirm that mysqldump is compatible with the server and that the account has backup privileges. Use transactional tables. External storage, external databases and custom deployment layouts require separate backup arrangements.
+
+Review the target commit or release in staging. Stop scheduled tasks and supervised queue workers, drain active requests and prevent other processes or hosts from writing to the database and storage. Maintenance mode alone does not guarantee consistency. Ensure enough disk space and a protected backup directory outside the application and all public web roots. Do not run as root. If update.sh is not present in your current release, download the reviewed script into the application root and keep the Git working tree clean (for example, place it there as a locally excluded file after reviewing it).
+
+```bash
+bash update.sh REVIEWED_REF /absolute/private/backup-directory
+```
+
+The script fetches origin, requires a forward-only target, locks against another updater, prompts for confirmation, enables maintenance mode, copies .env, dumps MySQL, archives storage/app and records the old and target commit. It checks backup files before changing code. It checks out the target detached, installs locked production dependencies, builds assets, checks that .env has not changed, migrates, rebuilds caches, requests queue restart and exits maintenance mode. It never regenerates APP_KEY or seeds data. Resume scheduler and supervised workers only after verifying the application. A queue restart signal is not a substitute for restarting stopped workers.
+
+Backups contain confidential client information and secrets. Local permissions are restrictive but backups are not encrypted by this script. Use encrypted storage, restricted access, off-host copies, retention policies and tested restores. The SQL dump does not include MySQL users, server configuration, routines or events. Back up any required external data separately. Backup existence and archive readability are not proof of restorability.
+
+### Failure and recovery
+
+If a failure occurs after maintenance mode starts, leave the application offline. Record the error, inspect the backup directory and check whether migrations ran. A failed backup may be incomplete; never restore from it without validation. Do not rerun blindly, reset the Git tree or run migrate:fresh. If the database has changed, rolling back code alone may be incompatible.
+
+For a full rollback, keep all writers stopped, verify the backup and restore it into an isolated test environment first. Have the database administrator restore the verified SQL dump to the intended database (including removing incompatible post-upgrade objects as appropriate), restore storage/app and the original .env with restricted permissions, and check out the recorded previous commit. Reinstall locked dependencies and rebuild assets for that revision. Rebuild Laravel caches, verify migrations and functionality, then run php artisan up and resume services. Never overwrite newer client data without explicit approval and a recovery plan. If the failure occurred before any database or storage changes, a reviewed code-only recovery may suffice.
+
+No automatic destructive rollback is performed. Runtime and recovery tests on disposable Ubuntu/MySQL installations remain required before production use.
