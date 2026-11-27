@@ -3,8 +3,6 @@ set -Eeuo pipefail
 umask 077
 cd -- "$(dirname -- "$0")"
 die(){ printf '%s\n' "$*" >&2; exit 1; }
-offline=0
-trap 'if ((offline)); then echo "Update failed; maintenance mode retained. Consult backup and recovery guide." >&2; fi' EXIT
 [[ $(id -u) != 0 ]] || die 'Run as deployment user, not root.'
 [[ $# == 2 ]] || die 'Usage: bash update.sh REVIEWED_REF ABSOLUTE_BACKUP_DIRECTORY'
 ref=$1
@@ -33,7 +31,7 @@ backup=$(mktemp -d "$backup_root/legal-desk-$(date -u +%Y%m%dT%H%M%SZ)-XXXXXX")
 printf '%s\n' "$old" > "$backup/previous-commit"
 printf '%s\n' "$target" > "$backup/target-commit"
 # Register cleanup before creating temporary credentials.
-trap 'rm -f -- "$backup/mysql.cnf"; if ((offline)); then echo "Maintenance mode retained. Backup directory: $backup" >&2; fi' EXIT
+trap 'rm -f -- "$backup/mysql.cnf"' EXIT
 # Use effective Laravel configuration, including cached configuration.
 php <<'PHP' > "$backup/mysql.cnf"
 <?php
@@ -53,9 +51,8 @@ foreach(['host'=>'host','port'=>'port','username'=>'user','password'=>'password'
 PHP
 db=$(php -r 'require "vendor/autoload.php";$a=require "bootstrap/app.php";$a->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();echo config("database.connections.".config("database.default").".database");')
 [[ $db =~ ^[A-Za-z0-9_]+$ ]] || die 'Unsupported database name'
-# Remove temporary credentials even on failure.
-trap 'rm -f -- "$backup/mysql.cnf"; if ((offline)); then echo "Maintenance mode retained. Backup directory: $backup" >&2; fi' EXIT
-offline=1
+# From this point a failure may leave maintenance mode enabled.
+trap 'rm -f -- "$backup/mysql.cnf"; echo "Update interrupted; check maintenance mode. Backup directory: $backup" >&2' EXIT
 php artisan down
 cp -p .env "$backup/environment"
 chmod 600 "$backup/environment"
