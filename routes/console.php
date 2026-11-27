@@ -181,3 +181,18 @@ Artisan::command('legal-desk:case-audit-cleanup {--dry-run : Count expired recor
 })->purpose('Remove expired case activity audit records according to the firm retention policy');
 
 \Illuminate\Support\Facades\Schedule::command('legal-desk:case-audit-cleanup')->daily()->withoutOverlapping();
+
+
+Artisan::command('legal-desk:expire-demo-users', function () {
+    $count = 0;
+    User::query()->whereNotNull('demo_expires_at')->where('demo_expires_at', '<=', now())
+        ->whereNull('demo_expired_at')->where('is_admin', false)->where('is_super_admin', false)
+        ->select('id')->chunkById(100, function ($users) use (&$count) {
+            foreach ($users as $user) {
+                if (\App\Support\DemoAccountExpiry::expire($user->id)) $count++;
+            }
+        });
+    $this->info('Expired demo accounts: '.$count);
+})->purpose('Rotate passwords and revoke expired demo accounts');
+
+\Illuminate\Support\Facades\Schedule::command('legal-desk:expire-demo-users')->everyMinute()->withoutOverlapping();

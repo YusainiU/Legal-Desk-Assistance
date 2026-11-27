@@ -21,7 +21,9 @@ class AppServiceProvider extends ServiceProvider
     {
         Auth::provider('active-users', function (Application $app, array $config): EloquentUserProvider {
             return (new EloquentUserProvider($app['hash'], $config['model']))
-                ->withQuery(fn (Builder $query) => $query->where('has_access', true));
+                ->withQuery(fn (Builder $query) => $query->where('has_access', true)
+                    ->where(fn (Builder $q) => $q->whereNull('demo_expires_at')
+                        ->orWhere(fn (Builder $demo) => $demo->where('demo_expires_at', '>', now())->whereNull('demo_expired_at'))));
         });
 
         foreach ([
@@ -45,6 +47,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('manage-users', fn (User $user): bool => $user->has_access && ($user->is_super_admin || $user->is_admin));
         Gate::define('manage-user', fn (User $actor, User $target): bool => $actor->has_access
             && ($actor->is_super_admin || $actor->is_admin)
+            && ($target->demo_expires_at === null || $actor->is_super_admin)
             && ($actor->is($target) || (! $target->is_super_admin && ($actor->is_super_admin || ! $target->is_admin))));
         Gate::define('grant-admin', fn (User $user): bool => $user->has_access && $user->is_super_admin);
         Gate::define('update-firm-settings', fn (User $user): bool => $user->has_access && $user->is_super_admin);

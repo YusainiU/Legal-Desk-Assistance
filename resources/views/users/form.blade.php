@@ -40,6 +40,13 @@
                     </flux:select>
                 @endunless
 
+                @if (auth()->user()->is_super_admin && ! $user->is_super_admin && ! $editingSelf)
+                    <flux:input name="demo_expires_at" type="datetime-local" label="Demo account expiry ({{ config('app.timezone') }})"
+                        :value="old('demo_expires_at', $user->demo_expires_at?->format('Y-m-d\\TH:i'))" />
+                    <flux:text>Leave blank for a regular account. Demo accounts must be Staff. Set a new password when creating or extending demo access. At expiry, access is blocked and the scheduler rotates the password.</flux:text>
+                    @error('demo_expires_at') <p class="text-sm text-red-500">{{ $message }}</p> @enderror
+                @endif
+
                 <flux:button type="submit" variant="primary">{{ $editing ? 'Save changes' : 'Create user' }}</flux:button>
             </form>
         </flux:card>

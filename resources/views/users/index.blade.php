@@ -30,13 +30,17 @@
                             <flux:table.cell>
                                 <flux:heading>{{ $user->name }}</flux:heading>
                                 <flux:text size="sm">{{ $user->email }}</flux:text>
+                                @if (auth()->user()->is_super_admin && $user->demo_expires_at)
+                                    <flux:badge size="sm" :color="$user->demoAccessExpired() ? 'red' : 'amber'">{{ $user->demoAccessExpired() ? 'Demo expired' : 'Demo' }}</flux:badge>
+                                    <flux:text size="sm">Expires {{ $user->demo_expires_at->format('Y-m-d H:i') }} ({{ config('app.timezone') }})</flux:text>
+                                @endif
                             </flux:table.cell>
                             <flux:table.cell>
                                 <flux:badge size="sm" :color="$user->is_super_admin ? 'blue' : ($user->is_admin ? 'teal' : 'zinc')">{{ $user->is_super_admin ? 'Super Admin' : ($user->is_admin ? 'Administrator' : 'Staff') }}</flux:badge>
                             </flux:table.cell>
                             <flux:table.cell>
-                                <flux:badge size="sm" :color="$user->has_access ? 'green' : 'zinc'">
-                                    {{ $user->has_access ? 'Granted' : 'Revoked' }}
+                                <flux:badge size="sm" :color="($user->has_access && ! $user->demoAccessExpired()) ? 'green' : 'zinc'">
+                                    {{ ($user->has_access && ! $user->demoAccessExpired()) ? 'Granted' : 'Revoked' }}
                                 </flux:badge>
                             </flux:table.cell>
                             <flux:table.cell>

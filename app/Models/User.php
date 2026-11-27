@@ -25,7 +25,15 @@ class User extends Authenticatable
         'is_admin' => 'boolean',
         'is_super_admin' => 'boolean',
         'has_access' => 'boolean',
+        'demo_expires_at' => 'datetime',
+        'demo_expired_at' => 'datetime',
     ];
+
+    public function demoAccessExpired(): bool
+    {
+        return $this->demo_expires_at !== null
+            && ($this->demo_expired_at !== null || $this->demo_expires_at->lte(now()));
+    }
 
     public function contacts(): HasMany
     {
