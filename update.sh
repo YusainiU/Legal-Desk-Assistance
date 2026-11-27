@@ -85,6 +85,6 @@ php artisan schedule:list
 php artisan queue:restart
 cmp -s .env "$backup/environment" || die 'Environment changed unexpectedly'
 php artisan up
-offline=0
+trap - EXIT
 echo "Updated to $target. Resume scheduler/workers and verify HTTPS, authentication, documents and email."
 echo "Retain protected backups at $backup according to firm policy."
