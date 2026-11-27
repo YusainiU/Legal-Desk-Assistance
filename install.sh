@@ -60,8 +60,11 @@ cd -- "$INSTALL_DIR"
 git checkout --detach "$ref" || git checkout --detach "origin/$ref"
 git rev-parse HEAD
 [[ -f public/.htaccess && -f composer.lock && -f package-lock.json ]] || die 'Required release files missing.'
+# shellcheck source=installer/environment.sh
 source installer/environment.sh
+# shellcheck source=installer/dependencies.sh
 source installer/dependencies.sh
+# shellcheck source=installer/verify.sh
 source installer/verify.sh
 configure_environment
 unset DB_PASSWORD
@@ -78,4 +81,12 @@ else php artisan legal-desk:setup-super-admin; fi
 verify_installation
 echo "Application files installed at $PWD"
 if [[ $mode == local ]]; then echo 'Run php artisan serve to start the application.'
-else echo 'Complete Apache, permissions, TLS, ClamAV, SMTP and scheduler setup using Docs/Installation-Guide.md before opening access.'; fi
+else
+ if ((noninteractive == 0)); then
+  read -rp 'Configure SMTP and approved AI services now? [yes/no]: ' answer
+  if [[ $answer == yes ]]; then bash installer/services.sh; fi
+  read -rp 'Run optional production deployment wizard now? [yes/no]: ' answer
+  if [[ $answer == yes ]]; then bash installer/deployment.sh; fi
+ fi
+ echo 'Complete Apache, permissions, TLS, ClamAV, SMTP and scheduler setup using Docs/Installation-Guide.md before opening access.'
+fi
