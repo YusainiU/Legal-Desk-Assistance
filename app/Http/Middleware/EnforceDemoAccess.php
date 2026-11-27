@@ -14,7 +14,7 @@ class EnforceDemoAccess
         if ($user && $user->demo_expires_at !== null) {
             $hash = hash('sha256', $user->getAuthPassword());
             $previous = $request->session()->get('demo_password_fingerprint');
-            if ($user->demoAccessExpired() || ! $user->has_access || ($previous !== null && ! hash_equals($previous, $hash))) {
+            if ($user->demoAccessExpired() || ! $user->has_access || (! is_string($previous) || ! hash_equals($previous, $hash))) {
                 Auth::logout();
                 $request->session()->invalidate();
                 $request->session()->regenerateToken();

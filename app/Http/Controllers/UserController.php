@@ -159,6 +159,7 @@ class UserController
     private function applyDemoExpiry(User $actor, User $target, array $data): void
     {
         $value = $data['demo_expires_at'] ?? null;
+        abort_if(! $actor->is_super_admin && array_key_exists('demo_expires_at', $data), 403);
         if ($target->demo_expires_at === null && blank($value)) {
             return;
         }

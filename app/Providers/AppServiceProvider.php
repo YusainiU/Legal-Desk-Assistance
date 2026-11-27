@@ -26,6 +26,12 @@ class AppServiceProvider extends ServiceProvider
                         ->orWhere(fn (Builder $demo) => $demo->where('demo_expires_at', '>', now())->whereNull('demo_expired_at'))));
         });
 
+        \Illuminate\Support\Facades\Event::listen(\Illuminate\Auth\Events\Login::class, function ($event): void {
+            if ($event->user instanceof User && $event->user->demo_expires_at !== null && request()->hasSession()) {
+                request()->session()->put('demo_password_fingerprint', hash('sha256', $event->user->getAuthPassword()));
+            }
+        });
+
         foreach ([
             \App\Models\Matter::class,
             \App\Models\MatterEntry::class,

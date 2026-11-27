@@ -13,6 +13,8 @@ class DemoAccountExpiry
     {
         Password::broker()->deleteToken($user);
         $user->setRememberToken(null);
+        DB::table('passkeys')->where('user_id', $user->id)->delete();
+        $user->forceFill(['two_factor_secret' => null, 'two_factor_recovery_codes' => null, 'two_factor_confirmed_at' => null]);
         if (config('session.driver') === 'database') {
             DB::connection(config('session.connection'))->table(config('session.table', 'sessions'))
                 ->where('user_id', $user->id)->delete();
