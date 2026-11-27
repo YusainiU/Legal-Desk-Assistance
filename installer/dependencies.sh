@@ -1,4 +1,5 @@
 install_dependencies(){
+ local mode="${1:?Installation mode required}"
  local args=(--prefer-dist --no-interaction)
  if [[ $mode == production ]]; then args+=(--no-dev --optimize-autoloader); fi
  composer install "${args[@]}"
