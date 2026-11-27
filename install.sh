@@ -68,7 +68,7 @@ source installer/dependencies.sh
 source installer/verify.sh
 configure_environment
 unset DB_PASSWORD
-install_dependencies
+install_dependencies "$mode"
 if [[ $mode == production ]]; then
  if ((noninteractive)); then [[ ${CONFIRM_MIGRATE:-} == yes ]] || die 'Set CONFIRM_MIGRATE=yes to authorize migrations.'
  else read -rp 'Run production migrations? [yes/no]: ' answer; [[ $answer == yes ]] || die 'Migration declined.'; fi
@@ -78,7 +78,7 @@ else
 fi
 if ((noninteractive)); then echo 'Administrator setup deferred: run php artisan legal-desk:setup-super-admin interactively.'
 else php artisan legal-desk:setup-super-admin; fi
-verify_installation
+verify_installation "$mode"
 echo "Application files installed at $PWD"
 if [[ $mode == local ]]; then echo 'Run php artisan serve to start the application.'
 else
