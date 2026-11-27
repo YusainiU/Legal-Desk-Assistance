@@ -32,6 +32,8 @@ mkdir -p -- "$backup_root"
 backup=$(mktemp -d "$backup_root/legal-desk-$(date -u +%Y%m%dT%H%M%SZ)-XXXXXX")
 printf '%s\n' "$old" > "$backup/previous-commit"
 printf '%s\n' "$target" > "$backup/target-commit"
+# Register cleanup before creating temporary credentials.
+trap 'rm -f -- "$backup/mysql.cnf"; if ((offline)); then echo "Maintenance mode retained. Backup directory: $backup" >&2; fi' EXIT
 # Use effective Laravel configuration, including cached configuration.
 php <<'PHP' > "$backup/mysql.cnf"
 <?php
@@ -53,8 +55,8 @@ db=$(php -r 'require "vendor/autoload.php";$a=require "bootstrap/app.php";$a->ma
 [[ $db =~ ^[A-Za-z0-9_]+$ ]] || die 'Unsupported database name'
 # Remove temporary credentials even on failure.
 trap 'rm -f -- "$backup/mysql.cnf"; if ((offline)); then echo "Maintenance mode retained. Backup directory: $backup" >&2; fi' EXIT
-php artisan down
 offline=1
+php artisan down
 cp -p .env "$backup/environment"
 chmod 600 "$backup/environment"
 mysqldump --defaults-extra-file="$backup/mysql.cnf" --single-transaction --quick --no-tablespaces --triggers --databases "$db" > "$backup/database.sql"
@@ -71,7 +73,10 @@ npm ci
 npm run build
 test -s public/build/manifest.json
 cmp -s .env "$backup/environment" || die 'Environment changed unexpectedly'
-php artisan optimize:clear
+php artisan config:clear
+php artisan route:clear
+php artisan view:clear
+php artisan event:clear
 php artisan migrate --force
 php artisan config:cache
 php artisan view:cache
