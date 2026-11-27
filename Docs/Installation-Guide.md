@@ -18,3 +18,16 @@ Non-interactive mode accepts INSTALL_DIR, APP_URL, DB_HOST, DB_PORT, DB_DATABASE
 The installer refuses existing directories and nonempty databases. On failure it retains files for diagnosis; do not rerun against a partially migrated database. Review errors and use a fresh empty database or complete setup manually. Never delete existing client data. This is not an upgrade tool. Follow the README upgrade and backup procedure for existing installations.
 
 Run php artisan serve for local testing. Verify authentication, assets, private document access and database operations before use.
+
+## Phase 2: optional production helpers
+
+Before installation, download and review installer/database.sh from the selected branch and run it with Bash if you need a new local MySQL database. It requires sudo mysql socket authentication and OpenSSL. It prints a generated password to your terminal; store securely and avoid recording the session. Existing database names and usernames are rejected. If provisioning fails midway, inspect partial objects manually; no automatic deletion is attempted.
+
+After installation, from the application directory:
+
+```bash
+bash installer/services.sh
+bash installer/deployment.sh
+```
+
+The services helper configures SMTP and optional approved OpenAI access. Special characters unsupported by the environment writer must be configured manually. The deployment helper requires an existing PHP-FPM installation, dedicated service account/pool, Apache, TLS certificates, ACL utilities and a path under /var/www. Verify that the selected PHP-FPM socket actually belongs to the intended pool and that Apache can traverse the public path. It offers ACL changes, ClamAV installation and a cron entry separately. Review existing scheduler entries before accepting. It generates an Apache candidate for a dedicated host or an Alias inside an existing HTTPS virtual host; it does not install or enable the candidate or obtain certificates. Review and apply manually, enable required Apache modules, run configtest and reload. Verify scanner signatures and enable document scanning manually. Complete the README go-live checklist. All helpers are experimental and require staging tests.
