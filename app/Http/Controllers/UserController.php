@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Support\DemoAccountExpiry;
+use Illuminate\Validation\ValidationException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -38,6 +40,7 @@ class UserController
             }
 
             $user = new User(['name' => $data['name'], 'email' => $data['email'], 'password' => $data['password']]);
+            $this->applyDemoExpiry($actor, $user, $data);
             $user->forceFill(['has_access' => $data['has_access'], 'is_admin' => $data['is_admin'] ?? false])->save();
         }, 3);
 
@@ -64,6 +67,7 @@ class UserController
                 Gate::forUser($actor)->authorize('grant-admin');
             }
 
+            $this->applyDemoExpiry($actor, $target, $data);
             $passwordChanged = filled($data['password'] ?? null);
             $accessRevoked = ! $self && $target->has_access && ! $data['has_access'];
 
@@ -144,7 +148,41 @@ class UserController
             $rules['is_admin'] = 'sometimes|boolean';
         }
 
+        if ($request->has('demo_expires_at')) {
+            abort_unless($request->user()->is_super_admin, 403);
+            $rules['demo_expires_at'] = ['nullable', 'date_format:Y-m-d\TH:i'];
+        }
+
         return $request->validate($rules);
+    }
+
+    private function applyDemoExpiry(User $actor, User $target, array $data): void
+    {
+        $value = $data['demo_expires_at'] ?? null;
+        abort_if(! $actor->is_super_admin && array_key_exists('demo_expires_at', $data), 403);
+        if ($target->demo_expires_at === null && blank($value)) {
+            return;
+        }
+
+        abort_unless($actor->is_super_admin && ! $target->is_super_admin, 403);
+        if ($target->is_admin || ($data['is_admin'] ?? false)) {
+            throw ValidationException::withMessages(['demo_expires_at' => 'Demo accounts must be staff accounts.']);
+        }
+        if (blank($value)) {
+            throw ValidationException::withMessages(['demo_expires_at' => 'Demo accounts must retain an expiry date.']);
+        }
+
+        $expiry = \Illuminate\Support\Carbon::createFromFormat('Y-m-d\TH:i', $value, config('app.timezone'))->startOfMinute();
+        $changed = ! $target->demo_expires_at || ! $target->demo_expires_at->equalTo($expiry);
+        if ($changed || $target->demoAccessExpired()) {
+            if ($expiry->lte(now()) || blank($data['password'] ?? null)) {
+                throw ValidationException::withMessages(['demo_expires_at' => 'Set a future expiry and a new password to create or renew demo access.']);
+            }
+            if ($target->exists) {
+                DemoAccountExpiry::invalidateCredentials($target);
+            }
+            $target->forceFill(['demo_expires_at' => $expiry, 'demo_expired_at' => null]);
+        }
     }
 
     private function lockTarget(Request $request, User $user): array
