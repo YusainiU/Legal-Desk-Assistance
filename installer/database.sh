@@ -23,11 +23,6 @@ provision_database(){
  local db user answer method admin existing password
  local -a mysql_cmd
  command -v openssl >/dev/null || { echo 'Install openssl first.' >&2; return 1; }
- read -rp 'New database name [legal_desk_assistance]: ' db || return 1
- db=$(trim_input "$db"); db=${db:-legal_desk_assistance}
- read -rp 'New database username [legal_desk_user]: ' user || return 1
- user=$(trim_input "$user"); user=${user:-legal_desk_user}
- [[ $db =~ ^[a-zA-Z0-9_]{1,64}$ && $user =~ ^[a-zA-Z0-9_]{1,32}$ ]] || { echo 'Use letters, numbers and underscores only.' >&2; return 1; }
  while true; do
   printf '%s\n' '1. Linux socket (sudo mysql)' '2. MySQL root password' '3. Custom MySQL administrator' '4. Cancel'
   read -rp 'Authentication method: ' method || return 1
@@ -41,12 +36,29 @@ provision_database(){
    4) return 1;;
    *) continue;;
   esac
-  # mysql itself prompts silently on the terminal; no administrator secret is stored.
-  if existing=$("${mysql_cmd[@]}" -e "SELECT (SELECT COUNT(*) FROM information_schema.SCHEMATA WHERE SCHEMA_NAME='$db') + (SELECT COUNT(*) FROM mysql.user WHERE User='$user');"); then break; fi
-  read -rp 'Administrator authentication or permission check failed. Retry? [yes/no]: ' answer || return 1
-  [[ $answer == yes ]] || return 1
+  while true; do
+   read -rp 'New database name [legal_desk_assistance]: ' db || return 1
+   db=$(trim_input "$db"); db=${db:-legal_desk_assistance}
+   read -rp 'New database username [legal_desk_user]: ' user || return 1
+   user=$(trim_input "$user"); user=${user:-legal_desk_user}
+   [[ $db =~ ^[a-zA-Z0-9_]{1,64}$ && $user =~ ^[a-zA-Z0-9_]{1,32}$ ]] || { echo 'Use letters, numbers and underscores only.' >&2; continue; }
+   # Native password prompt; no administrator secret is stored.
+   if ! existing=$("${mysql_cmd[@]}" -e "SELECT EXISTS(SELECT 1 FROM information_schema.SCHEMATA WHERE SCHEMA_NAME='$db'), EXISTS(SELECT 1 FROM mysql.user WHERE User='$user');"); then
+    read -rp 'Administrator authentication or permission check failed. Retry? [yes/no]: ' answer || return 1
+    [[ $answer == yes ]] || return 1
+    break
+   fi
+   case "$existing" in
+    $'0\t0') break 2;;
+    $'1\t0') printf 'Database already exists: %s\n' "$db" >&2;;
+    $'0\t1') printf 'Username already exists: %s\n' "$user" >&2;;
+    $'1\t1') printf 'Database already exists: %s\nUsername already exists: %s\n' "$db" "$user" >&2;;
+    *) echo 'Unexpected database conflict check result; stopping safely.' >&2; return 1;;
+   esac
+   read -rp 'Enter alternative database name or username? [yes/no]: ' answer || return 1
+   [[ $answer == yes ]] || return 1
+  done
  done
- [[ $existing == 0 ]] || { echo 'Database or username already exists; no changes made.' >&2; return 1; }
  read -rp "Create NEW local database $db and user $user? [yes/no]: " answer || return 1
  [[ $answer == yes ]] || return 1
  password=$(openssl rand -hex 32) || return 1
