@@ -23,4 +23,15 @@ trap 'rm -rf -- "$tmp"' EXIT
  if (configure_environment); then echo 'Existing environment overwritten' >&2; exit 1; fi
  cmp .env original
 )
+# shellcheck source=installer/database.sh
+source installer/database.sh
+[[ $(trim_input '  example  ') == example ]]
+DB_DATABASE=test DB_USERNAME=test DB_HOST=localhost DB_PORT=3306 DB_PASSWORD=''
+if valid_database_inputs; then echo 'Empty password accepted' >&2; exit 1; fi
+DB_PASSWORD=test-secret
+valid_database_inputs
+DB_PORT=65536
+if valid_database_inputs; then echo 'Invalid port accepted' >&2; exit 1; fi
+DB_PORT=3306 DB_HOST='localhost;dbname=other'
+if valid_database_inputs; then echo 'Invalid host accepted' >&2; exit 1; fi
 echo 'Installer smoke checks passed'
