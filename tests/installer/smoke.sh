@@ -34,4 +34,35 @@ DB_PORT=65536
 if valid_database_inputs; then echo 'Invalid port accepted' >&2; exit 1; fi
 DB_PORT=3306 DB_HOST='localhost;dbname=other'
 if valid_database_inputs; then echo 'Invalid host accepted' >&2; exit 1; fi
+# Simulate conflict checks without a real database or administrator password.
+(
+ mysql(){
+  case "$*" in
+   *"SCHEMA_NAME='taken_db'"*"User='taken_user'"*) printf '1\t1\n';;
+   *"SCHEMA_NAME='taken_db'"*) printf '1\t0\n';;
+   *"User='taken_user'"*) printf '0\t1\n';;
+   *) printf '0\t0\n';;
+  esac
+ }
+ output=$(provision_database 2>&1 <<'INPUT' || true
+2
+taken_db
+taken_user
+yes
+taken_db
+free_user
+yes
+free_db
+taken_user
+yes
+free_db
+free_user
+no
+INPUT
+ )
+ grep -q 'Database already exists: taken_db' <<< "$output"
+ grep -q 'Username already exists: taken_user' <<< "$output"
+ [[ $(grep -c 'Database already exists:' <<< "$output") == 2 ]]
+ [[ $(grep -c 'Username already exists:' <<< "$output") == 2 ]]
+)
 echo 'Installer smoke checks passed'
