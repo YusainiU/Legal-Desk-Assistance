@@ -2,6 +2,8 @@ verify_installation(){
  local mode="${1:?Installation mode required}"
  test -s public/build/manifest.json
  test -w storage
+ test -w storage/app/private
+ test -w storage/app/public
  test -w bootstrap/cache
  php artisan migrate:status
  php artisan schedule:list
