@@ -43,6 +43,10 @@ else
  read -rp 'Application URL [http://localhost:8000]: ' APP_URL
  APP_URL=${APP_URL:-http://localhost:8000}
 fi
+trim_prompt(){ local v=$1; v="${v#"${v%%[![:space:]]*}"}"; v="${v%"${v##*[![:space:]]}"}"; printf '%s' "$v"; }
+INSTALL_DIR=$(trim_prompt "$INSTALL_DIR")
+APP_URL=$(trim_prompt "$APP_URL")
+[[ -n $INSTALL_DIR && $APP_URL =~ ^https?://[^[:space:]]+$ ]] || die 'Invalid directory or URL'
 [[ ! -e $INSTALL_DIR && ! -L $INSTALL_DIR ]] || die 'Destination already exists; refusing overwrite.'
 [[ $mode != production || $APP_URL == https://* ]] || die 'Production requires an HTTPS URL.'
 [[ $ref != -* ]] || die 'Invalid ref'
