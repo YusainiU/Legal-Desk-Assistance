@@ -42,24 +42,54 @@ else
  INSTALL_DIR=${INSTALL_DIR:-legal-desk-assistance}
  read -rp 'Application URL [http://localhost:8000]: ' APP_URL
  APP_URL=${APP_URL:-http://localhost:8000}
- read -rp 'Database name: ' DB_DATABASE
- read -rp 'Database user: ' DB_USERNAME
- read -rsp 'Database password: ' DB_PASSWORD; echo
- read -rp 'Database host [127.0.0.1]: ' DB_HOST
- read -rp 'Database port [3306]: ' DB_PORT
 fi
-export APP_URL DB_DATABASE DB_USERNAME DB_PASSWORD
-export DB_HOST=${DB_HOST:-127.0.0.1} DB_PORT=${DB_PORT:-3306}
 [[ ! -e $INSTALL_DIR && ! -L $INSTALL_DIR ]] || die 'Destination already exists; refusing overwrite.'
 [[ $mode != production || $APP_URL == https://* ]] || die 'Production requires an HTTPS URL.'
-export INSTALL_MODE=$mode
-# Use PDO rather than exposing passwords in command-line arguments.
-php -r '$p=new PDO("mysql:host=".getenv("DB_HOST").";port=".getenv("DB_PORT").";dbname=".getenv("DB_DATABASE"),getenv("DB_USERNAME"),getenv("DB_PASSWORD")); if($p->query("SHOW TABLES")->fetch()) {fwrite(STDERR,"Database is not empty.\n");exit(1);}' || die 'Use a reachable, dedicated empty database.'
+[[ $ref != -* ]] || die 'Invalid ref'
+# Clone selected release first so standalone downloads use its matching database helper.
 git clone -- "$repo" "$INSTALL_DIR"
 cd -- "$INSTALL_DIR"
 git checkout --detach "$ref" || git checkout --detach "origin/$ref"
 git rev-parse HEAD
 [[ -f public/.htaccess && -f composer.lock && -f package-lock.json ]] || die 'Required release files missing.'
+# shellcheck source=installer/database.sh
+source installer/database.sh
+APP_URL=$(trim_input "$APP_URL")
+[[ $APP_URL =~ ^https?://[^[:space:]]+$ ]] || die 'Invalid application URL'
+if ((noninteractive)); then
+ DB_HOST=${DB_HOST:-127.0.0.1} DB_PORT=${DB_PORT:-3306}
+ verify_database_connection || die 'Use a reachable dedicated empty database.'
+else
+ while true; do
+  printf '%s\n' '1. Use existing empty database' '2. Create new local database' '3. Cancel'
+  read -rp 'Database option: ' choice
+  case "$choice" in
+   1)
+    read -rp 'Database name: ' DB_DATABASE
+    read -rp 'Database user: ' DB_USERNAME
+    while true; do
+     read -rsp 'Database password: ' DB_PASSWORD; echo
+     [[ -n $DB_PASSWORD ]] && break
+     echo 'Password must not be empty.'
+    done
+    read -rp 'Database host [127.0.0.1]: ' DB_HOST
+    read -rp 'Database port [3306]: ' DB_PORT
+    DB_DATABASE=$(trim_input "$DB_DATABASE")
+    DB_USERNAME=$(trim_input "$DB_USERNAME")
+    DB_HOST=$(trim_input "$DB_HOST"); DB_HOST=${DB_HOST:-127.0.0.1}
+    DB_PORT=$(trim_input "$DB_PORT"); DB_PORT=${DB_PORT:-3306}
+    if verify_database_connection; then break; fi
+    read -rp 'Retry database configuration? [yes/no]: ' answer
+    [[ $answer == yes ]] || die 'Cancelled; cloned files retained.'
+    ;;
+   2) provision_database || die 'Provisioning stopped; cloned files retained.'; break;;
+   3) die 'Cancelled; cloned files retained.';;
+   *) echo 'Choose 1, 2 or 3.';;
+  esac
+ done
+fi
+export APP_URL DB_DATABASE DB_USERNAME DB_PASSWORD DB_HOST DB_PORT
+export INSTALL_MODE=$mode
 # shellcheck source=installer/environment.sh
 source installer/environment.sh
 # shellcheck source=installer/dependencies.sh
